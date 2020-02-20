@@ -1,0 +1,22 @@
+{% extends "tasks/base.html" %}
+
+{% block leftcontent %}
+  <h3>Change Password</h3>
+  
+  <p style="color: red;">{{ pass_error }}</p>
+  <form action="{% url 'tasks:change-pass' %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <br />
+    <input type="submit" value="Change Password" class="btn btn-default" />
+  </form>
+{% endblock %}
+
+
+{% block scriptcontent %}
+<script>
+  $("input, select, textarea").addClass("form-control");
+  $("#gonder").removeClass("form-control");
+  $("td").css("padding", "4px");
+</script>
+{% endblock %}

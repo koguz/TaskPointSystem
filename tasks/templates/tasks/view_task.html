@@ -1,0 +1,82 @@
+{% extends "tasks/base.html" %}
+
+{% block leftcontent %}
+
+<h3>Task Details</h3>
+
+<table>
+<tr><td>Task Name</td><td>:</td><td>{{ task.title }}</td></tr>
+<tr><td>Team</td><td>:</td><td>{{ task.team }}</td></tr>
+<tr><td>Milestone</td><td>:</td><td>{{ task.milestone }}</td></tr>
+<tr><td>Created by</td><td>:</td><td>{{ task.creator }}</td></tr>
+<tr><td>Assigned to</td><td>:</td><td>{{ task.assignee }}</td></tr>
+<tr><td>Title</td><td>:</td><td>{{ task.title }}</td></tr>
+<tr><td valign="top">Description</td><td valign="top">:</td><td>{{ task.description|linebreaksbr }}</td></tr>
+<tr><td>Created on</td><td>:</td><td>{{ task.date }}</td></tr>
+<tr><td>Due Date</td><td>:</td><td>{{ task.due }}</td></tr>
+<tr><td>Last Modified</td><td>:</td><td>{{ task.completed }}</td></tr>
+<tr><td>Priority</td><td>:</td><td>{{ task.get_priority_display }}</td></tr>
+<tr><td>Difficulty</td><td>:</td><td>{{ task.get_difficulty_display }}</td></tr>
+<tr><td>Modifier</td><td>:</td><td>{{ task.modifier }}</td></tr>
+<tr><td>Task Point ( (p*d) + m)</td><td>:</td><td>{{ task.get_points }}</td></tr>
+<tr><td>Status</td><td>:</td><td>{{ task.get_status_display }}</td></tr>
+</table>
+
+
+<hr />
+
+{% if user_s and task.status == 3 %}
+    Set Modifier to:
+    <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
+    <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
+    <a href="{% url 'tasks:update-task-mod' task.id 3 %}" class="btn btn-default" role="button">3</a>
+    <a href="{% url 'tasks:update-task-mod' task.id 4 %}" class="btn btn-default" role="button">4</a>
+    <a href="{% url 'tasks:update-task-mod' task.id 5 %}" class="btn btn-default" role="button">5</a>
+    <hr />
+    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+    <a href="{% url 'tasks:update' task.id 4 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
+{% endif %}
+{% if user_d and task.status == 2 %}
+    <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
+{% endif %}
+
+<hr />
+
+<a href="{% url 'tasks:choose' %}">Go Home</a>.
+
+{% endblock %}
+
+{% block rightcontent %}
+
+<h3>Comments</h3>
+<form action="{% url 'tasks:send-comment' tid %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <div style="text-align: right; padding: 4px;"><input type="submit" value="Submit" class="btn btn-success" id="gonder" /></div>
+</form>
+<hr />
+
+{% if comments %}
+<ul class="list-group">
+  {% for comment in comments %}
+    <li class="list-group-item">
+      <p>Comment by <b>{{comment.owner}}</b> on {{comment.date}}</p>
+      <p>{{comment.body|linebreaksbr}}</p>
+      {% if comment.file_url %}
+      <p>File URL: <a href="{{comment.file_url }}">{{comment.file_url }}</a></p>
+      {% endif %}
+
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% endblock %}
+
+{% block scriptcontent %}
+<script>
+  $("input, select, textarea").addClass("form-control");
+  $("#gonder").removeClass("form-control");
+  $("td").css("padding", "4px");
+</script>
+{% endblock %}

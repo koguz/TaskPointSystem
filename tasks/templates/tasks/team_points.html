@@ -1,0 +1,56 @@
+{% extends "tasks/base.html" %}
+
+{% block leftcontent %}
+
+<h3>Team and Developer Points</h3>
+
+<p>Here you can see the developer and team points.</p>
+
+<p> The project is made up of the following milestones.
+<ul class="list-group">
+  {% for m in milestones %}
+    <li class="list-group-item">
+      {{m}}, due date {{m.due}}<br />
+      Weight: {{m.weight}} / 100
+    </li>
+  {% endfor %}
+</ul>
+</p>
+
+<p>The following list shows the developers in your team, their contributions and
+  final grades using the weights for each milestone.
+<ul class="list-group">
+{% for dev in developers %}
+  <li class="list-group-item">
+    <b>{{ dev }}</b> has an individual grade of {{ dev.get_project_grade }}.
+  </li>
+{% endfor %}
+</ul>
+</p>
+
+{% endblock %}
+
+{% block rightcontent %}
+
+<h3>Information</h3>
+
+<p>Every milestone has an associated weight under 100. For all the tasks in that milestone,
+  the team and individual grades are computed as follows. Every task created during a
+  milestone is either accepted or failed. Failure comes from either the rejection of
+  the work by other team members, or because the due date of the task or the milestone
+  has passed and it was not completed. The team grade then becomes the accepted points
+  over the points of all tasks.</p>
+
+  <p>Once the team grade is computed, all tasks for a milestone is divided to the
+    number of developers. This number represents the amount of contribution expected
+    from each developer. Then, the individual grade is computed, similar to the
+    team grade, but only the developer's tasks are taken into account. This number
+    is then divided to the expected value. If it is over 1, then the developer gets
+    full grade for the milestone. The final individual grade is the weighted sum of
+    all milestone grades.
+  </p>
+
+  <p>The project has a predefined values for team and individual grades. They contribute
+    to the project grade of the developer. </p>
+
+{% endblock%}

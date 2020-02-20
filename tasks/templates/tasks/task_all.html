@@ -1,0 +1,27 @@
+{% extends "tasks/base.html" %}
+
+{% block leftcontent %}
+    <h3>{{ page_title }}</h3>
+
+    <ul class="list-group">
+    {% for task in task_list %}
+      <li class="list-group-item">
+        <h4>{{ task.title }}</h4>
+        <p>
+          Assigned to: {{ task.assignee }}<br />
+          P/D/M:
+            {{ task.get_priority_display }} /
+            {{ task.get_difficulty_display }} /
+            {{ task.modifier }}<br />
+          Milestone: {{ task.milestone }} (Due: {{ task.milestone.due }})<br />
+          Due date: {{ task.due }}<br />
+          Status: {{ task.get_status_display }}
+        </p>
+        <p style="text-align: right">
+          <a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a>
+        </p>
+    </li>
+    {% endfor %}
+    </ul>
+
+{% endblock %}
