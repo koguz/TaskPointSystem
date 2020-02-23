@@ -20,4 +20,4 @@ class TaskModelTests(TestCase):
         past_date = timezone.now() + datetime.timedelta(days=1)
         past_date = past_date.date()
         task = Task(due=past_date)
-        self.assertEqual(past_date_validator(task.due), True)
+        self.assertEqual(past_date_validator(task.due), None)

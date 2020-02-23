@@ -1,4 +1,5 @@
 import datetime
+
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
@@ -12,9 +13,6 @@ def past_date_validator(value):
             _('%(value)s is in the past!'),
             params={'value': value},
         )
-        return False
-    return True
-    
 
 # in class definitions, foreign keys and relations should come first
 
