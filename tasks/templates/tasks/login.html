@@ -1,0 +1,36 @@
+{% extends "tasks/base.html" %}
+
+{% load static %}
+
+{% block leftcontent %}
+    <p><img src="{% static 'tasks/logo.png' %}" /></p>
+
+    <h3>Task Point System (v0.3.20190926)</h3>
+    <p>This is the web application for the Task Point System (TPS) used for
+      better execution of team projects.
+    </p>
+    <p>Please contact Kaya Oguz (kaya.oguz (a) ieu.edu.tr) if you are
+      experiencing problems logging in.
+    </p>
+    <p style="color: red;"> {{ login_error }}
+    </p>
+
+{% endblock %}
+
+{% block rightcontent %}
+    <h3>Login</h3>
+
+    <form action="{% url 'tasks:login' %}" method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="oasis">Login:</label>
+        <input type="text" name="oasis" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="pwd">Password:</label>
+        <input type="password" name="pass" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-default">Login</button>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "tasks/base.html" %}
+
+{% block leftcontent %}
+<h3>Teams and Tasks</h3>
+<ul class="list-group">
+{% for team in teams %}
+  <li class="list-group-item">
+    <p><b>{{ team.name }}</b></p>
+    {% for t in team.task_set.all %}
+      <p>{{ t.title }} <i>({{t.milestone.name}})</i><br />
+        {{t.get_status_display}} - <a href="{% url 'tasks:view-task' t.id %}">view details</a></p>
+    {% endfor %}
+  </li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+
+{% block rightcontent %}
+<h3>Teams and Grades</h3>
+{% for team in teams %}
+  <li class="list-group-item">
+    <p><b>{{ team.name }}</b></p>
+    Team milestone points:
+    <ul>
+    {% for m, g in team.get_milestone_list.items %}
+      <li> {{ m }} : {{ g }}</li>
+    {% endfor %}
+    </ul>
+    {% for d in team.developer_set.all %}
+      <p>{{ d }} has an individual grade of {{ d.getProjectGrade }}</p>
+      <p><ul>
+        {% for m, g in d.getMilestoneList.items %}
+          <li>{{ m }} : {{ g }}</li>
+        {% endfor %}
+      </ul></p>
+    {% endfor %}
+  </li>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "tasks/base.html" %}
+
+{% block leftcontent %}
+    <h3>{{ supervisor_name }}</h3>
+    <div style="text-align: right">
+      <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
+      <a href="{% url 'tasks:leave' %}" class="btn btn-default" role="button">Logout</a>
+    </div>
+<hr />
+    {% if completed_task_list %}
+<h3>Completed tasks from all supervised teams</h3>
+<ul class="list-group">
+{% for task in completed_task_list %}
+  <li class="list-group-item">
+    <h4>{{ task.title }}</h4>
+    <p>
+      Assigned to: {{ task.assignee }}<br />
+      Team: {{ task.team }}<br />
+      P/D/M:
+        {{ task.get_priority_display }} /
+        {{ task.get_difficulty_display }} /
+        {{ task.modifier }}<br />
+      Milestone: {{ task.milestone }} (Due: {{ task.milestone.due }})<br />
+      Due date: {{ task.due }}<br />
+      Status: {{ task.get_status_display }}
+    </p>
+    <p style="text-align: right"><a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a></p>
+</li>
+{% endfor %}
+</ul>
+{% else %}
+  <p>There are no completed tasks.</p>
+{% endif %}
+
+{% endblock %}
+
+{% block rightcontent %}
+    <h3>Supervising Following Teams</h3>
+    <hr />
+    {% if supervised_teams %}
+    <ul class="list-group">
+    {% for mteam in supervised_teams %}
+        <li class="list-group-item">{{ mteam.name }} <br />
+        {% for dv in mteam.developer_set.all %}
+            {{ dv }} /
+        {% endfor %}
+        <div align="right">
+            <a href="{% url 'tasks:team-all-tasks' mteam.id %}" class="btn btn-default btn-info" role="button">
+                View All Tasks of {{ mteam.name }}
+            </a>
+            <a href="{% url 'tasks:task-create' mteam.id %}" class="btn btn-default btn-info" role="button">
+                Create Task for {{ mteam.name }}
+            </a>
+        </div>
+        </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+
+{% endblock %}
+
+

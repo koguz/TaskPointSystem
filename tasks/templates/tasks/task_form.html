@@ -1,0 +1,52 @@
+{% extends "tasks/base.html" %}
+
+{% block rightcontent %}
+<h3>Milestone: {{milestone.name}}</h3>
+<hr />
+<p>
+  Due date: {{milestone.due}}<br />
+  Weigth: {{milestone.weight}}/100
+</p>
+<p>
+{{milestone.description|linebreaksbr}}
+</p>
+
+<h3>Information</h3>
+<hr />
+<p>Every task can be set to a single developer only. Once you create the task,
+  someone in your team must approve it. You cannot approve a task you have created.</p>
+<p>The decription should be written in detail, otherwise it would not be possible for your
+  fellow developers to understand what the task is about.</p>
+<p> Once the form is filled, you cannot change it, so be careful about the due date. </p>
+
+
+{% endblock %}
+
+{% block leftcontent %}
+<h3>Create New Task</h3>
+<hr />
+<form action="{% url 'tasks:task-create' team_id %}" method="post">
+  <table>
+    {% csrf_token %}
+    {{ form }}
+    <tr>
+      <td>&nbsp;</td>
+      <td style="text-align: right;">
+        <input type="submit" value="Submit" class="btn btn-success" id="gonder" />
+        <a href="{% url 'tasks:choose' %}" class="btn btn-default btn-danger" role="button">Cancel</a>
+      </td>
+    </tr>
+  </table>
+</form>
+{% endblock %}
+
+{% block scriptcontent %}
+<script>
+  $(document).ready(function() {
+      $('.datepicker').datepicker();
+  });
+  $("input, select, textarea").addClass("form-control");
+  $("#gonder").removeClass("form-control");
+  $("td").css("padding", "4px");
+</script>
+{% endblock %}
