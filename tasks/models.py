@@ -19,11 +19,7 @@ def past_date_validator(value):
 
 class Course(models.Model):
     name = models.CharField("Course Name", max_length=256)
-    project_members = models.PositiveSmallIntegerField(
-        "Maximum number of project members",
-        default=6,
-        validators=[MaxValueValidator(99), MinValueValidator(1)]
-    )
+    number_of_students = models.PositiveSmallIntegerField("Number of Students", default=40, validators=[MaxValueValidator(99), MinValueValidator(1)])
     team_weight = models.PositiveSmallIntegerField(
         "Team weight",
         default=40,
@@ -37,6 +33,9 @@ class Course(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_number_0f_students(self):
+        return self.number_of_students
 
     def get_current_milestone(self):
         return self.milestone_set.all().order_by('due').exclude(due__lte=datetime.date.today())[0]
@@ -69,9 +68,12 @@ class Supervisor(models.Model):
 
 class Team(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course1 = Course()
+    number_of_students = course1.get_number_0f_students()
     name = models.CharField("Team Name", max_length=128)
     github = models.CharField("Git Page", max_length=256, null=True)
     supervisor = models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True)
+    team_size = models.PositiveSmallIntegerField("Team size", default=4, validators=[MaxValueValidator(number_of_students), MinValueValidator(1)])
 
     def __str__(self):
         return self.name
@@ -106,6 +108,10 @@ class Team(models.Model):
 
     def get_developer_average(self, m):
         return self.get_all_task_points(m) / self.developer_set.count()
+
+    def get_team_size(self):
+        size = self.team_size
+        return size
 
 
 class Developer(models.Model):
@@ -181,6 +187,8 @@ class Task(models.Model):
         verbose_name="Assigned to"
     )
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team1 = Team()
+    team_size = team1.get_team_size()
     title = models.CharField("Brief task name", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date", validators=[past_date_validator])
@@ -194,12 +202,20 @@ class Task(models.Model):
         validators=[MaxValueValidator(5), MinValueValidator(1)]
     )
     status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=2)
+    no_of_votes = models.PositiveSmallIntegerField("Number of Votes", default=0, validators=[MaxValueValidator(team_size), MinValueValidator(1)])
+    valid = models.BooleanField("Is valid", default=False)
+
+    def is_okey(self, t):
+        valid_threshold = t.team_size * 0.51
+        if valid_threshold <= self.no_of_votes:
+            self.valid = True
+            return self.valid
 
     def get_points(self):
         return (self.difficulty*self.priority)+self.modifier
 
     def __str__(self):
-        return self.title
+        return self.title + self.description
 
 
 class Comment(models.Model):
