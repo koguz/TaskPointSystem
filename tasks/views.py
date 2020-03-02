@@ -102,7 +102,7 @@ def view_all_teams(request):
 
 # filtering solution https://stackoverflow.com/questions/291945/how-do-i-filter-foreignkey-choices-in-a-django-modelform
 @login_required
-def create(request, team_id):
+def supervisor_create(request, team_id):
     try:
         s = Supervisor.objects.get(user=request.user)
     except ObjectDoesNotExist:
@@ -126,7 +126,7 @@ def create(request, team_id):
         form = TaskForm(t)
     return render(
         request,
-        'tasks/task_form.html',
+        'tasks/supervisor_task_form.html',
         {
             'page_title': 'Create new task',
             'form': form,
@@ -135,6 +135,38 @@ def create(request, team_id):
         }
     )
 
+@login_required
+def developer_create(request):
+    try:
+        s = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        s = None
+        leave_site(request)
+        return HttpResponseRedirect('/tasks/')
+    t = s.team
+    c = t.course
+    m = c.get_current_milestone()
+    if request.method == 'POST':
+        form = TaskForm(t, request.POST)
+        if form.is_valid():
+            tk = form.save(commit=False)
+            tk.creator = s
+            tk.team = t
+            tk.milestone = c.get_current_milestone()
+            tk.save()
+            return HttpResponseRedirect('/tasks/team')
+    else:
+        form = TaskForm(t)
+    return render(
+        request,
+        'tasks/developer_task_form.html',
+        {
+            'page_title': 'Create new task',
+            'form': form,
+            'team_id': t.id,
+            'milestone': m
+        }
+    )
 
 @login_required
 def update(request, task_id, status_id):
@@ -273,7 +305,6 @@ def task_all(request):
             'task_list': tasks
         }
     )
-
 
 @login_required
 def team_points(request):

@@ -68,12 +68,10 @@ class Supervisor(models.Model):
 
 class Team(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    course1 = Course()
-    number_of_students = course1.get_number_0f_students()
     name = models.CharField("Team Name", max_length=128)
     github = models.CharField("Git Page", max_length=256, null=True)
     supervisor = models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True)
-    team_size = models.PositiveSmallIntegerField("Team size", default=4, validators=[MaxValueValidator(number_of_students), MinValueValidator(1)])
+    team_size = models.PositiveSmallIntegerField("Team size", default=4, validators=[MaxValueValidator(99), MinValueValidator(1)])
 
     def __str__(self):
         return self.name
@@ -112,6 +110,8 @@ class Team(models.Model):
     def get_team_size(self):
         size = self.team_size
         return size
+
+
 
 
 class Developer(models.Model):
@@ -179,7 +179,7 @@ class Task(models.Model):
         (5, "Accepted"),
     )
     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE)
-    creator = models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True, related_name='creator')
+    creator = models.CharField("creator",max_length=256)#= models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True, related_name='creator')
     assignee = models.ForeignKey(
         Developer,
         on_delete=models.CASCADE,
@@ -187,8 +187,6 @@ class Task(models.Model):
         verbose_name="Assigned to"
     )
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    team1 = Team()
-    team_size = team1.get_team_size()
     title = models.CharField("Brief task name", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date", validators=[past_date_validator])
@@ -202,10 +200,10 @@ class Task(models.Model):
         validators=[MaxValueValidator(5), MinValueValidator(1)]
     )
     status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=2)
-    no_of_votes = models.PositiveSmallIntegerField("Number of Votes", default=0, validators=[MaxValueValidator(team_size), MinValueValidator(1)])
+    no_of_votes = models.PositiveSmallIntegerField("Number of Votes", default=0, validators=[MaxValueValidator(99), MinValueValidator(0)])
     valid = models.BooleanField("Is valid", default=False)
 
-    def is_okey(self, t):
+    def is_okay(self, t):
         valid_threshold = t.team_size * 0.51
         if valid_threshold <= self.no_of_votes:
             self.valid = True

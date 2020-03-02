@@ -25,7 +25,7 @@
 {% block leftcontent %}
 <h3>Create New Task</h3>
 <hr />
-<form action="{% url 'tasks:task-create' team_id %}" method="post">
+<form action="{% url 'tasks:task-create-developer' %}" method="post">
   <table>
     {% csrf_token %}
     {{ form }}
