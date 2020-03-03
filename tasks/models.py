@@ -211,6 +211,11 @@ class Task(models.Model):
     def get_points(self):
         return (self.difficulty*self.priority)+self.modifier
 
+    def already_voted(self, developer):
+        if Vote.objects.filter(task=self, voter=developer):
+            return True
+        return False
+
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 

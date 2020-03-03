@@ -221,6 +221,9 @@ def view_task(request, task_id):
         user_s = Supervisor.objects.get(user=request.user)
 
     comment_list = tsk.comment_set.all().order_by("-date")
+    vote_list = tsk.vote_set.all()
+    already_voted = tsk.already_voted(request.user)
+    print(already_voted)
     form = CommentForm()
     return render(
         request,
@@ -229,12 +232,13 @@ def view_task(request, task_id):
             'page_title': 'View task',
             'task': tsk, 'tid': task_id,
             'comments': comment_list,
+            'votes': vote_list,
+            'already_voted': already_voted,
             'form': form,
             'user_d': user_d,
             'user_s': user_s,
         }
     )
-
 
 @login_required
 def send_comment(request, task_id):
@@ -336,6 +340,8 @@ def send_vote(request, task_id, status_id, button_id):
         vote.vote_type = 3
     elif status_id == 3 and button_id == 4:
         vote.vote_type = 4
-    
+
+
+
     vote.save()
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
