@@ -36,8 +36,16 @@
     <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
     <a href="{% url 'tasks:update' task.id 4 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
 {% endif %}
+{% if user_d and task.status == 1 %}
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Reject</a>
+{% endif %}
 {% if user_d and task.status == 2 %}
-    <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
+    <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
+{% endif %}
+{% if user_d and task.status == 3 %}
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Reject</a>
 {% endif %}
 
 <hr />
@@ -52,7 +60,7 @@
 <form action="{% url 'tasks:send-comment' tid %}" method="post">
     {% csrf_token %}
     {{ form }}
-    <div style="text-align: right; padding: 4px;"><input type="submit" value="Submit" class="btn btn-success" id="gonder" /></div>
+    <div style="text-align: right; padding: 4px;"><input type="submit" value="Submit" class="btn btn-success" id="send" /></div>
 </form>
 <hr />
 
@@ -76,7 +84,7 @@
 {% block scriptcontent %}
 <script>
   $("input, select, textarea").addClass("form-control");
-  $("#gonder").removeClass("form-control");
+  $("#send").removeClass("form-control");
   $("td").css("padding", "4px");
 </script>
 {% endblock %}

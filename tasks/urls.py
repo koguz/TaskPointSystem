@@ -17,6 +17,7 @@ urlpatterns = [
     re_path(r'^create/(?P<team_id>[0-9])/$', views.supervisor_create, name='task-create'),
     re_path(r'^create/developer/$', views.developer_create, name='task-create-developer'),
     re_path(r'^(?P<task_id>[0-9]+)/comment/$', views.send_comment, name='send-comment'),
+    re_path(r'^(?P<task_id>[0-9]+)/(?P<status_id>[0-5])/vote/(?P<button_id>[0-5])/$', views.send_vote, name='send-vote'),
     re_path(r'^(?P<task_id>[0-9]+)/view/$', views.view_task, name='view-task'),
     re_path(r'^(?P<task_id>[0-9]+)/update-mod/(?P<mod>[1-5])/$', views.update_task_mod, name='update-task-mod'),
     re_path(r'^(?P<task_id>[0-9]+)/update/(?P<status_id>[0-5])/$', views.update, name='update'),

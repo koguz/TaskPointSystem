@@ -57,8 +57,9 @@ class Milestone(models.Model):
 
 
 class Supervisor(models.Model):
+    id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
+    
     def __str__(self):
         return self.get_name()
 
@@ -112,9 +113,8 @@ class Team(models.Model):
         return size
 
 
-
-
 class Developer(models.Model):
+    id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -199,11 +199,10 @@ class Task(models.Model):
         default=3,
         validators=[MaxValueValidator(5), MinValueValidator(1)]
     )
-    status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=2)
-    no_of_votes = models.PositiveSmallIntegerField("Number of Votes", default=0, validators=[MaxValueValidator(99), MinValueValidator(0)])
-    valid = models.BooleanField("Is valid", default=False)
+    status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=1)
+    valid = models.BooleanField("Is Valid", default=False)
 
-    def is_okay(self, t):
+    def is_valid(self, t):
         valid_threshold = t.team_size * 0.51
         if valid_threshold <= self.no_of_votes:
             self.valid = True
@@ -213,7 +212,7 @@ class Task(models.Model):
         return (self.difficulty*self.priority)+self.modifier
 
     def __str__(self):
-        return self.title + self.description
+        return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 
 
 class Comment(models.Model):
@@ -225,3 +224,20 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.body
+
+
+class Vote(models.Model):
+    VOTE_TYPE = (
+        (1, 'Task Creation Accepted'),
+        (2, 'Task Creation Rejected'),
+        (3, 'Task Submission Accepted'),
+        (4, 'Task Submission Rejected'),
+    )
+
+    voter = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    task = models.ForeignKey(Task, on_delete=models.DO_NOTHING)
+    vote_type = models.PositiveSmallIntegerField("Vote Type", choices=VOTE_TYPE, default=1)
+    date = models.DateTimeField("Date", auto_now_add=True)
+
+    def __str__(self):
+        return self.voter.__str__() + " voted for " + self.task.title

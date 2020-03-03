@@ -319,3 +319,23 @@ def team_points(request):
             'developers': t.developer_set.all(),
             'milestones': t.course.milestone_set.all()
         })
+
+@login_required
+def send_vote(request, task_id, status_id, button_id):
+    status_id = int(status_id)
+    button_id = int(button_id)
+    vote = Vote(voter=request.user, task=Task.objects.get(pk=task_id))
+    # vote.voter = request.user  # Developer.objects.get(user=request.user)
+    # vote.task = Task.objects.get(pk=task_id)
+
+    if status_id == 1 and button_id == 1:
+        vote.vote_type = 1
+    elif status_id == 1 and button_id == 2:
+        vote.vote_type = 2
+    elif status_id == 3 and button_id == 3:
+        vote.vote_type = 3
+    elif status_id == 3 and button_id == 4:
+        vote.vote_type = 4
+    
+    vote.save()
+    return HttpResponseRedirect('/tasks/' + task_id + '/view/')
