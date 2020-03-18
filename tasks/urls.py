@@ -24,4 +24,12 @@ urlpatterns = [
     re_path(r'^logout/$', views.leave_site, name='leave'),
     re_path(r'^new-pass/$', views.change_pass, name='change-pass'),
     re_path(r'^view-all-teams/$', views.view_all_teams, name='view-all-teams'),
+    #re_path(r'^/developer/profile/$', views.view_developer_profile, name='developer-profile'),
+    #re_path(r'^/supervisor/profile/$', views.view_supervisor_profile, name='supervisor-profile'),
+    #re_path(r'^/developer/profile/notifications/$', views.view_developer_notifications, name='developer-notifications'),
+    #re_path(r'^/developer/profile/courses/$', views.view_developer_courses, name='developer-courses'),
+    #re_path(r'^/developer/profile/calendar/$', views.view_developer_calendar, name='developer-calendar'),
+    #re_path(r'^/developer/profile/comments/$', views.view_developer_comments, name='developer-comments'),
+    #re_path(r'^/developer/profile/grades/$', views.view_developer_grades, name='developer-grades'),
+
 ]
