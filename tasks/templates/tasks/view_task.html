@@ -20,6 +20,8 @@
 <tr><td>Modifier</td><td>:</td><td>{{ task.modifier }}</td></tr>
 <tr><td>Task Point ( (p*d) + m)</td><td>:</td><td>{{ task.get_points }}</td></tr>
 <tr><td>Status</td><td>:</td><td>{{ task.get_status_display }}</td></tr>
+<tr><td>Creation Accept Votes</td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
+<tr><td>Creation Reject Votes</td><td>:</td><td>{{ task.get_creation_reject_votes.count }}</td></tr>
 </table>
 
 

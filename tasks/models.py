@@ -216,6 +216,13 @@ class Task(models.Model):
             return True
         return False
 
+    def get_creation_accept_votes(self):
+        return Vote.objects.filter(task=self, vote_type=1)
+
+    def get_creation_reject_votes(self):
+        return Vote.objects.filter(task=self, vote_type=2)
+
+
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 
