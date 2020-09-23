@@ -7,7 +7,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from .models import *
 from .forms import *
+import logging
 
+logger = logging.getLogger('task')
 
 def login_form(request):
     context = {'page_title': 'Login'}
@@ -249,6 +251,7 @@ def send_comment(request, task_id):
             ct.owner = request.user  # Developer.objects.get(user=request.user)
             ct.task = Task.objects.get(pk=task_id)
             ct.save()
+            logger.info(request.user.get_username+' SENT COMMENT ON TASK ID:'+str(task_id))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 # https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.forms.PasswordChangeForm
@@ -344,4 +347,5 @@ def send_vote(request, task_id, status_id, button_id):
 
 
     vote.save()
+    logger.info(request.user.get_username() + " VOTED ON TASK ID: "+str(task_id) +", VOTE TYPE: "+str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')

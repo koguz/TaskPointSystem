@@ -68,6 +68,38 @@ TEMPLATES = [
     },
 ]
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname}s {asctime}s {module}s {message}s',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname}s {message}s',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'task': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
+}
+
 WSGI_APPLICATION = 'tps.wsgi.application'
 
 
