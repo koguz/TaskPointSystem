@@ -172,14 +172,15 @@ class Task(models.Model):
         (1, 'Easy'),
     )
     STATUS = (
-        (1, "Waiting for approval"),
+        (1, "Review"),
         (2, "Working on it"),
         (3, "Waiting for review"),
-        (4, "Rejected"),
-        (5, "Accepted"),
+        (4, "Waiting for supervisor grade"),
+        (5, "Rejected"),
+        (6, "Accepted"),
     )
     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE)
-    creator = models.CharField("creator",max_length=256)#= models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True, related_name='creator')
+    creator = models.CharField("creator", max_length=256)#= models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True, related_name='creator')
     assignee = models.ForeignKey(
         Developer,
         on_delete=models.CASCADE,
@@ -221,6 +222,10 @@ class Task(models.Model):
 
     def get_creation_reject_votes(self):
         return Vote.objects.filter(task=self, vote_type=2)
+
+
+
+
 
 
     def __str__(self):

@@ -211,21 +211,23 @@ def update_task_mod(request, task_id, mod):
 @login_required
 def view_task(request, task_id):
     tsk = get_object_or_404(Task, pk=task_id)
-
+    can_edit = False
     user_d = None
     user_s = None
     if Developer.objects.filter(user=request.user):
         user_d = Developer.objects.get(user=request.user)
+        if tsk.assignee == user_d:
+            can_edit = True
         if tsk.team != user_d.team:
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
     elif Supervisor.objects.filter(user=request.user):
+        can_edit = True
         user_s = Supervisor.objects.get(user=request.user)
 
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
     already_voted = tsk.already_voted(request.user)
-    print(already_voted)
     form = CommentForm()
     return render(
         request,
@@ -239,6 +241,7 @@ def view_task(request, task_id):
             'form': form,
             'user_d': user_d,
             'user_s': user_s,
+            'can_edit': can_edit
         }
     )
 
