@@ -116,16 +116,16 @@ def supervisor_create(request, team_id):
     c = t.course
     m = c.get_current_milestone()
     if request.method == 'POST':
-        form = TaskForm(t, request.POST)
+        form = TaskSupervisorForm(t, request.POST)
         if form.is_valid():
             tk = form.save(commit=False)
-            tk.creator = s
+            tk.creator = request.user
             tk.team = t
             tk.milestone = c.get_current_milestone()
             tk.save()
             return HttpResponseRedirect('/tasks/supervisor/')
     else:
-        form = TaskForm(t)
+        form = TaskSupervisorForm(t)
     return render(
         request,
         'tasks/supervisor_task_form.html',
@@ -140,33 +140,33 @@ def supervisor_create(request, team_id):
 @login_required
 def developer_create(request):
     try:
-        s = Developer.objects.get(user=request.user)
+        developer = Developer.objects.get(user=request.user)
     except ObjectDoesNotExist:
-        s = None
+        developer = None
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
-    t = s.team
-    c = t.course
-    m = c.get_current_milestone()
+    dev_team = developer.team
+    course = dev_team.course
+    milestone = course.get_current_milestone()
     if request.method == 'POST':
-        form = TaskForm(t, request.POST)
+        form = TaskSupervisorForm(dev_team, request.POST)
         if form.is_valid():
-            tk = form.save(commit=False)
-            tk.creator = s
-            tk.team = t
-            tk.milestone = c.get_current_milestone()
-            tk.save()
+            task = form.save(commit=False)
+            task.creator = developer
+            task.team = dev_team
+            task.milestone = course.get_current_milestone()
+            task.save()
             return HttpResponseRedirect('/tasks/team')
     else:
-        form = TaskForm(t)
+        form = TaskDeveloperForm(dev_team)
     return render(
         request,
         'tasks/developer_task_form.html',
         {
             'page_title': 'Create new task',
             'form': form,
-            'team_id': t.id,
-            'milestone': m
+            'team_id': dev_team.id,
+            'milestone': milestone
         }
     )
 
@@ -211,21 +211,23 @@ def update_task_mod(request, task_id, mod):
 @login_required
 def view_task(request, task_id):
     tsk = get_object_or_404(Task, pk=task_id)
-
+    can_edit = False
     user_d = None
     user_s = None
     if Developer.objects.filter(user=request.user):
         user_d = Developer.objects.get(user=request.user)
+        if tsk.assignee == user_d:
+            can_edit = True
         if tsk.team != user_d.team:
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
     elif Supervisor.objects.filter(user=request.user):
+        can_edit = True
         user_s = Supervisor.objects.get(user=request.user)
 
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
     already_voted = tsk.already_voted(request.user)
-    print(already_voted)
     form = CommentForm()
     return render(
         request,
@@ -239,6 +241,7 @@ def view_task(request, task_id):
             'form': form,
             'user_d': user_d,
             'user_s': user_s,
+            'can_edit': can_edit
         }
     )
 
