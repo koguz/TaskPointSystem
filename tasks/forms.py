@@ -11,8 +11,6 @@ class TaskSupervisorForm(ModelForm):
         widgets = {
             'due': forms.DateInput(attrs={'class': 'datepicker'}),
         }
-        exclude = None
-
     def __init__(self, team, *args, **kwargs):
         super(TaskSupervisorForm, self).__init__(*args, **kwargs)
         self.fields['assignee'].queryset = team.developer_set.all()

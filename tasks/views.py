@@ -55,7 +55,7 @@ def supervisor(request):    # this view is for the supervisors only...
 
     supervisor_name = s.get_name()
     page_title = "Supervisor page"
-    completed_task_list = s.creator.all().filter(status=3).order_by('team', 'due')
+    completed_task_list = request.user.creator.all().filter(status=3).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
 
     context = {
@@ -152,7 +152,7 @@ def developer_create(request):
         form = TaskSupervisorForm(dev_team, request.POST)
         if form.is_valid():
             task = form.save(commit=False)
-            task.creator = developer
+            task.creator = request.user
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
@@ -254,7 +254,7 @@ def send_comment(request, task_id):
             ct.owner = request.user  # Developer.objects.get(user=request.user)
             ct.task = Task.objects.get(pk=task_id)
             ct.save()
-            logger.info(request.user.get_username+' SENT COMMENT ON TASK ID:'+str(task_id))
+            logger.info(request.user.get_username()+' SENT COMMENT ON TASK ID:'+str(task_id))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 # https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.forms.PasswordChangeForm

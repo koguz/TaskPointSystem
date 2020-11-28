@@ -180,7 +180,7 @@ class Task(models.Model):
         (6, "Accepted"),
     )
     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE)
-    creator = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(User, related_name='creator', on_delete=models.SET_NULL, blank=True, null=True)
     assignee = models.ForeignKey(
         Developer,
         on_delete=models.CASCADE,
