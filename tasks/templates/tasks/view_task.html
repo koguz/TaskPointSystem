@@ -27,7 +27,7 @@
 
 <hr />
 
-<!--{% if user_s and task.status == 3 %}
+{% if user_s and task.status == 3 %}
     Set Modifier to:
     <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
     <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
@@ -46,13 +46,8 @@
 {% elif user_d and task.status == 3 and already_voted == False %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Reject</a>
-{% elif user_d and }
 {% endif %}
 
-{% if user_d and task.status == 1 %}
-    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Change Requested</a>
-{% endif %}
--->
 <hr />
 
 <a href="{% url 'tasks:choose' %}">Go Home</a>.
