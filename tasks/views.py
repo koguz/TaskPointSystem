@@ -149,7 +149,7 @@ def developer_create(request):
     course = dev_team.course
     milestone = course.get_current_milestone()
     if request.method == 'POST':
-        form = TaskSupervisorForm(dev_team, request.POST)
+        form = TaskDeveloperForm(dev_team, request.POST)
         if form.is_valid():
             task = form.save(commit=False)
             task.creator = request.user
@@ -211,18 +211,18 @@ def update_task_mod(request, task_id, mod):
 @login_required
 def view_task(request, task_id):
     tsk = get_object_or_404(Task, pk=task_id)
-    can_edit = False
+    can_edit = None
     user_d = None
     user_s = None
     if Developer.objects.filter(user=request.user):
         user_d = Developer.objects.get(user=request.user)
         if tsk.assignee == user_d:
-            can_edit = True
+            can_edit = 'developer'
         if tsk.team != user_d.team:
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
-    elif Supervisor.objects.filter(user=request.user):
-        can_edit = True
+    elif Supervisors.objects.filter(user=request.user):
+        can_edit = 'supervisor'
         user_s = Supervisor.objects.get(user=request.user)
 
     comment_list = tsk.comment_set.all().order_by("-date")
@@ -347,8 +347,42 @@ def send_vote(request, task_id, status_id, button_id):
     elif status_id == 3 and button_id == 4:
         vote.vote_type = 4
 
-
-
     vote.save()
     logger.info(request.user.get_username() + " VOTED ON TASK ID: "+str(task_id) +", VOTE TYPE: "+str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
+
+
+@login_required
+def developer_edit_task(request, task_id):
+    task_id = int(task_id)
+    task_to_edit = Task.objects.get(pk=task_id)
+    try:
+        developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        developer = None
+        leave_site(request)
+        return HttpResponseRedirect('/tasks/')
+    dev_team = developer.team
+    course = dev_team.course
+    milestone = course.get_current_milestone()
+    if request.method == 'POST':
+        form = TaskDeveloperForm(dev_team, request.POST, instance=task_to_edit) #instance argument allows existing entry to be edited
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.creator = request.user
+            task.team = dev_team
+            task.milestone = course.get_current_milestone()
+            task.save()
+            return HttpResponseRedirect('/tasks/team')
+    else:
+        form = TaskDeveloperForm(dev_team)
+    return render(
+        request,
+        'tasks/developer_task_form.html',
+        {
+            'page_title': 'Edit Existing Task',
+            'form': form,
+            'team_id': dev_team.id,
+            'milestone': milestone
+        }
+    )

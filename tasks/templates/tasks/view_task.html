@@ -47,6 +47,9 @@
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Reject</a>
 {% endif %}
+{% if can_edit == "developer" %}
+    <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
+{% endif %}
 
 <hr />
 
