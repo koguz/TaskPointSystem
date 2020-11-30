@@ -203,12 +203,6 @@ class Task(models.Model):
     status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=1)
     valid = models.BooleanField("Is Valid", default=False)
 
-    def is_valid(self, t):
-        valid_threshold = t.team_size * 0.51
-        if valid_threshold <= self.no_of_votes:
-            self.valid = True
-            return self.valid
-
     def get_points(self):
         return (self.difficulty*self.priority)+self.modifier
 
@@ -218,6 +212,11 @@ class Task(models.Model):
         return False
 
     def get_creation_accept_votes(self):
+
+        if Vote.objects.filter(task=self, vote_type=1).count() >= self.team.get_team_size()*0.50:
+            self.status = 2
+            self.save()
+
         return Vote.objects.filter(task=self, vote_type=1)
 
     def get_creation_reject_votes(self):
