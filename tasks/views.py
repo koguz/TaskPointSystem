@@ -435,7 +435,7 @@ def supervisor_edit_task(request, task_id):
             Vote.objects.filter(task=task).delete()
             task.milestone = course.get_current_milestone()
             task.save()
-            return HttpResponseRedirect('/tasks/team')
+            return HttpResponseRedirect('/tasks/supervisor/')
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
                                                      'title': task_to_edit.title,
