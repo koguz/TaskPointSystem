@@ -235,8 +235,10 @@ def view_task(request, task_id):
         can_edit = 'supervisor'
         user_s = Supervisor.objects.get(user=request.user)
 
-    if tsk.get_creation_change_votes().count() >= user_d.team.get_team_size() * 0.5:
-        needs_change = True
+    # THIS PART CAN BE ADDED TO send_vote FUNCTION AND needs_change boolean can be added to Task model
+    if user_d:
+        if tsk.get_creation_change_votes().count() >= user_d.team.get_team_size() * 0.5:
+            needs_change = True
 
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
