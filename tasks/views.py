@@ -11,6 +11,7 @@ import logging
 
 logger = logging.getLogger('task')
 
+
 def login_form(request):
     context = {'page_title': 'Login'}
     return render(request, 'tasks/login.html', context)
@@ -45,7 +46,7 @@ def choose(request):
 
 
 @login_required
-def supervisor(request):    # this view is for the supervisors only...
+def supervisor(request):  # this view is for the supervisors only...
     try:
         s = Supervisor.objects.get(user=request.user)
     except ObjectDoesNotExist:
@@ -68,7 +69,7 @@ def supervisor(request):    # this view is for the supervisors only...
 
 
 @login_required
-def team(request):   # this view is for the developer only...
+def team(request):  # this view is for the developer only...
     d = Developer.objects.get(user=request.user)
     t = d.team
     page_title = t.name + " Team Page"
@@ -101,6 +102,7 @@ def view_all_teams(request):
         'milestones': Milestone.objects.all(),
     }
     return render(request, 'tasks/view_all_teams.html', context)
+
 
 # filtering solution https://stackoverflow.com/questions/291945/how-do-i-filter-foreignkey-choices-in-a-django-modelform
 @login_required
@@ -137,6 +139,7 @@ def supervisor_create(request, team_id):
         }
     )
 
+
 @login_required
 def developer_create(request):
     try:
@@ -151,7 +154,6 @@ def developer_create(request):
     if request.method == 'POST':
         form = TaskDeveloperForm(dev_team, request.POST)
         if form.is_valid():
-
             task = form.save(commit=False)
             task.creator = request.user
             task.assignee = developer
@@ -173,6 +175,7 @@ def developer_create(request):
             'milestone': milestone
         }
     )
+
 
 @login_required
 def update(request, task_id, status_id):
@@ -251,6 +254,7 @@ def view_task(request, task_id):
         }
     )
 
+
 @login_required
 def send_comment(request, task_id):
     if request.method == 'POST':
@@ -260,8 +264,9 @@ def send_comment(request, task_id):
             ct.owner = request.user  # Developer.objects.get(user=request.user)
             ct.task = Task.objects.get(pk=task_id)
             ct.save()
-            logger.info(request.user.get_username()+' SENT COMMENT ON TASK ID:'+str(task_id))
+            logger.info(request.user.get_username() + ' SENT COMMENT ON TASK ID:' + str(task_id))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
+
 
 # https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.forms.PasswordChangeForm
 @login_required
@@ -322,6 +327,7 @@ def task_all(request):
         }
     )
 
+
 @login_required
 def team_points(request):
     d = Developer.objects.get(user=request.user)
@@ -335,6 +341,7 @@ def team_points(request):
             'developers': t.developer_set.all(),
             'milestones': t.course.milestone_set.all()
         })
+
 
 @login_required
 def send_vote(request, task_id, status_id, button_id):
@@ -354,7 +361,8 @@ def send_vote(request, task_id, status_id, button_id):
         vote.vote_type = 4
 
     vote.save()
-    logger.info(request.user.get_username() + " VOTED ON TASK ID: " + str(task_id) + ", VOTE TYPE: "+str(vote.vote_type))
+    logger.info(
+        request.user.get_username() + " VOTED ON TASK ID: " + str(task_id) + ", VOTE TYPE: " + str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 
@@ -372,7 +380,8 @@ def developer_edit_task(request, task_id):
     course = dev_team.course
     milestone = course.get_current_milestone()
     if request.method == 'POST':
-        form = TaskDeveloperForm(dev_team, request.POST, instance=task_to_edit) #instance argument allows existing entry to be edited
+        # instance argument allows existing entry to be edited
+        form = TaskDeveloperForm(request.POST, instance=task_to_edit)
         if form.is_valid():
             task = form.save(commit=False)
             task.creator = request.user
@@ -382,8 +391,7 @@ def developer_edit_task(request, task_id):
             task.save()
             return HttpResponseRedirect('/tasks/team')
     else:
-        form = TaskDeveloperForm(dev_team,
-                                 initial={'title': task_to_edit.title,
+        form = TaskDeveloperForm(initial={'title': task_to_edit.title,
                                           'description': task_to_edit.description,
                                           'due': task_to_edit.due,
                                           'priority': task_to_edit.priority,
@@ -392,6 +400,53 @@ def developer_edit_task(request, task_id):
     return render(
         request,
         'tasks/developer_task_form.html',
+        {
+            'page_title': 'Edit Existing Task',
+            'form': form,
+            'team_id': dev_team.id,
+            'milestone': milestone,
+            'is_edit': True,
+            'task_id': task_to_edit.id
+        }
+    )
+
+
+@login_required
+def supervisor_edit_task(request, task_id):
+    task_id = int(task_id)
+    task_to_edit = Task.objects.get(pk=task_id)
+    developer = task_to_edit.assignee
+    try:
+        supervisor = Supervisor.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        supervisor = None
+        leave_site(request)
+        return HttpResponseRedirect('/tasks/')
+    dev_team = developer.team
+    course = dev_team.course
+    milestone = course.get_current_milestone()
+    if request.method == 'POST':
+        # instance argument allows existing entry to be edited
+        form = TaskSupervisorForm(dev_team, request.POST, instance=task_to_edit)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.creator = request.user
+            task.team = dev_team
+            Vote.objects.filter(task=task).delete()
+            task.milestone = course.get_current_milestone()
+            task.save()
+            return HttpResponseRedirect('/tasks/team')
+    else:
+        form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
+                                                     'title': task_to_edit.title,
+                                                     'description': task_to_edit.description,
+                                                     'due': task_to_edit.due,
+                                                     'priority': task_to_edit.priority,
+                                                     'difficulty': task_to_edit.difficulty
+                                                     })
+    return render(
+        request,
+        'tasks/supervisor_task_form.html',
         {
             'page_title': 'Edit Existing Task',
             'form': form,

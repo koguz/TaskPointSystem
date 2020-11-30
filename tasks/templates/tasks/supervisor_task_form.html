@@ -23,9 +23,13 @@
 {% endblock %}
 
 {% block leftcontent %}
-<h3>Create New Task</h3>
+<h3>{{ page_title }}</h3>
 <hr />
-<form action="{% url 'tasks:task-create' team_id %}" method="post">
+{% if is_edit %}
+    <form action="{% url 'tasks:task-edit-supervisor' task_id %}" method="post">
+{% else %}
+    <form action="{% url 'tasks:task-create' team_id %}" method="post">
+{% endif %}
   <table>
     {% csrf_token %}
     {{ form }}
