@@ -221,7 +221,7 @@ def view_task(request, task_id):
         if tsk.team != user_d.team:
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
-    elif Supervisors.objects.filter(user=request.user):
+    elif Supervisor.objects.filter(user=request.user):
         can_edit = 'supervisor'
         user_s = Supervisor.objects.get(user=request.user)
 
@@ -348,7 +348,7 @@ def send_vote(request, task_id, status_id, button_id):
         vote.vote_type = 4
 
     vote.save()
-    logger.info(request.user.get_username() + " VOTED ON TASK ID: "+str(task_id) +", VOTE TYPE: "+str(vote.vote_type))
+    logger.info(request.user.get_username() + " VOTED ON TASK ID: " + str(task_id) + ", VOTE TYPE: "+str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 
@@ -375,7 +375,13 @@ def developer_edit_task(request, task_id):
             task.save()
             return HttpResponseRedirect('/tasks/team')
     else:
-        form = TaskDeveloperForm(dev_team)
+        form = TaskDeveloperForm(dev_team,
+                                 initial={'title': task_to_edit.title,
+                                          'description': task_to_edit.description,
+                                          'due': task_to_edit.due,
+                                          'priority': task_to_edit.priority,
+                                          'difficulty': task_to_edit.difficulty
+                                          })
     return render(
         request,
         'tasks/developer_task_form.html',
@@ -383,6 +389,8 @@ def developer_edit_task(request, task_id):
             'page_title': 'Edit Existing Task',
             'form': form,
             'team_id': dev_team.id,
-            'milestone': milestone
+            'milestone': milestone,
+            'is_edit': True,
+            'task_id': task_to_edit.id
         }
     )
