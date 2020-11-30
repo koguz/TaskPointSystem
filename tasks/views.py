@@ -151,12 +151,16 @@ def developer_create(request):
     if request.method == 'POST':
         form = TaskDeveloperForm(dev_team, request.POST)
         if form.is_valid():
+
             task = form.save(commit=False)
             task.creator = request.user
+            task.assignee = developer
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
+
             return HttpResponseRedirect('/tasks/team')
+
     else:
         form = TaskDeveloperForm(dev_team)
     return render(
@@ -228,6 +232,8 @@ def view_task(request, task_id):
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
     already_voted = tsk.already_voted(request.user)
+    check_status = tsk.get_creation_accept_votes()
+
     form = CommentForm()
     return render(
         request,
