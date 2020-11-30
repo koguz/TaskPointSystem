@@ -212,15 +212,19 @@ class Task(models.Model):
         return False
 
     def get_creation_accept_votes(self):
-
-        if Vote.objects.filter(task=self, vote_type=1).count() >= self.team.get_team_size()*0.50:
+        if Vote.objects.filter(task=self, vote_type=1).count() > self.team.get_team_size() * 0.50:
             self.status = 2
             self.save()
 
         return Vote.objects.filter(task=self, vote_type=1)
 
-    def get_creation_reject_votes(self):
+    def get_creation_change_votes(self):
         return Vote.objects.filter(task=self, vote_type=2)
+
+    def apply_self_accept(self, task_assignee):
+        vote = Vote(voter=task_assignee.user, task=self)
+        vote.vote_type = 1
+        vote.save()
 
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
@@ -239,14 +243,15 @@ class Comment(models.Model):
 
 class Vote(models.Model):
     VOTE_TYPE = (
-        (1, 'Task Creation Accepted'),
-        (2, 'Task Creation Rejected'),
-        (3, 'Task Submission Accepted'),
-        (4, 'Task Submission Rejected'),
+        (1, 'Creation Accepted'),
+        (2, 'Creation Change Requested'),
+        (3, 'Submission Accepted'),
+        (4, 'Submission Change Requested'),
     )
 
-    voter = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    task = models.ForeignKey(Task, on_delete=models.DO_NOTHING)
+    # VOTES WILL BE DELETED IF EITHER THE VOTER OR THE TASK IS DELETED !
+    voter = models.ForeignKey(User, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
     vote_type = models.PositiveSmallIntegerField("Vote Type", choices=VOTE_TYPE, default=1)
     date = models.DateTimeField("Date", auto_now_add=True)
 

@@ -152,7 +152,7 @@ def developer_create(request):
     course = dev_team.course
     milestone = course.get_current_milestone()
     if request.method == 'POST':
-        form = TaskDeveloperForm(dev_team, request.POST)
+        form = TaskDeveloperForm(request.POST)
         if form.is_valid():
             task = form.save(commit=False)
             task.creator = request.user
@@ -160,11 +160,13 @@ def developer_create(request):
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
+            task.apply_self_accept(task.assignee)
 
             return HttpResponseRedirect('/tasks/team')
 
     else:
-        form = TaskDeveloperForm(dev_team)
+        form = TaskDeveloperForm()
+
     return render(
         request,
         'tasks/developer_task_form.html',
@@ -221,6 +223,7 @@ def view_task(request, task_id):
     can_edit = None
     user_d = None
     user_s = None
+    needs_change = False
     if Developer.objects.filter(user=request.user):
         user_d = Developer.objects.get(user=request.user)
         if tsk.assignee == user_d:
@@ -231,6 +234,9 @@ def view_task(request, task_id):
     elif Supervisor.objects.filter(user=request.user):
         can_edit = 'supervisor'
         user_s = Supervisor.objects.get(user=request.user)
+
+    if tsk.get_creation_change_votes().count() >= user_d.team.get_team_size() * 0.5:
+        needs_change = True
 
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
@@ -250,7 +256,8 @@ def view_task(request, task_id):
             'form': form,
             'user_d': user_d,
             'user_s': user_s,
-            'can_edit': can_edit
+            'can_edit': can_edit,
+            'needs_change': needs_change,
         }
     )
 
