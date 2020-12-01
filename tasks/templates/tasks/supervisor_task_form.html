@@ -37,7 +37,11 @@
       <td>&nbsp;</td>
       <td style="text-align: right;">
         <input type="submit" value="Submit" class="btn btn-success" id="send" />
-        <a href="{% url 'tasks:choose' %}" class="btn btn-default btn-danger" role="button">Cancel</a>
+        {% if is_edit %}
+            <a href="{% url 'tasks:team-all-tasks' team_id %}" class="btn btn-default btn-danger" role="button">Cancel</a>
+        {% else %}
+            <a href="{% url 'tasks:choose' %}" class="btn btn-default btn-danger" role="button">Cancel</a>
+        {% endif %}
       </td>
     </tr>
   </table>
