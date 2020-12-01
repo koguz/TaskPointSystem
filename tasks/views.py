@@ -193,8 +193,8 @@ def update(request, task_id, status_id):
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
 
-    if req_status_id > 5 or req_status_id < 2:
-        status_id = "4"  # reject it because this is probably a scam...
+    if req_status_id > 6 or req_status_id < 1:
+        status_id = "5"  # reject it because this is probably a scam...
     tsk.status = status_id
     tsk.save()
     return HttpResponseRedirect('/tasks/choose/')

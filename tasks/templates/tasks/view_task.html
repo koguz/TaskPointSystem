@@ -27,7 +27,7 @@
 
 <hr />
 
-{% if user_s and task.status == 3 %}
+{% if user_s and task.status == 1 or user_s and task.status == 3 or user_s and task.status == 4 %}
     Set Modifier to:
     <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
     <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
@@ -35,9 +35,19 @@
     <a href="{% url 'tasks:update-task-mod' task.id 4 %}" class="btn btn-default" role="button">4</a>
     <a href="{% url 'tasks:update-task-mod' task.id 5 %}" class="btn btn-default" role="button">5</a>
     <hr />
-    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
-    <a href="{% url 'tasks:update' task.id 4 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
+    {% if task.status == 3 or task.status == 4 %}
+        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+    {% else %}
+        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+    {% endif %}
+
+    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
 {% endif %}
+
+{% if user_s and task.status == 5 %}
+    <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('revive')">Revive</a>
+{% endif %}
+
 {% if user_d and task.status == 1 and already_voted == False and can_edit == None %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
@@ -47,9 +57,11 @@
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
 {% endif %}
+
 {% if can_edit == "developer" and needs_change and task.status == 1 %}
     <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
 {% endif %}
+
 {% if can_edit == "supervisor" %}
     <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
 {% endif %}
