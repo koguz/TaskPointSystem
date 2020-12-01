@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from .models import *
 from .forms import *
+from .utilities import reset_task_submission_votes
 import logging
 
 logger = logging.getLogger('task')
@@ -75,8 +76,8 @@ def team(request):  # this view is for the developer only...
     page_title = t.name + " Team Page"
     developer_name = d.get_name()
 
-    user_task_list = d.assignee.all().filter(status__lt=4).order_by('due')
-    team_task_list = t.task_set.all().filter(status__lt=4).order_by('due').exclude(assignee=d)
+    user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')
+    team_task_list = t.task_set.all().filter(status__lt=5).order_by('due').exclude(assignee=d)
 
     context = {
         'page_title': page_title,
@@ -195,6 +196,8 @@ def update(request, task_id, status_id):
 
     if req_status_id > 6 or req_status_id < 1:
         status_id = "5"  # reject it because this is probably a scam...
+
+    reset_task_submission_votes(tsk)
     tsk.status = status_id
     tsk.save()
     return HttpResponseRedirect('/tasks/choose/')
@@ -242,8 +245,8 @@ def view_task(request, task_id):
 
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
-    already_voted = tsk.already_voted(request.user)
-    check_status = tsk.get_creation_accept_votes()
+    already_voted_for_creation = tsk.already_voted_for_creation(request.user)
+    already_voted_for_submission = tsk.already_voted_for_submission(request.user)
 
     form = CommentForm()
     return render(
@@ -254,7 +257,8 @@ def view_task(request, task_id):
             'task': tsk, 'tid': task_id,
             'comments': comment_list,
             'votes': vote_list,
-            'already_voted': already_voted,
+            'already_voted_for_creation': already_voted_for_creation,
+            'already_voted_for_submission': already_voted_for_submission,
             'form': form,
             'user_d': user_d,
             'user_s': user_s,
@@ -357,6 +361,7 @@ def send_vote(request, task_id, status_id, button_id):
     status_id = int(status_id)
     button_id = int(button_id)
     vote = Vote(voter=request.user, task=Task.objects.get(pk=task_id))
+    tsk = get_object_or_404(Task, pk=task_id)
     # vote.voter = request.user  # Developer.objects.get(user=request.user)
     # vote.task = Task.objects.get(pk=task_id)
 
@@ -370,6 +375,7 @@ def send_vote(request, task_id, status_id, button_id):
         vote.vote_type = 4
 
     vote.save()
+    tsk.check_for_status_change()
     logger.info(
         request.user.get_username() + " VOTED ON TASK ID: " + str(task_id) + ", VOTE TYPE: " + str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
@@ -425,12 +431,11 @@ def supervisor_edit_task(request, task_id):
     task_id = int(task_id)
     task_to_edit = Task.objects.get(pk=task_id)
     developer = task_to_edit.assignee
-    try:
-        supervisor = Supervisor.objects.get(user=request.user)
-    except ObjectDoesNotExist:
-        supervisor = None
+
+    if Supervisor.objects.get(user=request.user) is None:
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
+
     dev_team = developer.team
     course = dev_team.course
     milestone = course.get_current_milestone()

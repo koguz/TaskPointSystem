@@ -20,8 +20,13 @@
 <tr><td>Modifier</td><td>:</td><td>{{ task.modifier }}</td></tr>
 <tr><td>Task Point ( (p*d) + m)</td><td>:</td><td>{{ task.get_points }}</td></tr>
 <tr><td>Status</td><td>:</td><td>{{ task.get_status_display }}</td></tr>
-<tr><td>Creation Accept Votes</td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
-<tr><td>Creation Change Votes</td><td>:</td><td>{{ task.get_creation_change_votes.count }}</td></tr>
+{% if task.status == 1 or task.status == 2 %}
+    <tr><td>Creation Accept Votes</td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
+    <tr><td>Creation Change Votes</td><td>:</td><td>{{ task.get_creation_change_votes.count }}</td></tr>
+{% else %}
+    <tr><td>Submission Accept Votes</td><td>:</td><td>{{ task.get_submission_accept_votes.count }}</td></tr>
+    <tr><td>Submission Change Votes</td><td>:</td><td>{{ task.get_submission_change_votes.count }}</td></tr>
+{% endif %}
 </table>
 
 
@@ -48,20 +53,22 @@
     <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('revive')">Revive</a>
 {% endif %}
 
-{% if user_d and task.status == 1 and already_voted == False and can_edit == None %}
+{% if user_d and task.status == 1 and already_voted_for_creation == False and can_edit == None %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
 {% elif user_d and task.status == 2 and can_edit != None %}
-    <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
-{% elif user_d and task.status == 3 and already_voted == False and can_edit == None %}
+    <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
+{% elif user_d and task.status == 3 and already_voted_for_submission == False and can_edit == None %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
 {% endif %}
 
-{% if can_edit == "developer" and needs_change and task.status == 1 %}
+{#  ADD  and needs_change  #}
+{% if can_edit == "developer" and task.status == 1 %}
     <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
 {% endif %}
 
+{#  ADD  some conditions such as task.status != 4  #}
 {% if can_edit == "supervisor" %}
     <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
 {% endif %}

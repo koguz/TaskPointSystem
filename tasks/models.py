@@ -206,25 +206,48 @@ class Task(models.Model):
     def get_points(self):
         return (self.difficulty*self.priority)+self.modifier
 
-    def already_voted(self, developer):
-        if Vote.objects.filter(task=self, voter=developer):
+    def already_voted_for_creation(self, developer):
+        if Vote.objects.filter(task=self, voter=developer, vote_type__range=(1, 2)):
+            return True
+        return False
+
+    def already_voted_for_submission(self, developer):
+        if Vote.objects.filter(task=self, voter=developer, vote_type__range=(3, 4)):
             return True
         return False
 
     def get_creation_accept_votes(self):
-        if Vote.objects.filter(task=self, vote_type=1).count() > self.team.get_team_size() * 0.50:
-            self.status = 2
-            self.save()
-
         return Vote.objects.filter(task=self, vote_type=1)
 
     def get_creation_change_votes(self):
         return Vote.objects.filter(task=self, vote_type=2)
 
+    def get_submission_accept_votes(self):
+        return Vote.objects.filter(task=self, vote_type=3)
+
+    def get_submission_change_votes(self):
+        return Vote.objects.filter(task=self, vote_type=4)
+
     def apply_self_accept(self, task_assignee):
         vote = Vote(voter=task_assignee.user, task=self)
         vote.vote_type = 1
         vote.save()
+
+    def check_for_status_change(self):
+        if Vote.objects.filter(task=self, vote_type=1).count() > self.team.get_team_size() * 0.50 and self.status == 1:
+            self.status = 2
+            self.save()
+
+        elif Vote.objects.filter(task=self, vote_type=3).count() > self.team.get_team_size() * 0.50 and self.status == 3:
+
+            self.status = 4
+            self.save()
+
+        elif Vote.objects.filter(task=self, vote_type=4).count() >= self.team.get_team_size() * 0.50 and self.status == 3:
+            # resetting request change votes for submission so that when submitted again team members can vote
+            Vote.objects.filter(task=self, vote_type=4).delete()
+            self.status = 2
+            self.save()
 
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
