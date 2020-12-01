@@ -194,11 +194,14 @@ def update(request, task_id, status_id):
         if tsk.team != d.team or req_status_id != 3:
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
-
     if req_status_id > 6 or req_status_id < 1:
         status_id = "5"  # reject it because this is probably a scam...
 
     reset_task_submission_votes(tsk)
+
+    if d is not None and status_id == '3':
+        send_vote(request, task_id, status_id, 3)
+
     tsk.status = status_id
     tsk.save()
     return HttpResponseRedirect('/tasks/choose/')
