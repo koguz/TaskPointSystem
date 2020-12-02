@@ -244,7 +244,7 @@ def view_task(request, task_id):
 
     # THIS PART CAN BE ADDED TO send_vote FUNCTION AND needs_change boolean can be added to Task model
     if user_d:
-        if tsk.get_creation_change_votes().count() >= user_d.team.get_team_size() * 0.5:
+        if tsk.get_creation_change_votes().count() >= 1:
             needs_change = True
 
     comment_list = tsk.comment_set.all().order_by("-date")
@@ -405,9 +405,10 @@ def developer_edit_task(request, task_id):
             task = form.save(commit=False)
             task.creator = request.user
             task.team = dev_team
-            Vote.objects.filter(task=task).delete()
+            Vote.objects.filter(task=task).delete()  # votes are reset here
             task.milestone = course.get_current_milestone()
             task.save()
+            task.apply_self_accept(developer, 1)
             return HttpResponseRedirect('/tasks/team')
     else:
         form = TaskDeveloperForm(initial={'title': task_to_edit.title,
