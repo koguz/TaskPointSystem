@@ -451,8 +451,14 @@ def supervisor_edit_task(request, task_id):
             task = form.save(commit=False)
             task.creator = request.user
             task.team = dev_team
-            Vote.objects.filter(task=task).delete()
             task.milestone = course.get_current_milestone()
+
+            if task.status == 1:  # if task is in review state reset all votes and remain in current state
+                Vote.objects.filter(task=task).delete()  # reset all votes
+            else:  # if task is not in review state reset submission votes and go back to working on it state
+                Vote.objects.filter(task=task, vote_type__range=(3, 4)).delete()  # reset submission votes
+                task.status = 2
+
             task.save()
             return HttpResponseRedirect('/tasks/supervisor/')
     else:

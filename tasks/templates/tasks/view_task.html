@@ -61,6 +61,9 @@
 {% elif user_d and task.status == 3 and already_voted_for_submission == False and can_edit == None %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+{% elif user_d and can_edit == 'developer' and task.status == 1 and task.creator != user_d.user %}
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
 {% endif %}
 
 {#  ADD  and needs_change  #}
@@ -69,7 +72,7 @@
 {% endif %}
 
 {#  ADD  some conditions such as task.status != 4  #}
-{% if can_edit == "supervisor" %}
+{% if can_edit == "supervisor" and task.status != 4 and task.status != 2 %}
     <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
 {% endif %}
 

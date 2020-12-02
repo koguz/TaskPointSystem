@@ -239,13 +239,12 @@ class Task(models.Model):
             self.save()
 
         elif Vote.objects.filter(task=self, vote_type=3).count() > self.team.get_team_size() * 0.50 and self.status == 3:
-
             self.status = 4
             self.save()
 
         elif Vote.objects.filter(task=self, vote_type=4).count() >= self.team.get_team_size() * 0.50 and self.status == 3:
             # resetting request change votes for submission so that when submitted again team members can vote
-            Vote.objects.filter(task=self, vote_type=4).delete()
+            Vote.objects.filter(task=self, vote_type__range=(3, 4)).delete()
             self.status = 2
             self.save()
 
