@@ -58,7 +58,7 @@ def supervisor(request):  # this view is for the supervisors only...
     supervisor_name = s.get_name()
     page_title = "Supervisor page"
     # completed_task_list = request.user.creator.all().filter(status=3).order_by('team', 'due')
-    completed_task_list = Task.objects.all().filter(team__supervisor=s, status=3).order_by('team', 'due')
+    completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
 
     context = {

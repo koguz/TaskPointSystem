@@ -72,7 +72,7 @@
 {% endif %}
 
 {#  ADD  some conditions such as task.status != 4  #}
-{% if can_edit == "supervisor" and task.status != 4 and task.status != 2 %}
+{% if can_edit == "supervisor" and task.status != 2 and task.status != 4 and task.status != 6 %}
     <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
 {% endif %}
 
