@@ -228,9 +228,9 @@ class Task(models.Model):
     def get_submission_change_votes(self):
         return Vote.objects.filter(task=self, vote_type=4)
 
-    def apply_self_accept(self, task_assignee):
+    def apply_self_accept(self, task_assignee, vote_type):
         vote = Vote(voter=task_assignee.user, task=self)
-        vote.vote_type = 1
+        vote.vote_type = vote_type
         vote.save()
 
     def check_for_status_change(self):

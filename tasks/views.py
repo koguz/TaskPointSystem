@@ -162,7 +162,7 @@ def developer_create(request):
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
-            task.apply_self_accept(task.assignee)
+            task.apply_self_accept(task.assignee, 1)
 
             return HttpResponseRedirect('/tasks/team')
 
@@ -200,7 +200,7 @@ def update(request, task_id, status_id):
     reset_task_submission_votes(tsk)
 
     if d is not None and status_id == '3':
-        send_vote(request, task_id, status_id, 3)
+        tsk.apply_self_accept(d, 3)
 
     tsk.status = status_id
     tsk.save()
