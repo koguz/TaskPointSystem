@@ -33,13 +33,15 @@
 <hr />
 
 {% if user_s and task.status == 1 or user_s and task.status == 3 or user_s and task.status == 4 %}
-    Set Modifier to:
-    <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
-    <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
-    <a href="{% url 'tasks:update-task-mod' task.id 3 %}" class="btn btn-default" role="button">3</a>
-    <a href="{% url 'tasks:update-task-mod' task.id 4 %}" class="btn btn-default" role="button">4</a>
-    <a href="{% url 'tasks:update-task-mod' task.id 5 %}" class="btn btn-default" role="button">5</a>
-    <hr />
+    {% if user_s and task.status == 3 or user_s and task.status == 4 %}
+        Set Modifier to:
+        <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 3 %}" class="btn btn-default" role="button">3</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 4 %}" class="btn btn-default" role="button">4</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 5 %}" class="btn btn-default" role="button">5</a>
+        <hr />
+    {% endif %}
     {% if task.status == 3 or task.status == 4 %}
         <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
     {% else %}
