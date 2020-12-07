@@ -249,8 +249,6 @@ def view_task(request, task_id):
 
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
-    already_voted_for_creation = tsk.already_voted_for_creation(request.user)
-    already_voted_for_submission = tsk.already_voted_for_submission(request.user)
 
     form = CommentForm()
     return render(
@@ -261,8 +259,6 @@ def view_task(request, task_id):
             'task': tsk, 'tid': task_id,
             'comments': comment_list,
             'votes': vote_list,
-            'already_voted_for_creation': already_voted_for_creation,
-            'already_voted_for_submission': already_voted_for_submission,
             'form': form,
             'user_d': user_d,
             'user_s': user_s,
@@ -368,20 +364,27 @@ def send_vote(request, task_id, status_id, button_id):
     button_id = int(button_id)
     vote = Vote(voter=request.user, task=Task.objects.get(pk=task_id))
     tsk = get_object_or_404(Task, pk=task_id)
-    # vote.voter = request.user  # Developer.objects.get(user=request.user)
-    # vote.task = Task.objects.get(pk=task_id)
 
     if status_id == 1 and button_id == 1:
+        Vote.objects.all().filter(voter=request.user, task=tsk, vote_type__range=(1, 2)).delete()
         vote.vote_type = 1
     elif status_id == 1 and button_id == 2:
+        Vote.objects.all().filter(voter=request.user, task=tsk, vote_type__range=(1, 2)).delete()
         vote.vote_type = 2
     elif status_id == 3 and button_id == 3:
+        Vote.objects.all().filter(voter=request.user, task=tsk, vote_type__range=(3, 4)).delete()
         vote.vote_type = 3
     elif status_id == 3 and button_id == 4:
+        Vote.objects.all().filter(voter=request.user, task=tsk, vote_type__range=(3, 4)).delete()
         vote.vote_type = 4
+    elif status_id == 1 and button_id == 0:
+        Vote.objects.all().filter(voter=request.user, task=tsk, vote_type__range=(1, 2)).delete()
+    elif status_id == 3 and button_id == 0:
+        Vote.objects.all().filter(voter=request.user, task=tsk, vote_type__range=(3, 4)).delete()
 
-    vote.save()
-    tsk.check_for_status_change()
+    if button_id > 0:
+        vote.save()
+        tsk.check_for_status_change()
     logger.info(
         request.user.get_username() + " VOTED ON TASK ID: " + str(task_id) + ", VOTE TYPE: " + str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
@@ -457,9 +460,6 @@ def supervisor_edit_task(request, task_id):
 
             if task.status == 1:  # if task is in review state reset all votes and remain in current state
                 Vote.objects.filter(task=task).delete()  # reset all votes
-            else:  # if task is not in review state reset submission votes and go back to working on it state
-                Vote.objects.filter(task=task, vote_type__range=(3, 4)).delete()  # reset submission votes
-                task.status = 2
 
             task.save()
             return HttpResponseRedirect('/tasks/supervisor/')

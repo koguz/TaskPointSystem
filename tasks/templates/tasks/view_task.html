@@ -49,13 +49,27 @@
 
     <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
 {% endif %}
-{% if user_d and task.status == 1 and already_voted_for_creation == False and can_edit == None %}
+{% if user_d and task.status == 1 and can_edit == None %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=0 %}" class="btn btn-default btn-secondary" role="button">No Vote</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+{#    <div class="wrapper">#}
+{#        <div class="toggle_radio">#}
+{#            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" role="button"><label for="first_toggle"><p>Accept</p></label></a>#}
+{#            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=0 %}" role="button"><label for="second_toggle"><p>N/A</p></label></a>#}
+{#            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" role="button"><label for="third_toggle"><p>Request Change</p></label></a>#}
+{#            <input type="radio" class="toggle_option" id="first_toggle" name="toggle_option">#}
+{#            <input type="radio" checked class="toggle_option" id="second_toggle" name="toggle_option">#}
+{#            <input type="radio" class="toggle_option" id="third_toggle" name="toggle_option">#}
+{#            <div class="toggle_option_slider">#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
 {% elif user_d and task.status == 2 and can_edit != None %}
     <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
-{% elif user_d and task.status == 3 and already_voted_for_submission == False and can_edit == None %}
+{% elif user_d and task.status == 3 and can_edit == None %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=0 %}" class="btn btn-default btn-secondary" role="button">No Vote</a>
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
 {% elif user_d and can_edit == 'developer' and task.status == 1 and task.creator != user_d.user %}
     <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>

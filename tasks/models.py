@@ -277,5 +277,8 @@ class Vote(models.Model):
     vote_type = models.PositiveSmallIntegerField("Vote Type", choices=VOTE_TYPE, default=1)
     date = models.DateTimeField("Date", auto_now_add=True)
 
+    # should we add is active for votes?
+    # is_active = models.BooleanField("Is Active", default=True)
+
     def __str__(self):
         return self.voter.__str__() + " voted for " + self.task.title
