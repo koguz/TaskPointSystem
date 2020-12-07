@@ -10,12 +10,6 @@ from .forms import *
 import logging
 
 
-def reset_task_submission_votes(task):
-    # reset submission votes if the task is revived
-    if task.status == 5:
-        Vote.objects.filter(task=task, vote_type__range=(3, 4)).delete()
-
-
 def reset_task_submission_change_votes(task):
     # reset submission change votes if the task is once changed (waiting for rev -> working on it -> waiting for rev)
     Vote.objects.filter(task=task, vote_type=4).delete()
