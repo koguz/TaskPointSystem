@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from .models import *
 from .forms import *
-from .utilities import reset_task_submission_votes
+from .utilities import *
 import logging
 
 logger = logging.getLogger('task')
@@ -227,6 +227,8 @@ def update_task_mod(request, task_id, mod):
 @login_required
 def view_task(request, task_id):
     tsk = get_object_or_404(Task, pk=task_id)
+    priority_color = get_priority_or_difficulty_color(tsk.priority)
+    difficulty_color = get_priority_or_difficulty_color(tsk.difficulty)
     can_edit = None
     user_d = None
     user_s = None
@@ -268,6 +270,8 @@ def view_task(request, task_id):
             'user_s': user_s,
             'can_edit': can_edit,
             'needs_change': needs_change,
+            'priority_color': priority_color,
+            'difficulty_color': difficulty_color,
         }
     )
 
