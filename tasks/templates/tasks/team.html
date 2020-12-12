@@ -1,80 +1,88 @@
-{% extends "tasks/base.html" %}
+{% extends "tasks/base_new.html" %}
 
-{% block leftcontent %}
-    <h3>{{ developer_name }}</h3>
-    <div style="text-align: right">
-      <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
-      <a href="{% url 'tasks:leave' %}" class="btn btn-default" role="button">Logout</a>
+{% block content %}
+
+<div class="row">
+    <div class="col-sm-12">
+        <h3>{{ developer_name }} / {{ team_name }}</h3>
+
+        <div style="text-align: right">
+            <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
+        </div>
+        <hr />
     </div>
-<hr />
-{% if user_task_list %}
-<h3>Your Active Tasks</h3>
-<ul class="list-group">
-{% for task in user_task_list %}
-  <li class="list-group-item">
-    <h4>{{ task.title }}</h4>
-    <p>
-      P/D/M:
-        {{ task.get_priority_display }} /
-        {{ task.get_difficulty_display }} /
-        {{ task.modifier }}<br />
-      Milestone: {{ task.milestone }} (Due: {{ task.milestone.due }})<br />
-      Due date: {{ task.due }}<br />
-      Status: {{ task.get_status_display }}
-    </p>
-    <p style="text-align: right">
-      {% if task.status == 2 %}
-       <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
-      {% endif %}
-       <a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a>
-    </p>
-</li>
-{% endfor %}
-</ul>
-{% else %}
-  <p>You don't have any tasks assigned to you.</p>
-{% endif %}
+</div>
+<div class="row">
+    <div class="col-sm-6 user-feed">
+        {% if user_task_list %}
+            <h3>Your Active Tasks</h3>
+                    <ul>
+                        {% for task in user_task_list %}
+                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                                <li>
+                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                    <div class="task-header">
+                                        <h4>{{ task.title }}</h4>
+                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
+                                    </div>
+                                    <hr class="content-separator">
+                                    <div class="task-content">
+                                        <p class="content-text">{{ task.description }}</p>
+                                    </div>
+                                </li>
+                            </a>
+                        {% endfor %}
+                    </ul>
+        {% else %}
+            <p>You don't have any tasks assigned to you.</p>
+        {% endif %}
+    </div>
+    <div class="col-sm-6 user-feed">
+        <h3>Team Members</h3>
+        {% for mate, tasks in teammates_task_dict.items %}
+            <button class="accordion">{{ mate }}</button>
+            <ul>
+            {% for mate_task in tasks %}
+                <div class="panel">
+                     <a href="{% url 'tasks:view-task' mate_task.id %}" style="text-decoration: none; color: #1A1A1A">
+                        <li>
+                            <p class="task-date"><span class="bold-span">Due: </span>{{ mate_task.due }}</p>
+                            <div class="task-header">
+                                <h4>{{ mate_task.title }}</h4>
+                                <p><span class="bold-span">Status: </span>{{ mate_task.get_status_display }}</p>
+                            </div>
+                            <hr class="content-separator">
+                            <div class="task-content">
+                                <p class="content-text">{{ mate_task.description }}</p>
+                            </div>
+                        </li>
+                     </a>
+                </div>
+            {% endfor %}
+            </ul>
+        {% endfor %}
+    </div>
+</div>
+<a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button">Create Task for the team</a>
+<script>
+    const acc = document.getElementsByClassName("accordion");
+    let i;
+
+    for (i = 0; i < acc.length; i++) {
+      acc[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+          let task_list = this.nextElementSibling;
+          for (let task_index = 0; task_index < task_list.children.length; task_index++) {
+            let task = task_list.children.item(task_index);
+            if (task.style.display === "block") {
+                task.style.display = "none";
+            } else {
+                task.style.display = "block";
+            }
+          }
+      });
+    }
+</script>
 
 {% endblock %}
 
-{% block rightcontent %}
-    <h3>{{ team_name }}</h3>
-    <div style="text-align: right">
-      {% if request.user.is_superuser %}
-        <a href="{% url 'tasks:view-all-teams' %}" class="btn btn-default" role="button">View All Teams</a>
-      {% endif %}
-    {% if github_url %}
-      <a href="{{ github_url }}" class="btn btn-default" role="button">Git Page</a>
-    {% endif %}
-      <a href="{% url 'tasks:team-points' %}" class="btn btn-default" role="button">View Team/Developer Points</a>
-      <a href="{% url 'tasks:task-all' %}" class="btn btn-default" role="button">View All Tasks</a>
-      <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button">Create Task for the team</a>
-    </div>
-    <hr />
-    {% if team_task_list %}
-    <h3>Active Team Tasks</h3>
-    <ul class="list-group">
-    {% for task in team_task_list %}
-      <li class="list-group-item">
-        <h4>{{ task.title }}</h4>
-        <p>
-          Assigned to: {{ task.assignee }}<br />
-          P/D/M:
-            {{ task.get_priority_display }} /
-            {{ task.get_difficulty_display }} /
-            {{ task.modifier }}<br />
-          Milestone: {{ task.milestone }} (Due: {{ task.milestone.due }})<br />
-          Due date: {{ task.due }}<br />
-          Status: {{ task.get_status_display }}
-        </p>
-        <p style="text-align: right">
-          <a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a>
-        </p>
-    </li>
-    {% endfor %}
-    </ul>
-    {% else %}
-      <p>Your team does not have any tasks.</p>
-    {% endif %}
-
-{% endblock %}

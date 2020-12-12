@@ -79,6 +79,12 @@ def team(request):  # this view is for the developer only...
 
     user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')
     team_task_list = t.task_set.all().filter(status__lt=5).order_by('due').exclude(assignee=d)
+    teammates = Developer.objects.all().filter(team=t).exclude(id=d.id)
+
+    teammates_task_dict = {}
+
+    for mate in teammates:
+        teammates_task_dict.update({mate.get_name(): team_task_list.filter(assignee=mate)})
 
     context = {
         'page_title': page_title,
@@ -87,7 +93,9 @@ def team(request):  # this view is for the developer only...
         'current_user': d.id,
         'developer_name': developer_name,
         'user_task_list': user_task_list,
-        'team_task_list': team_task_list, }
+        'team_task_list': team_task_list,
+        'teammates_task_dict': teammates_task_dict,
+    }
     return render(request, 'tasks/team.html', context)
 
 
@@ -483,3 +491,22 @@ def supervisor_edit_task(request, task_id):
             'task_id': task_to_edit.id
         }
     )
+
+
+def profile(request):
+    return render(
+        request,
+        'tasks/profile.html',
+    )
+
+
+def teams(request):
+    teams_list = Developer.objects.get(user=request.user).team
+    return render(
+        request,
+        'tasks/teams.html',
+        {
+            'teams_list': teams_list,
+        }
+    )
+

@@ -69,6 +69,7 @@ class Supervisor(models.Model):
 
 class Team(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    # will we show these in teams.html
     name = models.CharField("Team Name", max_length=128)
     github = models.CharField("Git Page", max_length=256, null=True)
     supervisor = models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True)
