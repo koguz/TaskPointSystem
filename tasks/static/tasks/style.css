@@ -78,6 +78,15 @@ body, div, p, td, li {
   left: 295px;
 }
 
+.tps-logo{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 175px;
+}
+.version-text{
+  margin-top: 100px;
+}
 /*****************************     PROFILE     *****************************/
 
 /* SIDEBAR */
