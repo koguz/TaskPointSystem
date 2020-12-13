@@ -16,56 +16,28 @@
       </div>
       <div class="row">
         <div class="col-sm-5 user-feed">
-            <ul>
-                <li>
-                  <p class="task-date">05-05-20</p>
-                  <div class="task-header">
-                    <h4>SE 302</h4>
-                    <p><span class="bold-span">Milestone:</span> Design Document</p>
-                    <p><span class="bold-span">Task:</span> UML Diagrams</p>
-                  </div>
-                  <hr class="content-separator">
-                  <div class="task-content">
-                    <p class="content-text">Id sit aliqua consequat sunt qui cillum sit ea non magna ullamco. Tempor quis nulla non ut reprehenderit eiusmod proident. Incididunt aliqua reprehenderit laboris consectetur proident sint eu. Eiusmod magna consequat consectetur aliqua aute aliquip sint sit. Nisi tempor consectetur ipsum cillum tempor commodo dolore. Non ut voluptate nulla irure voluptate reprehenderit elit. Incididunt anim cupidatat incididunt laboris dolore reprehenderit adipisicing cillum. Eu sint occaecat aliqua aute magna voluptate ut voluptate irure aute duis pariatur id.</p>
-                  </div>
-                </li>
-                <li>
-                  <p class="task-date">05-05-20</p>
-                  <div class="task-header">
-                    <h4>SE 302</h4>
-                    <p><span class="bold-span">Milestone:</span> Design Document</p>
-                    <p><span class="bold-span">Task:</span> UML Diagrams</p>
-                  </div>
-                  <hr class="content-separator">
-                  <div class="task-content">
-                    <p class="content-text">Id sit aliqua consequat sunt qui cillum sit ea non magna ullamco. Tempor quis nulla non ut reprehenderit eiusmod proident. Incididunt aliqua reprehenderit laboris consectetur proident sint eu. Eiusmod magna consequat consectetur aliqua aute aliquip sint sit. Nisi tempor consectetur ipsum cillum tempor commodo dolore. Non ut voluptate nulla irure voluptate reprehenderit elit. Incididunt anim cupidatat incididunt laboris dolore reprehenderit adipisicing cillum. Eu sint occaecat aliqua aute magna voluptate ut voluptate irure aute duis pariatur id.</p>
-                  </div>
-                </li>
-                <li>
-                  <p class="task-date">05-05-20</p>
-                  <div class="task-header">
-                    <h4>SE 302</h4>
-                    <p><span class="bold-span">Milestone:</span> Design Document</p>
-                    <p><span class="bold-span">Task:</span> UML Diagrams</p>
-                  </div>
-                  <hr class="content-separator">
-                  <div class="task-content">
-                    <p class="content-text">Id sit aliqua consequat sunt qui cillum sit ea non magna ullamco. Tempor quis nulla non ut reprehenderit eiusmod proident. Incididunt aliqua reprehenderit laboris consectetur proident sint eu. Eiusmod magna consequat consectetur aliqua aute aliquip sint sit. Nisi tempor consectetur ipsum cillum tempor commodo dolore. Non ut voluptate nulla irure voluptate reprehenderit elit. Incididunt anim cupidatat incididunt laboris dolore reprehenderit adipisicing cillum. Eu sint occaecat aliqua aute magna voluptate ut voluptate irure aute duis pariatur id.</p>
-                  </div>
-                </li>
-                <li>
-                  <p class="task-date">05-05-20</p>
-                  <div class="task-header">
-                    <h4>SE 302</h4>
-                    <p><span class="bold-span">Milestone:</span> Design Document</p>
-                    <p><span class="bold-span">Task:</span> UML Diagrams</p>
-                  </div>
-                  <hr class="content-separator">
-                  <div class="task-content">
-                    <p class="content-text">Id sit aliqua consequat sunt qui cillum sit ea non magna ullamco. Tempor quis nulla non ut reprehenderit eiusmod proident. Incididunt aliqua reprehenderit laboris consectetur proident sint eu. Eiusmod magna consequat consectetur aliqua aute aliquip sint sit. Nisi tempor consectetur ipsum cillum tempor commodo dolore. Non ut voluptate nulla irure voluptate reprehenderit elit. Incididunt anim cupidatat incididunt laboris dolore reprehenderit adipisicing cillum. Eu sint occaecat aliqua aute magna voluptate ut voluptate irure aute duis pariatur id.</p>
-                  </div>
-                </li>
-            </ul>
+            {% if user_task_list %}
+                <h3>Your Active Tasks</h3>
+                <ul>
+                    {% for task in user_task_list %}
+                        <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                            <li>
+                                <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                <div class="task-header">
+                                    <h4>{{ task.title }}</h4>
+                                    <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
+                                </div>
+                                <hr class="content-separator">
+                                <div class="task-content">
+                                    <p class="content-text">{{ task.description }}</p>
+                                </div>
+                            </li>
+                        </a>
+                    {% endfor %}
+                </ul>
+        {% else %}
+            <p>You don't have any tasks assigned to you.</p>
+        {% endif %}
         </div>
         <div class="col-sm-7 user-calendar">
             <div id="calendar">

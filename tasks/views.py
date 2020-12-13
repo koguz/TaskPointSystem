@@ -494,9 +494,15 @@ def supervisor_edit_task(request, task_id):
 
 
 def profile(request):
+    d = Developer.objects.get(user=request.user)
+    user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')[:5]
+
     return render(
         request,
         'tasks/profile.html',
+        {
+            'user_task_list': user_task_list,
+        }
     )
 
 
