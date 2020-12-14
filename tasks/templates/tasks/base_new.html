@@ -33,7 +33,7 @@
             <li><a href="#"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
             <li><a href="#"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Grades</span></a></li>
         </ul>
-        <a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i>Sign Out</a>
+        <a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i><span id="sidebar-sign-out">Sign Out</span></a>
     </div>
     <div class="container main-screen">
         {% block content %}{% endblock %}

@@ -197,6 +197,12 @@ body, div, p, td, li {
   padding-top: 5px;
 }
 
+#sidebar-sign-out {
+  position: absolute;
+  left: 55px;
+  padding-top: 5px;
+}
+
 /* PROFILE PAGE */
 
 .profile-row {
