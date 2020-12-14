@@ -63,7 +63,7 @@
       <p>Comment by <b>{{comment.owner}}</b> on {{comment.date}}</p>
       <p>{{comment.body|linebreaksbr}}</p>
       {% if comment.file_url %}
-      <p>File URL: <a href="{{comment.file_url }}">{{comment.file_url }}</a></p>
+      <p>File URL: <a href="{{comment.file_url }}" target="_blank">{{comment.file_url }}</a></p>
       {% endif %}
 
     </li>
