@@ -41,7 +41,7 @@ def tps_login(request):
 @login_required
 def choose(request):
     if Developer.objects.filter(user=request.user):
-        return HttpResponseRedirect('/tasks/team/')
+        return HttpResponseRedirect('/tasks/profile/')
     elif Supervisor.objects.filter(user=request.user):
         return HttpResponseRedirect('/tasks/supervisor/')
 
@@ -261,7 +261,7 @@ def view_task(request, task_id):
     form = CommentForm()
     return render(
         request,
-        'tasks/view_task.html',
+        'tasks/view_task_new.html',
         {
             'page_title': 'View task',
             'task': tsk, 'tid': task_id,

@@ -17,9 +17,9 @@ def reset_task_submission_change_votes(task):
 
 def get_priority_or_difficulty_color(priority_or_difficulty):
     if priority_or_difficulty == 1:
-        return "yellow"
+        return "#F3F169"
     elif priority_or_difficulty == 2:
-        return "green"
+        return "#64F564"
     elif priority_or_difficulty == 3:
-        return "red"
+        return "#E83535"
 

@@ -157,9 +157,13 @@ body, div, p, td, li {
   background-color: #1A1A1A !important;
 }
 
+#brand-item {
+
+}
+
 #tps-logo {
   width: 160px;
-  height: 120px;
+  height: 90px;
   padding-left: 20px;
 }
 
@@ -336,7 +340,6 @@ body, div, p, td, li {
 }
 
 
-
 /* MEDIA AND COMPATIBILITY */
 
 @media only screen and (max-width: 1049px) {
@@ -379,4 +382,44 @@ body, div, p, td, li {
   display: none;
   background-color: white;
   overflow: hidden;
+}
+
+
+/*****************************     LOGIN     *****************************/
+
+
+.login-logo-container {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.login-trademark {
+  text-align: center;
+  font-size: 8pt;
+  margin-top: 20px;
+}
+
+
+/*****************************     TEAM     *****************************/
+
+.team-member-header {
+  padding-bottom: 50px;
+}
+
+.vl {
+  border-left: 2px solid rgba(165, 165, 165, 0.2);
+  height: 50px;
+  background-color: rgba(165, 165, 165, 0.2);
+  float: right;
+  text-align: right;
+}
+
+.disabled {
+  pointer-events: none;
+}
+
+.task-info-table {
+  border-collapse:separate;
+  border-spacing: 0 7px;
 }

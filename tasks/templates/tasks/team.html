@@ -3,15 +3,14 @@
 {% block content %}
 
 <div class="row">
-    <div class="col-sm-12">
-        <h3>{{ developer_name }} / {{ team_name }}</h3>
-
-        <div style="text-align: right">
-            <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
-        </div>
-        <hr />
+    <div class="col-sm-6" style="display: flex; justify-content: center; margin-top: 15px">
+        <h2>{{ developer_name }}</h2>
+    </div>
+    <div class="col-sm-6" style="display: flex; justify-content: center; margin-top: 15px">
+        <h2>{{ team_name }}</h2>
     </div>
 </div>
+<hr/>
 <div class="row">
     <div class="col-sm-6 user-feed">
         {% if user_task_list %}
@@ -38,7 +37,10 @@
         {% endif %}
     </div>
     <div class="col-sm-6 user-feed">
-        <h3>Team Members</h3>
+        <div class="team-member-header">
+            <h3 style="float: left">Team Members</h3>
+            <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button" style="float: right">Create Task for the team</a>
+        </div>
         {% for mate, tasks in teammates_task_dict.items %}
             <button class="accordion">{{ mate }}</button>
             <ul>
@@ -63,7 +65,6 @@
         {% endfor %}
     </div>
 </div>
-<a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button">Create Task for the team</a>
 <script>
     const acc = document.getElementsByClassName("accordion");
     let i;
