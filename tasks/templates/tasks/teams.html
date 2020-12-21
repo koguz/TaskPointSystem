@@ -3,27 +3,46 @@
 {% block content %}
 
     <div class="row">
-        <div class="col-sm-2"></div>
-        <div class="col-sm-8 user-feed" style="margin: 150px 0">
-    {#        <a href="{% url 'tasks:team-home' %}" class="btn btn-success" role="button" style="margin-top: 10px">{{ teams_list.course }}</a>#}
 
+        <div class="col-sm-2 user-feed" style="margin: 125px 0">
+    {#        <a href="{% url 'tasks:team-home' %}" class="btn btn-success" role="button" style="margin-top: 10px">{{ teams_list.course }}</a>#}
             <a href="{% url 'tasks:team-home' %}" role="button" style="text-decoration: none; color: #1A1A1A">
                 <ul>
                     <li>
-                        <p class="task-date"><span class="bold-span">Course: </span>{{ teams_list.course }}</p>
-                        <div class="task-header">
+                        <p class="teams-course"><span class="bold-span">Course: </span>{{ teams_list.course }}</p>
+                        <div class="teams-name">
                             <h4>{{ teams_list.name }}</h4>
                             <p><span class="bold-span">Milestone: </span>{{ teams_list.course.get_current_milestone }}</p>
                         </div>
     {#                    <hr class="content-separator">#}
-                        <div class="task-content">
-                            <p class="content-text">{{ teams_list.supervisor }}</p>
+                        <div class="teams-content">
+                            <p class="supervisor-text">{{ teams_list.supervisor }}</p>
                         </div>
                     </li>
                 </ul>
             </a>
         </div>
-        <div class="col-sm-2"></div>
+
+        <div class="col-sm-5 user-feed" style="margin: 125px 0">
+    {#        <a href="{% url 'tasks:team-home' %}" class="btn btn-success" role="button" style="margin-top: 10px">{{ teams_list.course }}</a>#}
+
+            <a href="{% url 'tasks:team-home' %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                <ul>
+                    <li>
+                        <p class="teams-course"><span class="bold-span">Course: </span>{{ teams_list.course }}</p>
+                        <div class="teams-name">
+                            <h4>{{ teams_list.name }}</h4>
+                            <p><span class="bold-span">Milestone: </span>{{ teams_list.course.get_current_milestone }}</p>
+                        </div>
+    {#                    <hr class="content-separator">#}
+                        <div class="teams-content">
+                            <p class="supervisor-text">{{ teams_list.supervisor }}</p>
+                        </div>
+                    </li>
+                </ul>
+            </a>
+        </div>
+        <div class="col-sm-5"></div>
     </div>
 
 {% endblock %}
