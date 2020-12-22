@@ -26,11 +26,11 @@
             <li id="brand-item"><a href="{% url 'tasks:profile' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
             <hr>
             <li><a href="{% url 'tasks:profile' %}"><i class="fas fa-user fa-2x"></i><span id="sidebar-user">{% developer_name request %}</span></a></li>
-            <li><a href="#"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
+            <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
             <li><a href="{% url 'tasks:teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
-            <li><a href="#"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
-            <li><a href="#"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
-            <li><a href="#"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Grades</span></a></li>
+            <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
+            <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
+            <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Grades</span></a></li>
         </ul>
         <a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i><span id="sidebar-sign-out">Sign Out</span></a>
     </div>

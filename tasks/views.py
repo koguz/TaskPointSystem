@@ -550,3 +550,30 @@ def teams(request):
         }
     )
 
+
+def notifications(request):
+    return render(
+        request,
+        'tasks/notifications.html',
+    )
+
+
+def grades(request):
+    return render(
+        request,
+        'tasks/grades.html',
+    )
+
+
+def comments(request):
+    return render(
+        request,
+        'tasks/comments.html',
+    )
+
+
+def calendar(request):
+    return render(
+        request,
+        'tasks/calendar.html',
+    )
