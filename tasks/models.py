@@ -113,6 +113,9 @@ class Team(models.Model):
         size = self.team_size
         return size
 
+    def get_team_members(self):
+        return Developer.objects.all().filter(team=self)
+
 
 class Developer(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)

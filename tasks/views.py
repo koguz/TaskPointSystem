@@ -502,17 +502,51 @@ def profile(request):
         'tasks/profile.html',
         {
             'user_task_list': user_task_list,
+            'developer': d,
+        }
+    )
+
+
+def visit_profile(request, developer_id):
+    d = Developer.objects.get(id=developer_id)
+    user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')[:5]
+
+    return render(
+        request,
+        'tasks/profile.html',
+        {
+            'user_task_list': user_task_list,
+            'developer': d,
         }
     )
 
 
 def teams(request):
+    current_developer = Developer.objects.get(user=request.user)
     teams_list = Developer.objects.get(user=request.user).team
+    teammates = teams_list.get_team_members().exclude(id=current_developer.id)
+    tasks_list = Task.objects.all().filter(team=teams_list)
+    review_tasks = tasks_list.filter(status=1).count()
+    working_on_it_tasks = tasks_list.filter(status=2).count()
+    waiting_for_review_tasks = tasks_list.filter(status=3).count()
+    waiting_for_supervisor_grade_tasks = tasks_list.filter(status=4).count()
+    rejected_tasks = tasks_list.filter(status=5).count()
+    accepted_tasks = tasks_list.filter(status=6).count()
+    current_developer_active_tasks = tasks_list.filter(assignee=current_developer, status__range=(1, 2)).count()
+
     return render(
         request,
         'tasks/teams.html',
         {
             'teams_list': teams_list,
+            'teammates': teammates,
+            'current_developer_active_tasks': current_developer_active_tasks,
+            'review_tasks': review_tasks,
+            'working_on_it_tasks': working_on_it_tasks,
+            'waiting_for_review_tasks': waiting_for_review_tasks,
+            'waiting_for_supervisor_grade_tasks': waiting_for_supervisor_grade_tasks,
+            'rejected_tasks': rejected_tasks,
+            'accepted_tasks': accepted_tasks,
         }
     )
 

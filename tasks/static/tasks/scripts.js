@@ -2,6 +2,8 @@ $(document).ready(function($) {
     $('.content-text').each(function(index, value) {
       $(this).html($(this).html().substring(0,150));
     })
+
+    addListenersToTeamMemberAccordions();
 });
 
 let today = new Date();
@@ -80,5 +82,25 @@ function showCalendar(month, year) {
             }
             tbl.appendChild(row); // appending each row into calendar body.
         }
+    }
+}
+
+function addListenersToTeamMemberAccordions() {
+    const acc = document.getElementsByClassName("accordion");
+    let i;
+
+    for (i = 0; i < acc.length; i++) {
+      acc[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+          let task_list = this.nextElementSibling;
+          for (let task_index = 0; task_index < task_list.children.length; task_index++) {
+            let task = task_list.children.item(task_index);
+            if (task.style.display === "block") {
+                task.style.display = "none";
+            } else {
+                task.style.display = "block";
+            }
+          }
+      });
     }
 }

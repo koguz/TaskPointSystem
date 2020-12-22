@@ -8,6 +8,7 @@ urlpatterns = [
     re_path(r'^$', lambda x: HttpResponseRedirect('choose/')),
     re_path(r'^login-form/$', views.login_form, name='login-form'),
     re_path(r'^login/$', views.tps_login, name='login'),
+    re_path(r'^profile/(?P<developer_id>[0-9]+)/$', views.visit_profile, name='visit-profile'),
     re_path(r'^profile/$', views.profile, name='profile'),
     re_path(r'^choose/$', views.choose, name='choose'),
     re_path(r'^team/$', views.team, name='team-home'),
@@ -36,5 +37,4 @@ urlpatterns = [
     #re_path(r'^/developer/profile/calendar/$', views.view_developer_calendar, name='developer-calendar'),
     #re_path(r'^/developer/profile/comments/$', views.view_developer_comments, name='developer-comments'),
     #re_path(r'^/developer/profile/grades/$', views.view_developer_grades, name='developer-grades'),
-
 ]
