@@ -15,6 +15,7 @@
     <div class="col-sm-6 user-feed">
         {% if user_task_list %}
             <h3>Your Active Tasks</h3>
+            <div class="your-active-tasks">
                     <ul>
                         {% for task in user_task_list %}
                             <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
@@ -32,6 +33,15 @@
                             </a>
                         {% endfor %}
                     </ul>
+            </div>
+            <div class="create-new-task-button">
+                <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button" style="float: right">Create a new task</a>
+            </div>
+
+            <div class="view-all-task-button">
+                <a href="{% url 'tasks:task-all' %}" class="btn btn-default btn-info" role="button" style="float: left">View All Tasks</a>
+            </div>
+
         {% else %}
             <p>You don't have any tasks assigned to you.</p>
         {% endif %}
@@ -39,8 +49,8 @@
     <div class="col-sm-6 user-feed">
         <div class="team-member-header">
             <h3 style="float: left">Team Members</h3>
-            <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button" style="float: right">Create Task for the team</a>
         </div>
+        <div class="team-accordion">
         {% for mate, tasks in teammates_task_dict.items %}
             <button class="accordion">{{ mate }}</button>
             <ul>
@@ -63,6 +73,7 @@
             {% endfor %}
             </ul>
         {% endfor %}
+        </div>
     </div>
 </div>
 {#<script>#}

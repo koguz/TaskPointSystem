@@ -340,11 +340,13 @@ def team_all_tasks(request, team_id):
 def task_all(request):
     d = Developer.objects.get(user=request.user)
     t = d.team
+    user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')
     tasks = t.task_set.all().order_by("due")
     return render(
         request,
         'tasks/task_all.html',
         {
+            'user_task_list': user_task_list,
             'page_title': 'All tasks',
             'task_list': tasks
         }

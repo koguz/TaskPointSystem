@@ -353,6 +353,10 @@ body {
 
 
 
+.your-active-tasks{
+  padding-top: 1px;
+}
+
 /* CALENDAR */
 
 .user-calendar {
@@ -447,6 +451,14 @@ body {
 
 .team-member-header {
   padding-bottom: 50px;
+}
+
+.team-accordion{
+  padding-top: 4px;
+}
+
+.view-all-task-button{
+  padding-left: 3px;
 }
 
 .vl {
