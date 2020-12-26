@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
-
+from anytree import Node
 
 def past_date_validator(value):
     if datetime.date.today() >= value:
@@ -252,6 +252,7 @@ class Task(models.Model):
             self.status = 2
             self.save()
 
+
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 
@@ -262,6 +263,23 @@ class Comment(models.Model):
     body = models.TextField("Comment")
     file_url = models.URLField("File URL", max_length=512, blank=True, null=True)
     date = models.DateTimeField("Date", auto_now_add=True)
+    response_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    points = models.IntegerField("Upvotes", default=0)
+
+    def is_direct_comment(self):
+        if self.response_to:
+            return False
+        return True
+
+    # https://anytree.readthedocs.io/en/2.8.0/index.html, https://pypi.org/project/anytree/
+    def make_children_nodes(self, depth, parent):
+        children = Comment.objects.filter(response_to=self)
+        if parent:
+            root = Node(parent=parent, id=self.id, depth=depth)
+        else:
+            root = Node(id=self.id, depth=depth)
+        for child in children:
+            make_children_nodes(child_node, depth+1, root)
 
     def __str__(self):
         return self.body

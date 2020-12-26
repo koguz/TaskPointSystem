@@ -257,7 +257,6 @@ def view_task(request, task_id):
 
     comment_list = tsk.comment_set.all().order_by("-date")
     vote_list = tsk.vote_set.all()
-
     form = CommentForm()
     return render(
         request,
