@@ -341,17 +341,17 @@ def task_all(request, order_by='due'):
     t = d.team
 
     user_task_list = ""
-    tasks = ""
+    task_list = ""
 
     if order_by == 'due':
         user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')
-        tasks = Task.objects.all().filter(team=t).exclude(assignee_id=request.user.id).order_by('due')
+        task_list = Task.objects.all().filter(team=t).exclude(assignee__id=d.id).order_by('due')
     elif order_by == 'status':
         user_task_list = d.assignee.all().filter(status__lt=5).order_by('status')
-        tasks = Task.objects.all().filter(team=t).exclude(assignee_id=request.user.id).order_by("status")
+        task_list = Task.objects.all().filter(team=t).exclude(assignee__id=d.id).order_by("status")
     elif order_by == 'last_modified':
         user_task_list = d.assignee.all().filter(status__lt=5).order_by('-completed')
-        tasks = Task.objects.all().filter(team=t).exclude(assignee_id=request.user.id).order_by("-completed")
+        task_list = Task.objects.all().filter(team=t).exclude(assignee__id=d.id).order_by("-completed")
 
     return render(
         request,
@@ -359,7 +359,7 @@ def task_all(request, order_by='due'):
         {
             'user_task_list': user_task_list,
             'page_title': 'All tasks',
-            'task_list': tasks
+            'task_list': task_list
         }
     )
 
