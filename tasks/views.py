@@ -336,11 +336,23 @@ def team_all_tasks(request, team_id):
 
 
 @login_required
-def task_all(request):
+def task_all(request, order_by='due'):
     d = Developer.objects.get(user=request.user)
     t = d.team
-    user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')
-    tasks = t.task_set.all().order_by("due")
+
+    user_task_list = ""
+    tasks = ""
+
+    if order_by == 'due':
+        user_task_list = d.assignee.all().filter(status__lt=5).order_by('due')
+        tasks = Task.objects.all().filter(team=t).exclude(assignee_id=request.user.id).order_by('due')
+    elif order_by == 'status':
+        user_task_list = d.assignee.all().filter(status__lt=5).order_by('status')
+        tasks = Task.objects.all().filter(team=t).exclude(assignee_id=request.user.id).order_by("status")
+    elif order_by == 'last_modified':
+        user_task_list = d.assignee.all().filter(status__lt=5).order_by('-completed')
+        tasks = Task.objects.all().filter(team=t).exclude(assignee_id=request.user.id).order_by("-completed")
+
     return render(
         request,
         'tasks/task_all.html',

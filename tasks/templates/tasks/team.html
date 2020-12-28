@@ -14,7 +14,16 @@
 <div class="row">
     <div class="col-sm-6 user-feed">
         {% if user_task_list %}
-            <h3>Your Active Tasks</h3>
+            <div class="your-active-tasks-header">
+                <h3 style="float: left">Your Active Tasks</h3>
+                <div class="create-new-task-button">
+                    <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button" style="float: right; margin-left: 10px">Create a new task</a>
+                    <a href="{% url 'tasks:task-all' 'due' %}" class="btn btn-default btn-info" role="button" style="float: right">View All Tasks</a>
+                </div>
+            </div>
+{#            <div class="view-all-task-button">#}
+{#                    #}
+{#            </div>#}
             <div class="your-active-tasks">
                     <ul>
                         {% for task in user_task_list %}
@@ -39,13 +48,6 @@
         {% else %}
             <p>You don't have any tasks assigned to you.</p>
         {% endif %}
-        <div class="create-new-task-button">
-                <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button" style="float: right">Create a new task</a>
-        </div>
-
-        <div class="view-all-task-button">
-                <a href="{% url 'tasks:task-all' %}" class="btn btn-default btn-info" role="button" style="float: left">View All Tasks</a>
-        </div>
     </div>
 
     <div class="col-sm-6 user-feed">

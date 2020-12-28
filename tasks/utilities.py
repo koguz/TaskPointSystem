@@ -22,4 +22,3 @@ def get_priority_or_difficulty_color(priority_or_difficulty):
         return "#64F564"
     elif priority_or_difficulty == 3:
         return "#E83535"
-

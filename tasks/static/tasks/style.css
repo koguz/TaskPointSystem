@@ -16,7 +16,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: #FF5722;
-  /*-webkit-border-radius: 1ex;*/
+  -webkit-border-radius: 1ex;
   -webkit-box-shadow: 0px 1px 2px #1A1A1A;
 }
 
@@ -352,9 +352,12 @@ body {
 }
 
 
-
 .your-active-tasks{
   padding-top: 1px;
+}
+
+.your-active-tasks-header{
+  margin-bottom: 45px;
 }
 
 /* CALENDAR */
@@ -476,4 +479,10 @@ body {
 .task-info-table {
   border-collapse:separate;
   border-spacing: 0 7px;
+}
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
 }

@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from anytree import Node
 
+
 def past_date_validator(value):
     if datetime.date.today() >= value:
         raise ValidationError(
@@ -252,7 +253,6 @@ class Task(models.Model):
             self.status = 2
             self.save()
 
-
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 
@@ -279,7 +279,9 @@ class Comment(models.Model):
         else:
             root = Node(id=self.id, depth=depth)
         for child in children:
-            make_children_nodes(child_node, depth+1, root)
+            self.make_children_nodes(child, depth + 1)
+        # for child in children:
+        #     make_children_nodes(child_node, depth+1, root)
 
     def __str__(self):
         return self.body
