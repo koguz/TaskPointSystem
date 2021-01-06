@@ -1,9 +1,10 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth import authenticate, logout, login, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
+from django.core import serializers
 from django.urls import reverse
 from .models import *
 from .forms import *
@@ -336,7 +337,7 @@ def team_all_tasks(request, team_id):
 
 
 @login_required
-def task_all(request, order_by='due'):
+def task_all(request, order_by):
     d = Developer.objects.get(user=request.user)
     t = d.team
 
@@ -590,3 +591,19 @@ def calendar(request):
         request,
         'tasks/calendar.html',
     )
+
+
+@login_required
+def sort_active_tasks(request):
+    if request.method == 'POST':
+        sort_metric = request.POST.get('metric')
+        task_list = request.POST.get('tasks')
+        sorted_tasks = tasks.order_by(sort_metric)
+        data = serializers.serialize("json", sorted_tasks)
+        return JsonResponse({"sorted_tasks": sorted_tasks}, status=200)
+    else:
+        return JsonResponse({"error": ""}, status=400)
+
+
+
+
