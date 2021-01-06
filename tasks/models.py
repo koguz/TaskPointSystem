@@ -35,7 +35,7 @@ class Course(models.Model):
     def __str__(self):
         return self.name
 
-    def get_number_0f_students(self):
+    def get_number_of_students(self):
         return self.number_of_students
 
     def get_current_milestone(self):
@@ -209,7 +209,7 @@ class Task(models.Model):
     valid = models.BooleanField("Is Valid", default=False)
 
     def get_points(self):
-        return (self.difficulty*self.priority)+self.modifier
+        return (self.difficulty * self.priority) + self.modifier
 
     def already_voted_for_creation(self, developer):
         if Vote.objects.filter(task=self, voter=developer, vote_type__range=(1, 2)):
@@ -279,9 +279,7 @@ class Comment(models.Model):
         else:
             root = Node(id=self.id, depth=depth)
         for child in children:
-            self.make_children_nodes(child, depth + 1)
-        # for child in children:
-        #     make_children_nodes(child_node, depth+1, root)
+            self.make_children_nodes(child, depth + 1, root)
 
     def __str__(self):
         return self.body

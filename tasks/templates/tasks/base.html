@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     {% load static %}
+    {% load tags %}
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400&amp;subset=latin-ext" rel="stylesheet">
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="{% static 'tasks/fontawesome/css/all.min.css' %}">
     <link rel="stylesheet" href="{% static 'tasks/style.css' %}">
     <title>TPS - {{ page_title }} </title>
     <script>
@@ -16,42 +18,49 @@
         return confirm("Are you sure you want to " + d + "?")
       }
     </script>
-  </head>
+</head>
 
-  <body>
-    <nav class="navbar navbar-default navbar-static-top">
-      <div class="container">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="{% url 'tasks:choose' %}">Task Point System</a>
-        </div>
-        <div id="navbar">
-          <ul class="nav navbar-nav">
-            <li><a href="{% static 'tasks/task_point_system.pdf' %}">Help File</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <div class="container">
-      <div class="row">
-  				<div class="col-xs-12 col-sm-6">
-            {% block leftcontent %}{% endblock %}
-          </div>
-          <div class="col-xs-12 col-sm-6">
-            {% block rightcontent %}{% endblock %}
-          </div>
-      </div>
-
-      <div class="row" style="text-align: center; font-size: 8pt; margin-top: 20px; ">
-        Task Point System, Kaya Oğuz, &copy; 2017-2019
-      </div>
+<body>
+    <div id="sidebar">
+        <ul>
+            <li id="brand-item"><a href="{% url 'tasks:profile' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
+            <hr>
+            <li><a href="{% url 'tasks:profile' %}"><i class="fas fa-user fa-2x"></i><span id="sidebar-user">{% developer_name request %}</span></a></li>
+            <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
+            <li><a href="{% url 'tasks:teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
+            <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
+            <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
+            <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Grades</span></a></li>
+{#            {% if is_developer %}#}
+{#                <li id="brand-item"><a href="{% url 'tasks:profile' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>#}
+{#                <hr>#}
+{#                <li><a href="{% url 'tasks:profile' %}"><i class="fas fa-user fa-2x"></i><span id="sidebar-user">{% developer_name request %}</span></a></li>#}
+{#                <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>#}
+{#                <li><a href="{% url 'tasks:teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>#}
+{#                <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>#}
+{#                <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>#}
+{#                <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Grades</span></a></li>#}
+{#            {% else %}#}
+{#                <li id="brand-item"><a href="{% url 'tasks:supervisor-home' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>#}
+{#                <hr>#}
+{#                <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>#}
+{#                <li><a href="{% url 'tasks:teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>#}
+{#                <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>#}
+{#                <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>#}
+{#                <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Grades</span></a></li>#}
+{#            {% endif %}#}
+        </ul>
+        <a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i><span id="sidebar-sign-out">Sign Out</span></a>
+    </div>
+    <div class="container main-screen">
+        {% block content %}{% endblock %}
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
     <script src="{% static 'tasks/scripts.js' %}"></script>
 
     {% block scriptcontent %}{% endblock %}
-    </body>
+</body>
 </html>

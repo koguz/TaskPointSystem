@@ -1,5 +1,5 @@
 from django import template
-from tasks.models import Developer
+from tasks.models import Developer, Supervisor
 from django.utils.safestring import mark_safe
 import json
 
@@ -16,9 +16,20 @@ def developer_name(request):
     return "No name"
 
 
+@register.simple_tag
 def developer_id(request):
     return Developer.objects.get(user=request.user).id
 
+
 @register.filter(is_safe=True)
-def safe_string(object):
-    return mark_safe(json.dumps(object))
+def safe_string(string_object):
+    return mark_safe(json.dumps(string_object))
+
+
+@register.simple_tag
+def is_developer(request):
+    developer = Developer.objects.filter(user=request.user)
+    if developer:
+        return True
+    else:
+        return False

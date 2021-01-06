@@ -261,7 +261,7 @@ def view_task(request, task_id):
     form = CommentForm()
     return render(
         request,
-        'tasks/view_task_new.html',
+        'tasks/view_task.html',
         {
             'page_title': 'View task',
             'task': tsk, 'tid': task_id,
@@ -569,6 +569,9 @@ def notifications(request):
     return render(
         request,
         'tasks/notifications.html',
+        {
+            "user": request.user,
+        }
     )
 
 
@@ -598,7 +601,7 @@ def sort_active_tasks(request):
     if request.method == 'POST':
         sort_metric = request.POST.get('metric')
         task_list = request.POST.get('tasks')
-        sorted_tasks = tasks.order_by(sort_metric)
+        sorted_tasks = task_list.order_by(sort_metric)
         data = serializers.serialize("json", sorted_tasks)
         return JsonResponse({"sorted_tasks": sorted_tasks}, status=200)
     else:

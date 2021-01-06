@@ -1,0 +1,128 @@
+{% extends "tasks/base_legacy.html" %}
+
+{% block leftcontent %}
+
+<h3>Task Details</h3>
+
+<table>
+<tr><td>Task Name</td><td>:</td><td>{{ task.title }}</td></tr>
+<tr><td>Team</td><td>:</td><td>{{ task.team }}</td></tr>
+<tr><td>Milestone</td><td>:</td><td>{{ task.milestone }}</td></tr>
+<tr><td>Last Modified by</td><td>:</td><td>{{ task.creator }}</td></tr>
+<tr><td>Assigned to</td><td>:</td><td>{{ task.assignee }}</td></tr>
+<tr><td>Title</td><td>:</td><td>{{ task.title }}</td></tr>
+<tr><td valign="top">Description</td><td valign="top">:</td><td>{{ task.description|linebreaksbr }}</td></tr>
+<tr><td>Created on</td><td>:</td><td>{{ task.date }}</td></tr>
+<tr><td>Due Date</td><td>:</td><td>{{ task.due }}</td></tr>
+<tr><td>Last Modified</td><td>:</td><td>{{ task.completed }}</td></tr>
+<tr><td>Priority</td><td>:</td><td bgcolor={{ priority_color }}>{{ task.get_priority_display }}</td></tr>
+<tr><td>Difficulty</td><td>:</td><td bgcolor={{ difficulty_color }}>{{ task.get_difficulty_display }}</td></tr>
+<tr><td>Modifier</td><td>:</td><td>{{ task.modifier }}</td></tr>
+<tr><td>Task Point ( (p*d) + m)</td><td>:</td><td>{{ task.get_points }}</td></tr>
+<tr><td>Status</td><td>:</td><td>{{ task.get_status_display }}</td></tr>
+{% if task.status == 1 or task.status == 2 %}
+    <tr><td>Creation Accept Votes</td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
+    <tr><td>Creation Change Votes</td><td>:</td><td>{{ task.get_creation_change_votes.count }}</td></tr>
+{% else %}
+    <tr><td>Submission Accept Votes</td><td>:</td><td>{{ task.get_submission_accept_votes.count }}</td></tr>
+    <tr><td>Submission Change Votes</td><td>:</td><td>{{ task.get_submission_change_votes.count }}</td></tr>
+{% endif %}
+</table>
+
+<hr />
+
+{% if user_s and task.status == 1 or user_s and task.status == 3 or user_s and task.status == 4 %}
+    {% if user_s and task.status == 3 or user_s and task.status == 4 %}
+        Set Modifier to:
+        <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 3 %}" class="btn btn-default" role="button">3</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 4 %}" class="btn btn-default" role="button">4</a>
+        <a href="{% url 'tasks:update-task-mod' task.id 5 %}" class="btn btn-default" role="button">5</a>
+        <hr />
+    {% endif %}
+    {% if task.status == 3 or task.status == 4 %}
+        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+    {% else %}
+        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+    {% endif %}
+
+    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
+{% endif %}
+{% if user_d and task.status == 1 and can_edit == None %}
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=0 %}" class="btn btn-default btn-secondary" role="button">No Vote</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+{#    <div class="wrapper">#}
+{#        <div class="toggle_radio">#}
+{#            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" role="button"><label for="first_toggle"><p>Accept</p></label></a>#}
+{#            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=0 %}" role="button"><label for="second_toggle"><p>N/A</p></label></a>#}
+{#            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" role="button"><label for="third_toggle"><p>Request Change</p></label></a>#}
+{#            <input type="radio" class="toggle_option" id="first_toggle" name="toggle_option">#}
+{#            <input type="radio" checked class="toggle_option" id="second_toggle" name="toggle_option">#}
+{#            <input type="radio" class="toggle_option" id="third_toggle" name="toggle_option">#}
+{#            <div class="toggle_option_slider">#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{% elif user_d and task.status == 2 and can_edit != None %}
+    <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
+{% elif user_d and task.status == 3 and can_edit == None %}
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=0 %}" class="btn btn-default btn-secondary" role="button">No Vote</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+{% elif user_d and can_edit == 'developer' and task.status == 1 and task.creator != user_d.user %}
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+{% endif %}
+
+{#  ADD  and needs_change  #}
+{% if can_edit == "developer" and needs_change and task.status == 1 %}
+    <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
+{% endif %}
+
+{#  ADD  some conditions such as task.status != 4  #}
+{% if can_edit == "supervisor" and task.status != 2 and task.status != 5 and task.status != 6 %}
+    <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
+{% endif %}
+
+<hr />
+
+<a href="{% url 'tasks:choose' %}">Go Home</a>.
+
+{% endblock %}
+
+{% block rightcontent %}
+
+<h3>Comments</h3>
+<form action="{% url 'tasks:send-comment' tid %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <div style="text-align: right; padding: 4px;"><input type="submit" value="Submit" class="btn btn-success" id="send" /></div>
+</form>
+<hr />
+
+{% if comments %}
+<ul class="list-group">
+  {% for comment in comments %}
+    <li class="list-group-item">
+      <p>Comment by <b>{{comment.owner}}</b> on {{comment.date}}</p>
+      <p>{{comment.body|linebreaksbr}}</p>
+      {% if comment.file_url %}
+      <p>File URL: <a href="{{comment.file_url }}">{{comment.file_url }}</a></p>
+      {% endif %}
+
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% endblock %}
+
+{% block scriptcontent %}
+<script>
+  $("input, select, textarea").addClass("form-control");
+  $("#send").removeClass("form-control");
+  $("td").css("padding", "4px");
+</script>
+{% endblock %}
