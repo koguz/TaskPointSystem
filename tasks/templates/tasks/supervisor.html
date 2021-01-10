@@ -2,20 +2,25 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-sm-6 user-feed">
-        <div class="col-sm-10">
-            <div class="profile-card" style="float: left">
-                <img src="../../static/tasks/cutedoggo.jpg" alt="Profile Picture">
-                <div>
-                    <div class="profile-info">
-                        <h1>{{ supervisor_name }}</h1>
-                    </div>
-                </div>
-            </div>
-            <div style="float: right; margin-top: 20px">
-              <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
-            </div>
-            <div style="margin-top: 250px">
+    <div class="col-sm-12 profile-row">
+      <div class="profile-card" style="float: left">
+          <img src="../../static/tasks/cutedoggo.jpg" alt="Profile Picture">
+          <div>
+              <div class="profile-info">
+                  <h1>{{ supervisor_name }}</h1>
+                  <p class="title">Computer Engineering</p>
+                  <p>20170602023</p>
+              </div>
+          </div>
+      </div>
+        <div style="float: right; margin-top: 20px">
+            <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-5 user-feed">
+            <div style="margin-top: 65px">
                 <hr />
                 {% if completed_task_list %}
                     <h3>Completed tasks from all supervised teams</h3>
@@ -42,10 +47,12 @@
                   <p>There are no completed tasks.</p>
                 {% endif %}
             </div>
-        </div>
     </div>
-    <div class="col-sm-6 user-feed" style="margin-top: 30px">
-        <div class="col-sm-10" style="float: right">
+
+    <div class="col-sm-1"> </div>
+
+    <div class="col-sm-6 user-feed" style="margin-top: 15px; float: left">
+         <!-- <div class="col-sm-10" style="float: right"> -->
             <h3>Supervised Teams</h3>
             <hr />
             {% if supervised_teams %}
@@ -67,7 +74,7 @@
             {% endfor %}
             </ul>
             {% endif %}
-        </div>
+        <!-- </div> -->
     </div>
 </div>
 {% endblock %}

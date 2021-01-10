@@ -71,6 +71,30 @@ def supervisor(request):  # this view is for the supervisors only...
     return render(request, 'tasks/supervisor.html', context)
 
 
+def supervisor_teams(request):
+    try:
+        s = Supervisor.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        s = None
+        leave_site(request)
+        return HttpResponseRedirect('/tasks/')
+
+    supervisor_name = s.get_name()
+    page_title = "Supervisor page"
+    # completed_task_list = request.user.creator.all().filter(status=3).order_by('team', 'due')
+    completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team',
+                                                                                                       'due')
+    supervised_teams = Team.objects.all().filter(supervisor=s)
+
+    context = {
+        'page_title': page_title,
+        'supervisor_name': supervisor_name,
+        'completed_task_list': completed_task_list,
+        'supervised_teams': supervised_teams,
+    }
+    return render(request, 'tasks/supervisor_teams.html', context)
+
+
 @login_required
 def team(request):  # this view is for the developer only...
     d = Developer.objects.get(user=request.user)

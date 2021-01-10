@@ -33,6 +33,7 @@ urlpatterns = [
     re_path(r'^view-all-teams/$', views.view_all_teams, name='view-all-teams'),
     re_path(r'^edit/developer/(?P<task_id>[0-9]+)$', views.developer_edit_task, name='task-edit-developer'),
     re_path(r'^edit/supervisor/(?P<task_id>[0-9]+)$', views.supervisor_edit_task, name='task-edit-supervisor'),
+    re_path(r'^teams/supervisor/', views.supervisor_teams, name='supervisor-view-teams'),
     #re_path(r'^edit/(?P<team_id>[0-9])/$', views.supervisor_create, name='task-create'),
     #re_path(r'^/developer/profile/$', views.view_developer_profile, name='developer-profile'),
     #re_path(r'^/supervisor/profile/$', views.view_supervisor_profile, name='supervisor-profile'),
