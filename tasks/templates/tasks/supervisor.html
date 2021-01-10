@@ -3,61 +3,71 @@
 {% block content %}
 <div class="row">
     <div class="col-sm-6 user-feed">
-        <h3>{{ supervisor_name }}</h3>
-        <div style="text-align: right">
-          <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
-          <a href="{% url 'tasks:leave' %}" class="btn btn-default" role="button">Logout</a>
+        <div class="col-sm-10">
+            <div class="profile-card" style="float: left">
+                <img src="../../static/tasks/cutedoggo.jpg" alt="Profile Picture">
+                <div>
+                    <div class="profile-info">
+                        <h1>{{ supervisor_name }}</h1>
+                    </div>
+                </div>
+            </div>
+            <div style="float: right; margin-top: 20px">
+              <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
+            </div>
+            <div style="margin-top: 250px">
+                <hr />
+                {% if completed_task_list %}
+                    <h3>Completed tasks from all supervised teams</h3>
+                    <ul class="list-group">
+                    {% for task in completed_task_list %}
+                        <li class="list-group-item">
+                            <h4>{{ task.title }}</h4>
+                            <p>
+                                Assigned to: {{ task.assignee }}<br />
+                                Team: {{ task.team }}<br />
+                                P/D/M:
+                                {{ task.get_priority_display }} /
+                                {{ task.get_difficulty_display }} /
+                                {{ task.modifier }}<br />
+                                Milestone: {{ task.milestone }} (Due: {{ task.milestone.due }})<br />
+                                Due date: {{ task.due }}<br />
+                                Status: {{ task.get_status_display }}
+                            </p>
+                            <p style="text-align: right"><a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a></p>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                  <p>There are no completed tasks.</p>
+                {% endif %}
+            </div>
         </div>
-        <hr />
-        {% if completed_task_list %}
-            <h3>Completed tasks from all supervised teams</h3>
+    </div>
+    <div class="col-sm-6 user-feed" style="margin-top: 30px">
+        <div class="col-sm-10" style="float: right">
+            <h3>Supervised Teams</h3>
+            <hr />
+            {% if supervised_teams %}
             <ul class="list-group">
-            {% for task in completed_task_list %}
-                <li class="list-group-item">
-                    <h4>{{ task.title }}</h4>
-                    <p>
-                        Assigned to: {{ task.assignee }}<br />
-                        Team: {{ task.team }}<br />
-                        P/D/M:
-                        {{ task.get_priority_display }} /
-                        {{ task.get_difficulty_display }} /
-                        {{ task.modifier }}<br />
-                        Milestone: {{ task.milestone }} (Due: {{ task.milestone.due }})<br />
-                        Due date: {{ task.due }}<br />
-                        Status: {{ task.get_status_display }}
-                    </p>
-                    <p style="text-align: right"><a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a></p>
+            {% for mteam in supervised_teams %}
+                <li class="list-group-item">{{ mteam.name }} <br />
+                {% for dv in mteam.developer_set.all %}
+                    {{ dv }} /
+                {% endfor %}
+                <div>
+                    <a href="{% url 'tasks:team-all-tasks' mteam.id %}" class="btn btn-default btn-info" role="button">
+                        View All Tasks of {{ mteam.name }}
+                    </a>
+                    <a href="{% url 'tasks:task-create' mteam.id %}" class="btn btn-default btn-info" role="button">
+                        Create Task for {{ mteam.name }}
+                    </a>
+                </div>
                 </li>
             {% endfor %}
             </ul>
-        {% else %}
-          <p>There are no completed tasks.</p>
-        {% endif %}
-
-    </div>
-    <div class="col-sm-6 user-feed">
-
-        <h3>Supervising Following Teams</h3>
-        <hr />
-        {% if supervised_teams %}
-        <ul class="list-group">
-        {% for mteam in supervised_teams %}
-            <li class="list-group-item">{{ mteam.name }} <br />
-            {% for dv in mteam.developer_set.all %}
-                {{ dv }} /
-            {% endfor %}
-            <div align="right">
-                <a href="{% url 'tasks:team-all-tasks' mteam.id %}" class="btn btn-default btn-info" role="button">
-                    View All Tasks of {{ mteam.name }}
-                </a>
-                <a href="{% url 'tasks:task-create' mteam.id %}" class="btn btn-default btn-info" role="button">
-                    Create Task for {{ mteam.name }}
-                </a>
-            </div>
-            </li>
-        {% endfor %}
-        </ul>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
