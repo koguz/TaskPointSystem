@@ -606,7 +606,3 @@ def sort_active_tasks(request):
         return JsonResponse({"sorted_tasks": sorted_tasks}, status=200)
     else:
         return JsonResponse({"error": ""}, status=400)
-
-
-
-
