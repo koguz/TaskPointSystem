@@ -9,7 +9,7 @@ register = template.Library()
 @register.simple_tag
 def developer_name(request):
     if Developer.objects.filter(user=request.user):
-        return Developer.objects.get(user=request.user).get_full_name()
+        return Developer.objects.get(user=request.user).get_name()
     elif Supervisor.objects.filter(user=request.user):
         return Supervisor.objects.get(user=request.user).get_name()
 

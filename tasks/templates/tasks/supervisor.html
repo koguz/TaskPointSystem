@@ -76,7 +76,7 @@
                     <div class="col-sm-8">
                         <div style="display: inline-flex; float: right;">
                             {% for developer in mteam.developer_set.all %}
-                                <p style="padding-right: 10px; font-size: 18px">{{ developer.get_name }},</p>
+                                <p style="padding-right: 10px; font-size: 18px">{{ developer.get_only_name }},</p>
                             {% endfor %}
                         </div>
                     </div>
