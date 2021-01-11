@@ -1,0 +1,87 @@
+{% extends "tasks/base.html" %}
+
+{% block content %}
+<div class="row" style="justify-content: center; align-items: center; margin-top: 10px">
+{#        <div class="col-sm-6 user-feed">#}
+{#            {% if user_task_list %}#}
+{#                <div class="all-tasks-search sticky" style="margin-bottom: 20px;">#}
+{#                    <h3>Your Active Tasks</h3>#}
+{#                    <a href="{% url 'tasks:task-all-supervisor' 'status' %}" class="btn btn-default btn-info" role="button">#}
+{#                        Sort by status#}
+{#                    </a>#}
+{#                    <a href="{% url 'tasks:task-all-supervisor' 'last_modified' %}" class="btn btn-default btn-info" role="button">#}
+{#                        Sort by last modified#}
+{#                    </a>#}
+{#                    <a href="{% url 'tasks:task-all-supervisor' 'due' %}" class="btn btn-default btn-info" role="button">#}
+{#                        Sort by due date#}
+{#                    </a>#}
+{#                </div>#}
+{#                <div style="margin-top: 102px; overflow: auto; height: 800px; padding-right: 20px">#}
+{#                    <ul>#}
+{#                        {% for task in user_task_list %}#}
+{#                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">#}
+{#                                <li>#}
+{#                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>#}
+{#                                    <div class="task-header">#}
+{#                                        <h4>{{ task.title }}</h4>#}
+{#                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>#}
+{#                                    </div>#}
+{#                                    <hr class="content-separator">#}
+{#                                    <div class="task-content">#}
+{#                                        <p class="content-text">{{ task.description }}</p>#}
+{#                                    </div>#}
+{#                                </li>#}
+{#                            </a>#}
+{#                        {% endfor %}#}
+{#                    </ul>#}
+{#                </div>#}
+{#        {% else %}#}
+{#            <p>This team does not have any tasks assigned to them.</p>#}
+{#        {% endif %}#}
+{#        </div>#}
+
+        <div class="col-sm-12 user-feed">
+            {% if task_list %}
+                <div class="all-tasks-search sticky" style="margin-bottom: 20px;">
+                    <h3>This Team's Active Tasks</h3>
+                    <a href="{% url 'tasks:team-all-tasks' team_id 'status' %}" class="btn btn-default btn-info" role="button">
+                        Sort by status
+                    </a>
+                    <a href="{% url 'tasks:team-all-tasks' team_id 'last_modified' %}" class="btn btn-default btn-info" role="button">
+                        Sort by last modified
+                    </a>
+                    <a href="{% url 'tasks:team-all-tasks' team_id 'due' %}" class="btn btn-default btn-info" role="button">
+                        Sort by due date
+                    </a>
+                </div>
+                <div style="margin-top: 102px; overflow: auto; height: 800px; padding-right: 20px">
+                    <ul>
+                        {% for task in task_list %}
+                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                                <li>
+                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                    <div class="task-header">
+                                        <h4>{{ task.title }}</h4>
+                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
+                                    </div>
+                                    <hr class="content-separator">
+                                    <div class="task-content">
+                                        <p class="content-text">{{ task.description }}</p>
+                                    </div>
+                                </li>
+                            </a>
+                        {% endfor %}
+                    </ul>
+                </div>
+        {% else %}
+            <p>This team does not have any tasks assigned to them.</p>
+        {% endif %}
+        </div>
+</div>
+
+{% endblock %}
+
+{% block scriptcontent %}
+
+{% endblock %}
+

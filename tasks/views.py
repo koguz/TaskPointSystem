@@ -150,6 +150,7 @@ def supervisor_create(request, team_id):
         return HttpResponseRedirect('/tasks/')
 
     t = get_object_or_404(Team, pk=team_id)
+    team_name = t.name
     c = t.course
     m = c.get_current_milestone()
     if request.method == 'POST':
@@ -167,10 +168,10 @@ def supervisor_create(request, team_id):
         request,
         'tasks/supervisor_task_form.html',
         {
-            'page_title': 'Create new task',
+            'page_title': 'Create new task for ' + team_name,
             'form': form,
             'team_id': t.id,
-            'milestone': m
+            'milestone': m,
         }
     )
 
@@ -347,15 +348,23 @@ def change_pass(request):
 
 
 @login_required()
-def team_all_tasks(request, team_id):
+def team_all_tasks(request, team_id, order_by="due"):
     current_team = get_object_or_404(Team, pk=team_id)
-    tasks = current_team.task_set.all().order_by("due")
+    task_list = ""
+
+    if order_by == 'due':
+        task_list = Task.objects.all().filter(team=current_team).order_by('due')
+    elif order_by == 'status':
+        task_list = Task.objects.all().filter(team=current_team).order_by("status")
+    elif order_by == 'last_modified':
+        task_list = Task.objects.all().filter(team=current_team).order_by("-completed")
     return render(
         request,
-        'tasks/task_all.html',
+        'tasks/task_all_supervisor.html',
         {
             'page_title': 'All tasks for ' + current_team.name,
-            'task_list': tasks
+            'task_list': task_list,
+            'team_id': current_team.id,
         }
     )
 
