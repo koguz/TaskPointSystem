@@ -126,8 +126,11 @@ class Developer(models.Model):
     def __str__(self):
         return self.get_name()
 
-    def get_name(self):
+    def get_full_name(self):
         return self.user.first_name + " " + self.user.last_name
+
+    def get_name(self):
+        return self.user.first_name
 
     def get_all_accepted_points(self, m):
         p = 0
