@@ -112,6 +112,7 @@ body {
   text-decoration: none !important;
   color: #1A1A1A !important;
   display: block;
+  padding: 8px 16px 8px 16px;
 }
 
 
@@ -498,10 +499,18 @@ body {
 
 /*****************************     SUPERVISOR     *****************************/
 
-.supervisor-all-tasks th,
+.supervisor-all-tasks th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px 16px 8px 16px;
+}
+
 .supervisor-all-tasks td {
   border: 1px solid #dddddd;
   text-align: left;
+}
+
+.task-description {
   padding: 8px 16px 8px 16px;
 }
 
