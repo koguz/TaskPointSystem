@@ -107,6 +107,14 @@ body {
 .version-text{
   margin-top: 100px;
 }
+
+.views-link {
+  text-decoration: none !important;
+  color: #1A1A1A !important;
+  display: block;
+}
+
+
 /*****************************     PROFILE     *****************************/
 
 /* SIDEBAR */
@@ -485,4 +493,30 @@ body {
   position: fixed;
   top: 0;
   width: 100%;
+}
+
+
+/*****************************     SUPERVISOR     *****************************/
+
+.supervisor-all-tasks th,
+.supervisor-all-tasks td {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px 16px 8px 16px;
+}
+
+.supervisor-all-tasks tr {
+  min-height: 500px;
+}
+
+.supervisor-all-tasks tr:nth-child(even) {
+  background-color: #eeeeee;
+}
+
+.supervisor-all-tasks th {
+  background-color: #d1d1d1;
+  position: sticky;
+  position: -webkit-sticky;
+  top: -1px;
+  z-index: 2;
 }

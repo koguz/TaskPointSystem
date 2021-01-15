@@ -40,7 +40,7 @@
 {#        {% endif %}#}
 {#        </div>#}
 
-        <div class="col-sm-12 user-feed">
+        <div class="col-sm-12">
             {% if task_list %}
                 <div class="all-tasks-search sticky" style="margin-bottom: 20px;">
                     <h3>This Team's Active Tasks</h3>
@@ -55,23 +55,27 @@
                     </a>
                 </div>
                 <div style="margin-top: 102px; overflow: auto; height: 800px; padding-right: 20px">
-                    <ul>
+                    <table class="supervisor-all-tasks">
+                        <tr>
+                            <th style="min-width: 300px">Task Title</th>
+                            <th style="min-width: 200px">Creator</th>
+                            <th style="min-width: 200px">Assignee</th>
+                            <th style="min-width: 250px">Status</th>
+                            <th style="min-width: 100px">Description</th>
+                            <th style="min-width: 150px">Due Date</th>
+                        </tr>
                         {% for task in task_list %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
-                                <li>
-                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
-                                    <div class="task-header">
-                                        <h4>{{ task.title }}</h4>
-                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
-                                    </div>
-                                    <hr class="content-separator">
-                                    <div class="task-content">
-                                        <p class="content-text">{{ task.description }}</p>
-                                    </div>
-                                </li>
-                            </a>
+
+                            <tr data-href="{% url 'tasks:view-task' task.id %}">
+                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.title }}</a></td>
+                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.creator }}</a></td>
+                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.assignee }}</a></td>
+                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.get_status_display }}</a></td>
+                                    <td class="task-description" height="65">{{ task.description }}</td>
+                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.due }}</a></td>
+                            </tr>
                         {% endfor %}
-                    </ul>
+                    </table>
                 </div>
         {% else %}
             <p>This team does not have any tasks assigned to them.</p>
@@ -82,6 +86,18 @@
 {% endblock %}
 
 {% block scriptcontent %}
-
+<script>
+$(document).ready(function() {
+    const taskDescriptions = document.getElementsByClassName("task-description");
+    for (let i = 0; i < taskDescriptions.length; i++) {
+        let description = taskDescriptions[i].innerHTML;
+        if (description.length > 127) {
+            taskDescriptions[i].innerHTML = description.substr(0, 114) + "... ";
+        } else {
+            taskDescriptions[i].innerHTML = description.substr(0, 114);
+        }
+    }
+});
+</script>
 {% endblock %}
 
