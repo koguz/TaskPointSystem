@@ -365,6 +365,7 @@ def team_all_tasks(request, team_id, order_by="due"):
             'page_title': 'All tasks for ' + current_team.name,
             'task_list': task_list,
             'team_id': current_team.id,
+            'team_name': current_team.name,
         }
     )
 
