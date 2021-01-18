@@ -128,7 +128,7 @@ body {
   left: 0;
   top: 0;
   position: fixed;
-  z-index: 1;
+  z-index: 4;
   overflow-x: hidden;
 }
 
@@ -504,10 +504,10 @@ body {
   text-align: left;
   padding: 8px 16px 8px 16px;
   background-color: #d1d1d1;
-  position: sticky !important;
-  position: -webkit-sticky !important;
-  top: -1px !important;
-  z-index: 2 !important;
+  position: sticky;
+  position: -webkit-sticky;
+  top: 112px;
+  z-index: 2;
 }
 
 .supervisor-all-tasks td {
@@ -527,5 +527,7 @@ body {
   background-color: #eeeeee;
 }
 
-.supervisor-all-tasks th {
+.all-tasks-search {
+  background-color: #fff;
+  height: 113px;
 }
