@@ -26,10 +26,10 @@ def safe_string(string_object):
     return mark_safe(json.dumps(string_object))
 
 
-@register.simple_tag
-def is_developer(request):
-    developer = Developer.objects.filter(user=request.user)
-    if developer:
-        return True
-    else:
-        return False
+# @register.simple_tag
+# def is_developer(request):
+#     developer = Developer.objects.filter(user=request.user)
+#     if developer:
+#         return True
+#     else:
+#         return False
