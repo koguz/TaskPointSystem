@@ -110,9 +110,9 @@ media/
 # Ignore Django Migrations in Development if you are working on team
 
 # Only for Development only
-**/migrations/**
-!**/migrations
-!**/migrations/__init__.py
+# **/migrations/**
+# !**/migrations
+# !**/migrations/__init__.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
