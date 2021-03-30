@@ -307,3 +307,14 @@ class Vote(models.Model):
 
     def __str__(self):
         return self.voter.__str__() + " voted for " + self.task.title
+
+
+class DeveloperTeam(models.Model):
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.developer.get_name() + " is in team " + self.team.name
+
+    class Meta:
+        unique_together = ['developer', 'team']

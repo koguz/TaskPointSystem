@@ -22,3 +22,15 @@ def get_priority_or_difficulty_color(priority_or_difficulty):
         return "#64F564"
     elif priority_or_difficulty == 3:
         return "#E83535"
+
+
+def get_all_teams_of_developer(developer_id):
+    # developer = Developer.objects.all().filter(developer_id=developer_id)
+    developer_team_ids = DeveloperTeam.objects.all().filter(developer__user_id=developer_id)
+    developer_teams = []
+
+    for developer_team in developer_team_ids:
+        team = Team.objects.all().filter(pk=developer_team.team_id)
+        developer_teams.append(team)
+
+    return developer_teams

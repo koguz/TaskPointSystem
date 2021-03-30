@@ -96,9 +96,9 @@ def supervisor_teams(request):
 
 
 @login_required
-def team(request):  # this view is for the developer only...
+def team(request, team_id):  # this view is for the developer only...
     d = Developer.objects.get(user=request.user)
-    t = d.team
+    t = Team.objects.all().filter(team_id=team_id)
     page_title = t.name + " Team Page"
     developer_name = d.get_name()
 
@@ -571,30 +571,33 @@ def visit_profile(request, developer_id):
 
 def teams(request):
     current_developer = Developer.objects.get(user=request.user)
-    teams_list = Developer.objects.get(user=request.user).team
-    teammates = teams_list.get_team_members().exclude(id=current_developer.id)
-    tasks_list = Task.objects.all().filter(team=teams_list)
-    review_tasks = tasks_list.filter(status=1).count()
-    working_on_it_tasks = tasks_list.filter(status=2).count()
-    waiting_for_review_tasks = tasks_list.filter(status=3).count()
-    waiting_for_supervisor_grade_tasks = tasks_list.filter(status=4).count()
-    rejected_tasks = tasks_list.filter(status=5).count()
-    accepted_tasks = tasks_list.filter(status=6).count()
-    current_developer_active_tasks = tasks_list.filter(assignee=current_developer, status__range=(1, 2)).count()
+    teams_list = get_all_teams_of_developer(current_developer.user_id)
+    # teams_list = Developer.objects.get(user=request.user).team
+    # TODO: teammates should look at the DeveloperTeam model
+    # teammates = teams_list.get_team_members().exclude(id=current_developer.id)
+    # TODO: tasks_list should look for each team's tasks
+    # tasks_list = Task.objects.all().filter(team=teams_list)
+    # review_tasks = tasks_list.filter(status=1).count()
+    # working_on_it_tasks = tasks_list.filter(status=2).count()
+    # waiting_for_review_tasks = tasks_list.filter(status=3).count()
+    # waiting_for_supervisor_grade_tasks = tasks_list.filter(status=4).count()
+    # rejected_tasks = tasks_list.filter(status=5).count()
+    # accepted_tasks = tasks_list.filter(status=6).count()
+    # current_developer_active_tasks = tasks_list.filter(assignee=current_developer, status__range=(1, 2)).count()
 
     return render(
         request,
         'tasks/teams.html',
         {
             'teams_list': teams_list,
-            'teammates': teammates,
-            'current_developer_active_tasks': current_developer_active_tasks,
-            'review_tasks': review_tasks,
-            'working_on_it_tasks': working_on_it_tasks,
-            'waiting_for_review_tasks': waiting_for_review_tasks,
-            'waiting_for_supervisor_grade_tasks': waiting_for_supervisor_grade_tasks,
-            'rejected_tasks': rejected_tasks,
-            'accepted_tasks': accepted_tasks,
+            # 'teammates': teammates,
+            # 'current_developer_active_tasks': current_developer_active_tasks,
+            # 'review_tasks': review_tasks,
+            # 'working_on_it_tasks': working_on_it_tasks,
+            # 'waiting_for_review_tasks': waiting_for_review_tasks,
+            # 'waiting_for_supervisor_grade_tasks': waiting_for_supervisor_grade_tasks,
+            # 'rejected_tasks': rejected_tasks,
+            # 'accepted_tasks': accepted_tasks,
         }
     )
 
