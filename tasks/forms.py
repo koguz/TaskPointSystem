@@ -32,7 +32,7 @@ class TaskDeveloperForm(ModelForm):
 class CommentForm(ModelForm):
     class Meta:
         model = Comment
-        fields = ['body', 'file_url']
+        fields = ['body', 'file_url', 'isfinal']
         widgets = {
             'body': Textarea(attrs={'cols': 20, 'rows': 3}),
         }

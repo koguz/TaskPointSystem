@@ -22,3 +22,14 @@ def get_priority_or_difficulty_color(priority_or_difficulty):
         return "#64F564"
     elif priority_or_difficulty == 3:
         return "#E83535"
+
+
+def check_is_final(comment_list):
+    comments = []
+    final_comment = []
+    for comment in comment_list:
+        if comment.isfinal:
+            final_comment.append(comment)
+        else:
+            comments.append(comment)
+    return final_comment, comments

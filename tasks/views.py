@@ -233,7 +233,6 @@ def update(request, task_id, status_id):
 
     if d is not None and status_id == '3':
         tsk.apply_self_accept(d, 3)
-
     tsk.status = status_id
     tsk.save()
     return HttpResponseRedirect('/tasks/choose/')
@@ -265,6 +264,7 @@ def view_task(request, task_id):
     user_d = None
     user_s = None
     needs_change = False
+
     if Developer.objects.filter(user=request.user):
         user_d = Developer.objects.get(user=request.user)
         if tsk.assignee == user_d:
@@ -282,6 +282,7 @@ def view_task(request, task_id):
             needs_change = True
 
     comment_list = tsk.comment_set.all().order_by("-date")
+    final_comment, all_comments_but_final = check_is_final(comment_list)
     vote_list = tsk.vote_set.all()
     form = CommentForm()
     return render(
@@ -290,7 +291,8 @@ def view_task(request, task_id):
         {
             'page_title': 'View task',
             'task': tsk, 'tid': task_id,
-            'comments': comment_list,
+            'all_comments_but_final': all_comments_but_final,
+            'final_comment': final_comment,
             'votes': vote_list,
             'form': form,
             'user_d': user_d,
