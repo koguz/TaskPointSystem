@@ -2,63 +2,61 @@
 
 {% block content %}
 
-    {% for team in teams_list %}
-        {% for team_details in team %}
 
-            <div class="row" style="justify-content: center; align-items: center; margin-top: 125px">
-                <div class="col-sm-2 user-feed">
-                    {# TODO: change tasks:team-home so that each team button sends the user to the correct team #}
-                    <a href="{% url 'tasks:team-home' %}" role="button" style="text-decoration: none; color: #1A1A1A">
-                        <ul>
-                            <li>
-                                <p class="teams-course"><span class="bold-span">Course: </span>{{ team_details.course }}</p>
-                                <div class="teams-name">
-                                    <h4>{{ team_details.name }}</h4>
-                                    <p><span class="bold-span">Milestone: </span>{{ team_details.course.get_current_milestone }}</p>
-                                </div>
-            {#                    <hr class="content-separator">#}
-                                <div class="teams-content">
-                                    <p class="supervisor-text">{{ team_details.supervisor }}</p>
-                                </div>
-                            </li>
-                        </ul>
-                    </a>
-                </div>
+    <div class="row" style="justify-content: center; align-items: center; margin-top: 125px">
+        {% for team in teams_list %}
+            <div class="col-sm-2 user-feed">
+                <a href="{% url 'tasks:team-home' team.0.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                    <ul>
+                        <li>
+                            <p class="teams-course"><span class="bold-span">Course: </span>{{ team.0.course }}</p>
+                            <div class="teams-name">
+                                <h4>{{ team.0.name }}</h4>
+                                <p><span class="bold-span">Milestone: </span>{{ team.0.course.get_current_milestone }}</p>
+                            </div>
+        {#                    <hr class="content-separator">#}
+                            <div class="teams-content">
+                                <p class="supervisor-text">{{ team.0.supervisor }}</p>
+                            </div>
+                        </li>
+                    </ul>
+                </a>
             </div>
-
-        {#    <div class="row" style="justify-content: center; align-items: center;">#}
-        {#        <div class="col-sm-2 user-feed">#}
-        {#            <table class="task-info-table">#}
-        {#                <tr><td>You have <b>{{ current_developer_active_tasks }}</b> active task(s) in this team.</td></tr>#}
-        {#                <tr><td>Tasks in review state</td><td>: </td><td> {{ review_tasks }}</td></tr>#}
-        {#                <tr><td>Tasks in working on it state</td><td>: </td><td> {{ working_on_it_tasks }}</td></tr>#}
-        {#                <tr><td>Tasks in waiting for review state</td><td>: </td><td> {{ waiting_for_review_tasks }}</td></tr>#}
-        {#                <tr><td>Tasks in waiting for supervisor grade state</td><td>: </td><td> {{ waiting_for_supervisor_grade_tasks }}</td></tr>#}
-        {#                <tr><td>Tasks in accepted state</td><td>: </td><td> {{ accepted_tasks }}</td></tr>#}
-        {#                <tr><td>Tasks in rejected state</td><td>: </td><td> {{ rejected_tasks }}</td></tr>#}
-        {#            </table>#}
-        {#        </div>#}
-        {#    </div>#}
-
-        {#    <div class="row" style="justify-content: center; align-items: center;">#}
-        {#        <div class="col-sm-2 user-feed">#}
-        {#            <button class="accordion">Teammates</button>#}
-        {#            <ul>#}
-        {#            {% for mate in teammates %}#}
-        {#                <div class="panel">#}
-        {#                     <a href="{% url 'tasks:visit-profile' mate.id %}" style="text-decoration: none; color: #1A1A1A">#}
-        {#                        <li>#}
-        {#                            <p>{{ mate }}</p>#}
-        {#                        </li>#}
-        {#                     </a>#}
-        {#                </div>#}
-        {#            {% endfor %}#}
-        {#            </ul>#}
-        {#        </div>#}
-        {#    </div>#}
-
-
         {% endfor %}
-    {% endfor %}
+    </div>
+
+{#    <div class="row" style="justify-content: center; align-items: center;">#}
+{#        <div class="col-sm-2 user-feed">#}
+{#            <table class="task-info-table">#}
+{#                <tr><td>You have <b>{{ current_developer_active_tasks }}</b> active task(s) in this team.</td></tr>#}
+{#                <tr><td>Tasks in review state</td><td>: </td><td> {{ review_tasks }}</td></tr>#}
+{#                <tr><td>Tasks in working on it state</td><td>: </td><td> {{ working_on_it_tasks }}</td></tr>#}
+{#                <tr><td>Tasks in waiting for review state</td><td>: </td><td> {{ waiting_for_review_tasks }}</td></tr>#}
+{#                <tr><td>Tasks in waiting for supervisor grade state</td><td>: </td><td> {{ waiting_for_supervisor_grade_tasks }}</td></tr>#}
+{#                <tr><td>Tasks in accepted state</td><td>: </td><td> {{ accepted_tasks }}</td></tr>#}
+{#                <tr><td>Tasks in rejected state</td><td>: </td><td> {{ rejected_tasks }}</td></tr>#}
+{#            </table>#}
+{#        </div>#}
+{#    </div>#}
+
+    {# TODO: teammates accordion is misplaced whenever another accordion is opened #}
+    <div class="row" style="justify-content: center; align-items: center;">
+        {% for teammates in all_teammates %}
+            <div class="col-sm-2 user-feed">
+                <button class="accordion">Teammates</button>
+                <ul>
+                {% for mate in teammates %}
+                    <div class="panel">
+                         <a href="{% url 'tasks:visit-profile' mate.id %}" style="text-decoration: none; color: #1A1A1A">
+                            <li>
+                                <p>{{ mate }}</p>
+                            </li>
+                         </a>
+                    </div>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
 
 {% endblock %}

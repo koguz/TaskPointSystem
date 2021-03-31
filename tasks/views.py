@@ -98,7 +98,7 @@ def supervisor_teams(request):
 @login_required
 def team(request, team_id):  # this view is for the developer only...
     d = Developer.objects.get(user=request.user)
-    t = Team.objects.all().filter(team_id=team_id)
+    t = Team.objects.all().filter(pk=team_id)[0]
     page_title = t.name + " Team Page"
     developer_name = d.get_name()
 
@@ -572,9 +572,7 @@ def visit_profile(request, developer_id):
 def teams(request):
     current_developer = Developer.objects.get(user=request.user)
     teams_list = get_all_teams_of_developer(current_developer.user_id)
-    # teams_list = Developer.objects.get(user=request.user).team
-    # TODO: teammates should look at the DeveloperTeam model
-    # teammates = teams_list.get_team_members().exclude(id=current_developer.id)
+    all_teammates = get_all_teammates_of_each_team(teams_list, current_developer.user_id)
     # TODO: tasks_list should look for each team's tasks
     # tasks_list = Task.objects.all().filter(team=teams_list)
     # review_tasks = tasks_list.filter(status=1).count()
@@ -590,7 +588,7 @@ def teams(request):
         'tasks/teams.html',
         {
             'teams_list': teams_list,
-            # 'teammates': teammates,
+            'all_teammates': all_teammates,
             # 'current_developer_active_tasks': current_developer_active_tasks,
             # 'review_tasks': review_tasks,
             # 'working_on_it_tasks': working_on_it_tasks,

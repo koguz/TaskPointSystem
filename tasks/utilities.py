@@ -25,7 +25,6 @@ def get_priority_or_difficulty_color(priority_or_difficulty):
 
 
 def get_all_teams_of_developer(developer_id):
-    # developer = Developer.objects.all().filter(developer_id=developer_id)
     developer_team_ids = DeveloperTeam.objects.all().filter(developer__user_id=developer_id)
     developer_teams = []
 
@@ -34,3 +33,21 @@ def get_all_teams_of_developer(developer_id):
         developer_teams.append(team)
 
     return developer_teams
+
+
+def get_all_teammates_of_each_team(teams_list, current_developer_id):
+    all_teams_developers = []
+
+    for team in teams_list:
+        team_id = team[0].id
+        developer_ids = DeveloperTeam.objects.all().filter(team_id=team_id)
+        team_developers = []
+
+        for developer_team_object in developer_ids:
+            developer_id = developer_team_object.developer_id
+            developer = Developer.objects.all().get(pk=developer_id)
+            team_developers.append(developer)
+
+        all_teams_developers.append(team_developers)
+
+    return all_teams_developers
