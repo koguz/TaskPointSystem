@@ -28,7 +28,7 @@ def check_is_final(comment_list):
     comments = []
     final_comment = []
     for comment in comment_list:
-        if comment.isfinal:
+        if comment.is_final:
             final_comment.append(comment)
         else:
             comments.append(comment)

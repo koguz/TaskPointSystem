@@ -268,7 +268,7 @@ class Comment(models.Model):
     file_url = models.URLField("File URL", max_length=512, blank=True, null=True)
     date = models.DateTimeField("Date", auto_now_add=True)
     points = models.IntegerField("Upvotes", default=0)
-    isfinal = models.BooleanField(default=False)
+    is_final = models.BooleanField(default=False)
 
     def is_direct_comment(self):
         if self.response_to:
