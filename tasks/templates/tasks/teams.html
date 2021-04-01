@@ -4,7 +4,7 @@
 
 
     <div class="row" style="justify-content: center; align-items: center; margin-top: 125px">
-        {% for team in teams_list %}
+        {% for team in teams %}
             <div class="col-sm-2 user-feed">
                 <a href="{% url 'tasks:team-home' team.0.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
                     <ul>
@@ -25,19 +25,21 @@
         {% endfor %}
     </div>
 
-{#    <div class="row" style="justify-content: center; align-items: center;">#}
-{#        <div class="col-sm-2 user-feed">#}
-{#            <table class="task-info-table">#}
-{#                <tr><td>You have <b>{{ current_developer_active_tasks }}</b> active task(s) in this team.</td></tr>#}
-{#                <tr><td>Tasks in review state</td><td>: </td><td> {{ review_tasks }}</td></tr>#}
-{#                <tr><td>Tasks in working on it state</td><td>: </td><td> {{ working_on_it_tasks }}</td></tr>#}
-{#                <tr><td>Tasks in waiting for review state</td><td>: </td><td> {{ waiting_for_review_tasks }}</td></tr>#}
-{#                <tr><td>Tasks in waiting for supervisor grade state</td><td>: </td><td> {{ waiting_for_supervisor_grade_tasks }}</td></tr>#}
-{#                <tr><td>Tasks in accepted state</td><td>: </td><td> {{ accepted_tasks }}</td></tr>#}
-{#                <tr><td>Tasks in rejected state</td><td>: </td><td> {{ rejected_tasks }}</td></tr>#}
-{#            </table>#}
-{#        </div>#}
-{#    </div>#}
+    <div class="row" style="justify-content: center; align-items: center;">
+        {% for team_task_status in tasks_status %}
+            <div class="col-sm-2 user-feed">
+                <table class="task-info-table">
+                    <tr><td>You have <b>{{ team_task_status.active_tasks }}</b> active task(s) in this team.</td></tr>
+                    <tr><td>Tasks in review</td><td>: </td><td> {{ team_task_status.review_tasks }}</td></tr>
+                    <tr><td>Tasks in working on it</td><td>: </td><td> {{ team_task_status.working_on_it_tasks }}</td></tr>
+                    <tr><td>Tasks in waiting for review</td><td>: </td><td> {{ team_task_status.waiting_for_review_tasks }}</td></tr>
+                    <tr><td>Tasks in waiting for supervisor grade</td><td>: </td><td> {{ team_task_status.waiting_for_supervisor_grade_tasks }}</td></tr>
+                    <tr><td>Tasks in accepted</td><td>: </td><td> {{ team_task_status.accepted_tasks }}</td></tr>
+                    <tr><td>Tasks in rejected</td><td>: </td><td> {{ team_task_status.rejected_tasks }}</td></tr>
+                </table>
+            </div>
+        {% endfor %}
+    </div>
 
     {# TODO: teammates accordion is misplaced whenever another accordion is opened #}
     <div class="row" style="justify-content: center; align-items: center;">

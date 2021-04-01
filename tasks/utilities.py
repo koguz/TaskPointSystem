@@ -8,6 +8,7 @@ from django.urls import reverse
 from .models import *
 from .forms import *
 import logging
+from enum import Enum
 
 
 def reset_task_submission_change_votes(task):
@@ -45,9 +46,78 @@ def get_all_teammates_of_each_team(teams_list, current_developer_id):
 
         for developer_team_object in developer_ids:
             developer_id = developer_team_object.developer_id
+
+            if developer_id == current_developer_id:
+                continue
+
             developer = Developer.objects.all().get(pk=developer_id)
             team_developers.append(developer)
 
         all_teams_developers.append(team_developers)
 
     return all_teams_developers
+
+
+def get_all_teams_tasks(teams_list):
+    all_teams_tasks = []
+
+    for team in teams_list:
+        team_id = team[0].id
+        all_teams_tasks.append([Task.objects.all().filter(team_id=team_id)])
+
+    return all_teams_tasks
+
+
+def get_all_teams_tasks_as_list(teams_list):
+    all_tasks_as_queryset = get_all_teams_tasks(teams_list)
+    all_teams_tasks = []
+
+    for tasks in all_tasks_as_queryset:
+        team_tasks = []
+
+        for task in tasks[0]:
+            team_tasks.append(task)
+
+        all_teams_tasks.append(team_tasks)
+
+    return all_teams_tasks
+
+
+def get_all_teams_tasks_status(tasks_list, current_developer):
+    tasks_status_list = []
+
+    for tasks in tasks_list:
+        review_tasks = tasks[0].filter(status=1).count()
+        working_on_it_tasks = tasks[0].filter(status=2).count()
+        waiting_for_review_tasks = tasks[0].filter(status=3).count()
+        waiting_for_supervisor_grade_tasks = tasks[0].filter(status=4).count()
+        rejected_tasks = tasks[0].filter(status=5).count()
+        accepted_tasks = tasks[0].filter(status=6).count()
+
+        tasks_status_dict = {
+            'review_tasks': review_tasks,
+            'working_on_it_tasks': working_on_it_tasks,
+            'waiting_for_review_tasks': waiting_for_review_tasks,
+            'waiting_for_supervisor_grade_tasks': waiting_for_supervisor_grade_tasks,
+            'rejected_tasks': rejected_tasks,
+            'accepted_tasks': accepted_tasks,
+            'active_tasks': tasks[0].filter(assignee=current_developer, status__range=(1, 2)).count(),
+        }
+
+        tasks_status_list.append(tasks_status_dict)
+
+    return tasks_status_list
+
+
+def get_current_developers_active_tasks(tasks_list, current_developer):
+    developer_active_task_counts = []
+
+    for tasks in tasks_list:
+        developer_active_task_counts.append({
+            'active_tasks': tasks[0].filter(assignee=current_developer, status__range=(1, 2)).count()
+        })
+
+    print(developer_active_task_counts)
+
+    return developer_active_task_counts
+

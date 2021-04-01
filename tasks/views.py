@@ -184,9 +184,12 @@ def developer_create(request):
         developer = None
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
+
+    # TODO: change team logic to multiple teams
     dev_team = developer.team
     course = dev_team.course
     milestone = course.get_current_milestone()
+
     if request.method == 'POST':
         form = TaskDeveloperForm(request.POST)
         if form.is_valid():
@@ -225,9 +228,10 @@ def update(request, task_id, status_id):
     req_status_id = int(status_id)
 
     if d is not None:
-        if tsk.team != d.team or req_status_id != 3:
+        if not d.is_in_team(tsk.team) or req_status_id != 3:
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
+
     if req_status_id > 6 or req_status_id < 1:
         status_id = "5"  # reject it because this is probably a scam...
 
@@ -269,7 +273,7 @@ def view_task(request, task_id):
         user_d = Developer.objects.get(user=request.user)
         if tsk.assignee == user_d:
             can_edit = 'developer'
-        if tsk.team != user_d.team:
+        if not user_d.is_in_team(tsk.team):
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
     elif Supervisor.objects.filter(user=request.user):
@@ -373,6 +377,7 @@ def team_all_tasks(request, team_id, order_by="due"):
 @login_required
 def task_all(request, order_by):
     d = Developer.objects.get(user=request.user)
+    # TODO: change team logic to multiple teams
     t = d.team
 
     user_task_list = ""
@@ -402,6 +407,7 @@ def task_all(request, order_by):
 @login_required
 def team_points(request):
     d = Developer.objects.get(user=request.user)
+    # TODO: change team logic to multiple teams
     t = d.team
     return render(
         request,
@@ -456,6 +462,8 @@ def developer_edit_task(request, task_id):
         developer = None
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
+
+    # TODO: change team logic to multiple teams
     dev_team = developer.team
     course = dev_team.course
     milestone = course.get_current_milestone()
@@ -502,6 +510,7 @@ def supervisor_edit_task(request, task_id):
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
 
+    # TODO: change team logic to multiple teams
     dev_team = developer.team
     course = dev_team.course
     milestone = course.get_current_milestone()
@@ -573,29 +582,16 @@ def teams(request):
     current_developer = Developer.objects.get(user=request.user)
     teams_list = get_all_teams_of_developer(current_developer.user_id)
     all_teammates = get_all_teammates_of_each_team(teams_list, current_developer.user_id)
-    # TODO: tasks_list should look for each team's tasks
-    # tasks_list = Task.objects.all().filter(team=teams_list)
-    # review_tasks = tasks_list.filter(status=1).count()
-    # working_on_it_tasks = tasks_list.filter(status=2).count()
-    # waiting_for_review_tasks = tasks_list.filter(status=3).count()
-    # waiting_for_supervisor_grade_tasks = tasks_list.filter(status=4).count()
-    # rejected_tasks = tasks_list.filter(status=5).count()
-    # accepted_tasks = tasks_list.filter(status=6).count()
-    # current_developer_active_tasks = tasks_list.filter(assignee=current_developer, status__range=(1, 2)).count()
+    tasks_list = get_all_teams_tasks(teams_list)
+    tasks_status_list = get_all_teams_tasks_status(tasks_list, current_developer)
 
     return render(
         request,
         'tasks/teams.html',
         {
-            'teams_list': teams_list,
+            'teams': teams_list,
             'all_teammates': all_teammates,
-            # 'current_developer_active_tasks': current_developer_active_tasks,
-            # 'review_tasks': review_tasks,
-            # 'working_on_it_tasks': working_on_it_tasks,
-            # 'waiting_for_review_tasks': waiting_for_review_tasks,
-            # 'waiting_for_supervisor_grade_tasks': waiting_for_supervisor_grade_tasks,
-            # 'rejected_tasks': rejected_tasks,
-            # 'accepted_tasks': accepted_tasks,
+            'tasks_status': tasks_status_list,
         }
     )
 

@@ -1,4 +1,5 @@
 import datetime
+from enum import Enum
 
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -74,7 +75,11 @@ class Team(models.Model):
     name = models.CharField("Team Name", max_length=128)
     github = models.CharField("Git Page", max_length=256, null=True)
     supervisor = models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True)
-    team_size = models.PositiveSmallIntegerField("Team size", default=4, validators=[MaxValueValidator(99), MinValueValidator(1)])
+    team_size = models.PositiveSmallIntegerField(
+        "Team size",
+        default=4,
+        validators=[MaxValueValidator(99), MinValueValidator(1)]
+    )
 
     def __str__(self):
         return self.name
@@ -121,7 +126,7 @@ class Team(models.Model):
 class Developer(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.SET_NULL, blank=True, null=True)
+    # team = models.ForeignKey(Team, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.get_name()
@@ -139,6 +144,7 @@ class Developer(models.Model):
                 p = p + task.get_points()
         return p
 
+    # TODO: fix single team logic for model functions
     # since we compute the team grade with the milestone, we should compute
     # the individual grade as such, too...
     def get_developer_grade(self, m):
@@ -166,6 +172,12 @@ class Developer(models.Model):
             team_grade = team_grade + self.team.get_team_grade(m) * (m.weight / 100)
             ind_grade = ind_grade + self.get_developer_grade(m) * (m.weight / 100)
         return round(team_grade * (c.team_weight / 100) + ind_grade * (c.ind_weight / 100))
+
+    def is_in_team(self, team):
+        print('self.id: ' + str(self.id) + '   team.id: ' + str(team.id))
+        if DeveloperTeam.objects.all().filter(developer_id=self.id, team_id=team.id):
+            return True
+        return False
 
 
 class Task(models.Model):
