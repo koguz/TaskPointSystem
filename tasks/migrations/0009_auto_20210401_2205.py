@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0008_merge_20210331_2252'),
+        ('tasks', '0007_comment_isfinal'),
     ]
 
     operations = [
