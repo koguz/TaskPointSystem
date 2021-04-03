@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0003_auto_20201228_1220'),
+        ('tasks', '0003_comment_addfields_vote_alterfields'),
     ]
 
     operations = [

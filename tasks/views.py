@@ -283,16 +283,16 @@ def view_task(request, task_id):
         if task.get_creation_change_votes().count() >= 1:
             needs_change = True
 
-    comment_list = tsk.comment_set.all().order_by("-date")
+    comment_list = task.comment_set.all().order_by("-date")
     final_comment, all_comments_but_final = check_is_final(comment_list)
-    vote_list = tsk.vote_set.all()
+    vote_list = task.vote_set.all()
     form = CommentForm()
     return render(
         request,
         'tasks/view_task.html',
         {
             'page_title': 'View task',
-            'task': tsk, 'tid': task_id,
+            'task': task, 'tid': task_id,
             'all_comments_but_final': all_comments_but_final,
             'final_comment': final_comment,
             'votes': vote_list,
