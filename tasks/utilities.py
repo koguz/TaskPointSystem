@@ -40,20 +40,11 @@ def get_all_teammates_of_each_team(teams_list, current_developer_id):
     all_teams_developers = []
 
     for team in teams_list:
-        team_id = team[0].id
-        developer_ids = DeveloperTeam.objects.all().filter(team_id=team_id)
-        team_developers = []
-
-        for developer_team_object in developer_ids:
-            developer_id = developer_team_object.developer_id
-
-            if developer_id == current_developer_id:
-                continue
-
-            developer = Developer.objects.all().get(pk=developer_id)
-            team_developers.append(developer)
-
-        all_teams_developers.append(team_developers)
+        all_teams_developers.append(
+            list(
+                team[0].get_team_members().exclude(user_id=current_developer_id)
+            )
+        )
 
     return all_teams_developers
 
@@ -63,22 +54,9 @@ def get_all_teams_tasks(teams_list):
 
     for team in teams_list:
         team_id = team[0].id
-        all_teams_tasks.append([Task.objects.all().filter(team_id=team_id)])
-
-    return all_teams_tasks
-
-
-def get_all_teams_tasks_as_list(teams_list):
-    all_tasks_as_queryset = get_all_teams_tasks(teams_list)
-    all_teams_tasks = []
-
-    for tasks in all_tasks_as_queryset:
-        team_tasks = []
-
-        for task in tasks[0]:
-            team_tasks.append(task)
-
-        all_teams_tasks.append(team_tasks)
+        all_teams_tasks.append([
+            Task.objects.all().filter(team_id=team_id)
+        ])
 
     return all_teams_tasks
 
@@ -117,7 +95,4 @@ def get_current_developers_active_tasks(tasks_list, current_developer):
             'active_tasks': tasks[0].filter(assignee=current_developer, status__range=(1, 2)).count()
         })
 
-    print(developer_active_task_counts)
-
     return developer_active_task_counts
-

@@ -1,7 +1,6 @@
 from django import forms
 from django.forms import ModelForm, Textarea
 from .models import *
-import sys
 
 
 class TaskSupervisorForm(ModelForm):
@@ -14,7 +13,7 @@ class TaskSupervisorForm(ModelForm):
 
     def __init__(self, team, *args, **kwargs):
         super(TaskSupervisorForm, self).__init__(*args, **kwargs)
-        self.fields['assignee'].queryset = team.developer_set.all()
+        self.fields['assignee'].queryset = team.get_team_members()
 
 
 class TaskDeveloperForm(ModelForm):
@@ -36,4 +35,3 @@ class CommentForm(ModelForm):
         widgets = {
             'body': Textarea(attrs={'cols': 20, 'rows': 3}),
         }
-

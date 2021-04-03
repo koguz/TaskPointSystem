@@ -1,5 +1,4 @@
 import datetime
-from enum import Enum
 
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -21,7 +20,11 @@ def past_date_validator(value):
 
 class Course(models.Model):
     name = models.CharField("Course Name", max_length=256)
-    number_of_students = models.PositiveSmallIntegerField("Number of Students", default=40, validators=[MaxValueValidator(99), MinValueValidator(1)])
+    number_of_students = models.PositiveSmallIntegerField(
+        "Number of Students",
+        default=40,
+        validators=[MaxValueValidator(99), MinValueValidator(1)]
+    )
     team_weight = models.PositiveSmallIntegerField(
         "Team weight",
         default=40,
@@ -113,14 +116,14 @@ class Team(models.Model):
         return g
 
     def get_developer_average(self, m):
-        return self.get_all_task_points(m) / self.developer_set.count()
+        return self.get_all_task_points(m) / self.get_team_members().count()
 
     def get_team_size(self):
         size = self.team_size
         return size
 
     def get_team_members(self):
-        return Developer.objects.all().filter(team=self)
+        return Developer.objects.all().filter(developerteam__team_id=self.id)
 
 
 class Developer(models.Model):
@@ -144,33 +147,32 @@ class Developer(models.Model):
                 p = p + task.get_points()
         return p
 
-    # TODO: fix single team logic for model functions
     # since we compute the team grade with the milestone, we should compute
     # the individual grade as such, too...
-    def get_developer_grade(self, m):
+    def get_developer_grade(self, team, milestone):
         g = 0
-        if self.team.get_developer_average(m) > 0:
-            g = round((self.get_all_accepted_points(m) / self.team.get_developer_average(m)) * 100)
+        if team.get_developer_average(milestone) > 0:
+            g = round((self.get_all_accepted_points(milestone) / team.get_developer_average(milestone)) * 100)
             if g > 100:
                 g = 100
         return g
 
     # this function is for the "view all teams" - we have to get the milestone names and points
     # for those milestones in a dictionary, so that i can loop through it in the template...
-    def get_milestone_list(self):
+    def get_milestone_list(self, team):
         milestone_list = {}
-        for m in self.team.course.milestone_set.all():
-            milestone_list[m.name] = self.get_developer_grade(m)
+        for milestone in team.course.milestone_set.all():
+            milestone_list[milestone.name] = self.get_developer_grade(team, milestone)
         return milestone_list
 
-    def get_project_grade(self):
+    def get_project_grade(self, team):
         # loop through the milestones, get developer grade and team grade...
         team_grade = 0
         ind_grade = 0
-        c = self.team.course
-        for m in c.milestone_set.all():
-            team_grade = team_grade + self.team.get_team_grade(m) * (m.weight / 100)
-            ind_grade = ind_grade + self.get_developer_grade(m) * (m.weight / 100)
+        c = team.course
+        for milestone in c.milestone_set.all():
+            team_grade = team_grade + team.get_team_grade(milestone) * (milestone.weight / 100)
+            ind_grade = ind_grade + self.get_developer_grade(team, milestone) * (milestone.weight / 100)
         return round(team_grade * (c.team_weight / 100) + ind_grade * (c.ind_weight / 100))
 
     def is_in_team(self, team):
@@ -254,15 +256,24 @@ class Task(models.Model):
         vote.save()
 
     def check_for_status_change(self):
-        if Vote.objects.filter(task=self, vote_type=1).count() > self.team.get_team_size() * 0.50 and self.status == 1:
+        if (
+                Vote.objects.filter(task=self, vote_type=1).count() > self.team.get_team_size() * 0.50 and
+                self.status == 1
+        ):
             self.status = 2
             self.save()
 
-        elif Vote.objects.filter(task=self, vote_type=3).count() > self.team.get_team_size() * 0.50 and self.status == 3:
+        elif (
+                Vote.objects.filter(task=self, vote_type=3).count() > self.team.get_team_size() * 0.50 and
+                self.status == 3
+        ):
             self.status = 4
             self.save()
 
-        elif Vote.objects.filter(task=self, vote_type=4).count() >= self.team.get_team_size() * 0.50 and self.status == 3:
+        elif (
+                Vote.objects.filter(task=self, vote_type=4).count() >= self.team.get_team_size() * 0.50 and
+                self.status == 3
+        ):
             # resetting request change votes for submission so that when submitted again team members can vote
             Vote.objects.filter(task=self, vote_type__range=(3, 4)).delete()
             self.status = 2

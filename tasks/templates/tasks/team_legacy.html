@@ -45,8 +45,8 @@
     {% if github_url %}
       <a href="{{ github_url }}" class="btn btn-default" role="button">Git Page</a>
     {% endif %}
-      <a href="{% url 'tasks:team-points' %}" class="btn btn-default" role="button">View Team/Developer Points</a>
-      <a href="{% url 'tasks:task-all' %}" class="btn btn-default" role="button">View All Tasks</a>
+      <a href="{% url 'tasks:team-points' team_id %}" class="btn btn-default" role="button">View Team/Developer Points</a>
+      <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-default" role="button">View All Tasks</a>
       <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button">Create Task for the team</a>
     </div>
     <hr />

@@ -10,7 +10,7 @@
                 {% if is_edit %}
                     <form action="{% url 'tasks:task-edit-developer' task_id %}" method="post">
                 {% else %}
-                    <form action="{% url 'tasks:task-create-developer' %}" method="post">
+                    <form action="{% url 'tasks:task-create-developer' team_id %}" method="post">
                 {% endif %}
               <table>
                 {% csrf_token %}
