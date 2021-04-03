@@ -1,3 +1,11 @@
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth import authenticate, logout, login, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
+from django.urls import reverse
+from .models import *
 from .forms import *
 
 
@@ -63,3 +71,14 @@ def get_all_teams_tasks_status(tasks_list, current_developer):
         tasks_status_list.append(tasks_status_dict)
 
     return tasks_status_list
+
+
+def check_is_final(comment_list):
+    comments = []
+    final_comment = []
+    for comment in comment_list:
+        if comment.is_final:
+            final_comment.append(comment)
+        else:
+            comments.append(comment)
+    return final_comment, comments

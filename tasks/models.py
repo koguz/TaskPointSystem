@@ -291,11 +291,12 @@ class Task(models.Model):
 class Comment(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    response_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
     body = models.TextField("Comment")
     file_url = models.URLField("File URL", max_length=512, blank=True, null=True)
     date = models.DateTimeField("Date", auto_now_add=True)
-    response_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
     points = models.IntegerField("Upvotes", default=0)
+    is_final = models.BooleanField(default=False)
 
     def is_direct_comment(self):
         if self.response_to:

@@ -95,9 +95,34 @@
             </form>
             <hr />
 
-            {% if comments %}
+            {% if final_comment %}
+
+                <i class="fa fa-check fa-2x" aria-hidden="true"></i>
+                <ul class="list-group">
+                    {% for f_comment in final_comment %}
+                        <li class="list-group-item" style="border: 1px solid rgb(5,229,5)">
+                          <div class="row">
+                              <div class="col-sm-6">
+                                 <p style="font-size: 1.3rem"><b>{{f_comment.owner}}</b></p>
+                              </div>
+                              <div class="col-sm-6">
+                                <p style="text-align: right">{{f_comment.date}}</p>
+                              </div>
+                          </div>
+                          <hr class="content-separator" style="margin: -12px 0 10px 0">
+                          <p>{{f_comment.body|linebreaksbr}}</p>
+                          {% if f_comment.file_url %}
+                          <p>File URL: <a href="{{f_comment.file_url }}">{{f_comment.file_url }}</a></p>
+                          {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+            {% endif %}
+
+            {% if all_comments_but_final %}
             <ul class="list-group">
-              {% for comment in comments %}
+              {% for comment in all_comments_but_final %}
                 <li class="list-group-item" style="border: 1px solid rgba(206, 212, 218, 0.9)">
                   <div class="row">
                       <div class="col-sm-6">
