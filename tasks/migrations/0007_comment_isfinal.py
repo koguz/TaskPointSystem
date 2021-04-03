@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='comment',
-            name='isfinal',
+            name='is_final',
             field=models.BooleanField(default=False),
         ),
     ]
