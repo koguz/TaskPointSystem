@@ -125,6 +125,9 @@ class Team(models.Model):
     def get_team_members(self):
         return Developer.objects.all().filter(developerteam__team_id=self.id)
 
+    def get_tasks(self):
+        return self.task_set.all()
+
 
 class Developer(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
@@ -174,6 +177,9 @@ class Developer(models.Model):
             team_grade = team_grade + team.get_team_grade(milestone) * (milestone.weight / 100)
             ind_grade = ind_grade + self.get_developer_grade(team, milestone) * (milestone.weight / 100)
         return round(team_grade * (c.team_weight / 100) + ind_grade * (c.ind_weight / 100))
+
+    def get_teams(self):
+        return Team.objects.all().filter(developerteam__developer=self)
 
     def is_in_team(self, team):
         if DeveloperTeam.objects.all().filter(developer_id=self.id, team_id=team.id):

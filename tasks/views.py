@@ -1,4 +1,10 @@
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
+from django.contrib.auth import authenticate, logout, login, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
+from django.urls import reverse
 from .utilities import *
 import logging
 
@@ -580,7 +586,7 @@ def visit_profile(request, developer_id):
 
 def teams(request):
     current_developer = Developer.objects.get(user=request.user)
-    teams_list = get_all_teams_of_developer(current_developer.user_id)
+    teams_list = current_developer.get_teams()
     all_teammates = get_all_teammates_of_each_team(teams_list, current_developer.user_id)
     tasks_list = get_all_teams_tasks(teams_list)
     tasks_status_list = get_all_teams_tasks_status(tasks_list, current_developer)
