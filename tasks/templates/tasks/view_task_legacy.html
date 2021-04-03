@@ -78,7 +78,7 @@
 
 {#  ADD  and needs_change  #}
 {% if can_edit == "developer" and needs_change and task.status == 1 %}
-    <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-info" role="button">Edit</a>
+    <a href="{% url 'tasks:task-edit-developer' task_id %}" class="btn btn-default btn-info" role="button">Edit</a>
 {% endif %}
 
 {#  ADD  some conditions such as task.status != 4  #}

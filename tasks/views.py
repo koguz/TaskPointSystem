@@ -48,7 +48,6 @@ def supervisor(request):  # this view is for the supervisors only...
 
     supervisor_name = s.get_name()
     page_title = "Supervisor page"
-    # completed_task_list = request.user.creator.all().filter(status=3).order_by('team', 'due')
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
 
@@ -70,9 +69,7 @@ def supervisor_teams(request):
 
     supervisor_name = s.get_name()
     page_title = "Supervisor page"
-    # completed_task_list = request.user.creator.all().filter(status=3).order_by('team', 'due')
-    completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team',
-                                                                                                       'due')
+    completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
 
     context = {
@@ -87,7 +84,12 @@ def supervisor_teams(request):
 @login_required
 def team(request, team_id):  # this view is for the developer only...
     developer = Developer.objects.get(user=request.user)
-    dev_team = Team.objects.all().filter(pk=team_id)[0]
+
+    try:
+        dev_team = Team.objects.get(pk=team_id, developerteam__developer=developer)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/profile/')
+
     page_title = dev_team.name + " Team Page"
     developer_name = developer.get_name()
 
@@ -192,7 +194,6 @@ def developer_create(request, team_id):
             task.save()
             task.apply_self_accept(task.assignee, 1)
 
-            # return HttpResponseRedirect('/tasks/team')
             return HttpResponseRedirect(reverse('tasks:team-home', args=(team_id,)))
 
     else:
@@ -400,8 +401,12 @@ def task_all(request, team_id, order_by):
 
 @login_required
 def team_points(request, team_id):
-    Developer.objects.get(user=request.user)
-    dev_team = Team.objects.get(pk=team_id)
+    developer = Developer.objects.get(user=request.user)
+    try:
+        dev_team = Team.objects.get(pk=team_id, developerteam__developer=developer)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/profile/')
+
     return render(
         request,
         'tasks/team_points.html',
@@ -455,10 +460,14 @@ def developer_edit_task(request, task_id):
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
 
-    # TODO: change team logic to multiple teams
-    dev_team = developer.team
+    try:
+        dev_team = Team.objects.get(pk=task_to_edit.team.id, developerteam__developer=developer)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/profile/')
+
     course = dev_team.course
     milestone = course.get_current_milestone()
+
     if request.method == 'POST':
         # instance argument allows existing entry to be edited
         form = TaskDeveloperForm(request.POST, instance=task_to_edit)
@@ -502,8 +511,7 @@ def supervisor_edit_task(request, task_id):
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
 
-    # TODO: change team logic to multiple teams
-    dev_team = developer.team
+    dev_team = Team.objects.get(pk=task_to_edit.team.id, developerteam__developer=developer)
     course = dev_team.course
     milestone = course.get_current_milestone()
     if request.method == 'POST':

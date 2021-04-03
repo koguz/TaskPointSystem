@@ -176,7 +176,6 @@ class Developer(models.Model):
         return round(team_grade * (c.team_weight / 100) + ind_grade * (c.ind_weight / 100))
 
     def is_in_team(self, team):
-        print('self.id: ' + str(self.id) + '   team.id: ' + str(team.id))
         if DeveloperTeam.objects.all().filter(developer_id=self.id, team_id=team.id):
             return True
         return False
