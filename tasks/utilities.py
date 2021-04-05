@@ -11,7 +11,7 @@ from .forms import *
 
 def reset_task_submission_change_votes(task):
     # reset submission change votes if the task is once changed (waiting for rev -> working on it -> waiting for rev)
-    Vote.objects.filter(task=task, vote_type=4).delete()
+    Vote.objects.filter(task=task, vote_type__range=(3, 4)).delete()
 
 
 def get_priority_or_difficulty_color(priority_or_difficulty):
@@ -82,3 +82,10 @@ def check_is_final(comment_list):
         else:
             comments.append(comment)
     return final_comment, comments
+
+
+def unflag_final_comment(task):
+    comments = task.comment_set.all().order_by("-date")
+    for comment in comments:
+        if comment.is_final:
+            comment.is_final = False

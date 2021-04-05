@@ -220,8 +220,11 @@ def developer_create(request, team_id):
 @login_required
 def update(request, task_id, status_id):
     developer = None
+    supervisor = None
     if Developer.objects.filter(user=request.user):
         developer = Developer.objects.get(user=request.user)
+    else:
+        supervisor = Supervisor.objects.get(user=request.user)
 
     task = get_object_or_404(Task, pk=task_id)
     req_status_id = int(status_id)
@@ -236,6 +239,10 @@ def update(request, task_id, status_id):
 
     if developer is not None and status_id == '3':
         task.apply_self_accept(developer, 3)
+
+    if supervisor and status_id == '5':
+        unflag_final_comment(task)
+
     task.status = status_id
     task.save()
     return HttpResponseRedirect('/tasks/choose/')

@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from anytree import Node
+from tasks.utilities import *
 
 
 def past_date_validator(value):
@@ -280,7 +281,7 @@ class Task(models.Model):
                 self.status == 3
         ):
             # resetting request change votes for submission so that when submitted again team members can vote
-            Vote.objects.filter(task=self, vote_type__range=(3, 4)).delete()
+            reset_task_submission_change_votes(self)
             self.status = 2
             self.save()
 
