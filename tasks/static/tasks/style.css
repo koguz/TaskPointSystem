@@ -515,8 +515,8 @@ body {
   text-align: left;
 }
 
-.task-description {
-  padding: 8px 16px 8px 16px;
+.supervisor-task-operations > a {
+  margin-left: 10px;
 }
 
 .supervisor-all-tasks tr {
