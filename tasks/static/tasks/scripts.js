@@ -1,4 +1,4 @@
-$(document).ready(function($) {
+$(function($) {
     $('.content-text').each(function(index, value) {
       $(this).html($(this).html().substring(0,150));
     })

@@ -53,7 +53,6 @@ body {
 .toggle_radio label{
   font: 90%/1.618 "Roboto";
   color: rgba(22,22,22,.9);
-  z-index: 0;
   display: block;
   width: 140px;
   height: 25px;
@@ -114,7 +113,6 @@ body {
   display: block;
   padding: 8px 16px 8px 16px;
 }
-
 
 /*****************************     PROFILE     *****************************/
 
@@ -280,7 +278,6 @@ body {
   padding-top: 10px;
 }
 
-
 /* FEED */
 
 .user-feed {
@@ -397,7 +394,6 @@ body {
   width: 130px;
 }
 
-
 /* MEDIA AND COMPATIBILITY */
 
 @media only screen and (max-width: 1049px) {
@@ -412,7 +408,6 @@ body {
     visibility: hidden;
   }
 }
-
 
 /*****************************     TEAMS     *****************************/
 
@@ -442,9 +437,7 @@ body {
   overflow: hidden;
 }
 
-
 /*****************************     LOGIN     *****************************/
-
 
 .login-logo-container {
   justify-content: center;
@@ -457,7 +450,6 @@ body {
   font-size: 8pt;
   margin-top: 20px;
 }
-
 
 /*****************************     TEAM     *****************************/
 
@@ -496,8 +488,11 @@ body {
   width: 100%;
 }
 
-
 /*****************************     SUPERVISOR     *****************************/
+
+.supervisor-all-tasks {
+  width: 100%;
+}
 
 .supervisor-all-tasks th {
   border: 1px solid #dddddd;
@@ -515,8 +510,10 @@ body {
   text-align: left;
 }
 
-.supervisor-task-operations > a {
-  margin-left: 10px;
+.supervisor-task-operations {
+  padding-left: 10px;
+  padding-right: 10px;
+  align-content: center;
 }
 
 .supervisor-all-tasks tr {
@@ -530,4 +527,22 @@ body {
 .all-tasks-search {
   background-color: #fff;
   height: 113px;
+}
+
+[data-title] {
+  position: relative;
+}
+
+[data-title]:hover::before {
+  content: attr(data-title);
+  position: absolute;
+  bottom: -26px;
+  display: inline-block;
+  padding: 3px 6px;
+  border-radius: 2px;
+  background: #000;
+  color: #fff;
+  font-size: 12px;
+  font-family: sans-serif;
+  white-space: nowrap;
 }
