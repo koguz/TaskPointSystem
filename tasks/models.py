@@ -285,6 +285,9 @@ class Task(models.Model):
             self.status = 2
             self.save()
 
+    def get_final_answer(self):
+        return Comment.objects.get(task=self, is_final=1)
+
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 

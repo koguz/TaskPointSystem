@@ -2,54 +2,79 @@
 
 {% block content %}
 <div class="row" style="justify-content: center; align-items: center; margin-top: 10px">
-        <div class="col-sm-12">
-            {% if task_list %}
-                <div class="all-tasks-search sticky" style="margin-bottom: 20px;">
-                    <h3>All Tasks of {{ team_name }}</h3>
-                    <a href="{% url 'tasks:team-all-tasks' team_id 'status' %}" class="btn btn-default btn-info" role="button">
-                        Sort by status
-                    </a>
-                    <a href="{% url 'tasks:team-all-tasks' team_id 'last_modified' %}" class="btn btn-default btn-info" role="button">
-                        Sort by last modified
-                    </a>
-                    <a href="{% url 'tasks:team-all-tasks' team_id 'due' %}" class="btn btn-default btn-info" role="button">
-                        Sort by due date
-                    </a>
-                </div>
-                <div style="margin-top: 102px; padding-right: 20px">
-                    <table class="supervisor-all-tasks">
-                        <tr class="table-header-row">
-                            <th style="min-width: 300px">Task Title</th>
-                            <th style="min-width: 200px">Creator</th>
-                            <th style="min-width: 200px">Assignee</th>
-                            <th style="min-width: 250px">Status</th>
-                            <th style="min-width: 550px">Description</th>
-                            <th style="min-width: 150px">Due Date</th>
+    <div class="col-sm-12">
+        {% if task_list %}
+            <div class="all-tasks-search sticky" style="margin-bottom: 20px;">
+                <h3>All Tasks of {{ team_name }}</h3>
+                <a href="{% url 'tasks:team-all-tasks' team_id 'status' %}" class="btn btn-default btn-info" role="button">
+                    Sort by status
+                </a>
+                <a href="{% url 'tasks:team-all-tasks' team_id 'last_modified' %}" class="btn btn-default btn-info" role="button">
+                    Sort by last modified
+                </a>
+                <a href="{% url 'tasks:team-all-tasks' team_id 'due' %}" class="btn btn-default btn-info" role="button">
+                    Sort by due date
+                </a>
+            </div>
+            <div style="margin-top: 102px; padding-right: 20px">
+                <table class="supervisor-all-tasks">
+                    <tr class="table-header-row">
+                        <th style="min-width: 300px">Task Title</th>
+                        <th style="min-width: 200px">Creator</th>
+                        <th style="min-width: 200px">Assignee</th>
+                        <th style="min-width: 250px">Status</th>
+                        <th style="min-width: 250px">Operations</th>
+                        <th style="min-width: 150px">Final Answer</th>
+                        <th style="min-width: 150px">Due Date</th>
+                    </tr>
+                    {% for task in task_list %}
+                        <tr data-href="{% url 'tasks:view-task' task.id %}">
+                            <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.title }}</a></td>
+                            <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.creator }}</a></td>
+                            <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.assignee }}</a></td>
+                            <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.get_status_display }}</a></td>
+                            <td class="supervisor-task-operations" height="65">
+                                {% if task.status != 2 and task.status != 5 and task.status != 6 %}
+                                    {% if task.status == 1 %}
+                                        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+                                    {% else %}
+                                        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+                                    {% endif %}
+                                    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
+                                    <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-primary" role="button">Edit</a>
+                                {% else %}
+                                    <div class="disabled">
+                                        <a href="#" class="btn btn-default btn-secondary" role="button" onclick="return ensure('accept')">Accept</a>
+                                        <a href="#" class="btn btn-default btn-secondary" role="button" onclick="return ensure('reject')">Reject</a>
+                                        <a href="#" class="btn btn-default btn-secondary" role="button">Edit</a>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td height="65" class="supervisor-task-operations">
+                                {% if task.get_final_answer and task.get_final_answer.file_url %}
+                                    <a href="{{ task.get_final_answer.file_url }}" target="_blank" role="button" class="btn btn-default btn-info">Go to final answer</a>
+                                {% elif task.get_final_answer %}
+                                    <span data-title="No URL given in the final answer">No URL</span>
+                                {% else %}
+                                    <span data-title="No final answer given yet">No answer</span>
+                                {% endif %}
+                            </td>
+                            <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.due }}</a></td>
                         </tr>
-                        {% for task in task_list %}
-
-                            <tr data-href="{% url 'tasks:view-task' task.id %}">
-                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.title }}</a></td>
-                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.creator }}</a></td>
-                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.assignee }}</a></td>
-                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.get_status_display }}</a></td>
-                                    <td class="task-description" height="65">{{ task.description }}</td>
-                                    <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.due }}</a></td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-        {% else %}
-            <p>This team does not have any tasks assigned to them.</p>
-        {% endif %}
-        </div>
+                    {% endfor %}
+                </table>
+            </div>
+    {% else %}
+        <p>This team does not have any tasks assigned to them.</p>
+    {% endif %}
+    </div>
 </div>
 
 {% endblock %}
 
 {% block scriptcontent %}
 <script>
-$(document).ready(function() {
+$(function() {
     const taskDescriptions = document.getElementsByClassName("task-description");
     for (let i = 0; i < taskDescriptions.length; i++) {
         let description = taskDescriptions[i].innerHTML;
