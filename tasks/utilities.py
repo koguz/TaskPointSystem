@@ -82,10 +82,3 @@ def check_is_final(comment_list):
         else:
             comments.append(comment)
     return final_comment, comments
-
-
-def unflag_final_comment(task):
-    comments = task.comment_set.all().order_by("-date")
-    for comment in comments:
-        if comment.is_final:
-            comment.is_final = False

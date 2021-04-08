@@ -240,7 +240,7 @@ def update(request, task_id, status_id):
     if developer is not None and status_id == '3':
         task.apply_self_accept(developer, 3)
 
-    if supervisor and status_id == '5':
+    if supervisor and status_id == '2':
         unflag_final_comment(task)
 
     task.status = status_id
@@ -525,7 +525,6 @@ def supervisor_edit_task(request, task_id):
     if Supervisor.objects.get(user=request.user) is None:
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
-
     dev_team = Team.objects.get(pk=task_to_edit.team.id, developerteam__developer=developer)
     course = dev_team.course
     milestone = course.get_current_milestone()
@@ -540,7 +539,8 @@ def supervisor_edit_task(request, task_id):
 
             if task.status == 1:  # if task is in review state reset all votes and remain in current state
                 Vote.objects.filter(task=task).delete()  # reset all votes
-
+            task_to_edit.unflag_final_comment()
+            task_to_edit.supervisor_edit_actions()
             task.save()
             return HttpResponseRedirect('/tasks/supervisor/')
     else:
