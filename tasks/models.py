@@ -293,6 +293,8 @@ class Task(models.Model):
         final_comment = Comment.objects.get(task=self, is_final=True)
         print("Final Comment is  ", final_comment)
         final_comment.is_final = False
+        final_comment.save()
+        self.save()
 
     def get_final_answer(self):
         return Comment.objects.get(task=self, is_final=1)
