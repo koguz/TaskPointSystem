@@ -1,6 +1,8 @@
 from django import forms
 from django.forms import ModelForm, Textarea
+from bootstrap_modal_forms.forms import BSModalModelForm
 from .models import *
+from bootstrap_modal_forms.mixins import PopRequestMixin, CreateUpdateAjaxMixin
 
 
 class TaskSupervisorForm(ModelForm):
@@ -34,4 +36,13 @@ class CommentForm(ModelForm):
         fields = ['body', 'file_url', 'is_final']
         widgets = {
             'body': Textarea(attrs={'cols': 20, 'rows': 3}),
+        }
+
+
+class TeamRenameForm(BSModalModelForm):
+    class Meta:
+        model = Team
+        fields = ['name']
+        widgets = {
+            'body': Textarea(attrs={'cols': 25, 'rows': 1}),
         }
