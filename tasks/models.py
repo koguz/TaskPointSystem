@@ -43,7 +43,12 @@ class Course(models.Model):
         return self.number_of_students
 
     def get_current_milestone(self):
-        return self.milestone_set.all().order_by('due').exclude(due__lte=datetime.date.today())[0]
+        milestones = self.milestone_set.all().order_by('due').exclude(due__lte=datetime.date.today())
+
+        if len(milestones) > 0:
+            return milestones[0]
+
+        return "No Milestone"
 
 
 class Milestone(models.Model):
