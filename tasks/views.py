@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth import authenticate, logout, login, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.utils.decorators import method_decorator
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, get_object_or_404
@@ -652,7 +653,7 @@ def sort_active_tasks(request):
         return JsonResponse({"error": ""}, status=400)
 
 @method_decorator(login_required, name='dispatch')
-class TeamRenameView(BSModalUpdateView):
+class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
     model = Team
     form_class = TeamRenameForm
     pk_url_kwarg = 'team_id'
@@ -661,3 +662,10 @@ class TeamRenameView(BSModalUpdateView):
 
     def get_success_url(self):
         return reverse_lazy('tasks:team-home', kwargs={'team_id': self.kwargs['team_id']})
+
+    def test_func(self):
+        developer = Developer.objects.get(user=self.request.user)
+        team = self.get_object()
+        if DeveloperTeam.objects.get(developer=developer, team=team):
+            return True
+        return False

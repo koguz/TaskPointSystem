@@ -13,7 +13,7 @@
   <div class="modal-body">
     {% for field in form %}
       <div class="form-group{% if field.errors %} invalid{% endif %}">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>:
         {{ field }}
         {% for error in field.errors %}
           <p class="help-block">{{ error }}</p>
@@ -24,7 +24,7 @@
 
   <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" id="rename-team" class="btn btn-default btn-info" type="button" name="button" style="float: right">Rename Team</button>
   </div>
 
 </form>
