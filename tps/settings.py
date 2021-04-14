@@ -26,9 +26,7 @@ SECRET_KEY = '##lscb)pb=jq%i%&06!o!^(=m%ig4)(pkpv0p4ca)elar4%g)#'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During dev only
+# During dev only
 
 
 # Application definition
@@ -163,3 +161,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 LOGIN_URL = '/tasks/login-form/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'tpsdeneme@gmail.com'
+EMAIL_HOST_PASSWORD = 'mchflnelithnqccu'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'TPS Dev Team <noreply@codingwithmitch.com>'
