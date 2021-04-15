@@ -109,13 +109,23 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
 <script type="text/javascript">
+var name_change_count = '{{name_change_count}}'
 $(document).ready(function() {
-
-    $("#rename-team").modalForm({
-        formURL: "{% url 'tasks:rename-team' team_id %}"
-    });
-
+    if( name_change_count > 3){
+        $("#rename-team").removeClass('btn btn-default btn-info');
+        $("#rename-team").addClass('btn btn-default btn-secondary');
+        $("#rename-team").prop('title', "Your team's name was already changed the limit of 3 times");
+        $("#rename-team").attr('disabled', 'disabled');
+        $("#rename-team").css('cursor', 'context-menu');
+    }
+    else{
+        $("#rename-team").modalForm({
+            formURL: "{% url 'tasks:rename-team' team_id %}"
+        });
+    }
 });
+
+
 </script>
 {% endblock %}
 

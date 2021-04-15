@@ -114,9 +114,11 @@ def team(request, team_id):  # this view is for the developer only...
     for mate in teammates:
         teammates_task_dict.update({mate.get_name(): team_task_list.filter(assignee=mate)})
 
+    name_change_count = dev_team.name_change_count
     context = {
         'page_title': page_title,
         'team_name': dev_team.name,
+        'name_change_count': name_change_count,
         'team_id': team_id,
         'github_url': dev_team.github,
         'current_user': developer.id,

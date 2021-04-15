@@ -40,6 +40,13 @@ class CommentForm(ModelForm):
 
 
 class TeamRenameForm(BSModalModelForm):
+    def save(self, commit=True):
+        team = super(TeamRenameForm, self).save(commit=False)
+        team.name_change_count += 1
+        if commit:
+            team.save()
+        return team
+
     class Meta:
         model = Team
         fields = ['name']
