@@ -1,6 +1,5 @@
 from django.conf.urls import re_path
 from django.http import HttpResponseRedirect
-
 from . import views
 
 app_name = 'tasks'
@@ -34,12 +33,7 @@ urlpatterns = [
     re_path(r'^edit/developer/(?P<task_id>[0-9]+)/$', views.developer_edit_task, name='task-edit-developer'),
     re_path(r'^edit/supervisor/(?P<task_id>[0-9]+)/$', views.supervisor_edit_task, name='task-edit-supervisor'),
     re_path(r'^teams/supervisor/', views.supervisor_teams, name='supervisor-view-teams'),
-    #re_path(r'^edit/(?P<team_id>[0-9])/$', views.supervisor_create, name='task-create'),
-    #re_path(r'^/developer/profile/$', views.view_developer_profile, name='developer-profile'),
-    #re_path(r'^/supervisor/profile/$', views.view_supervisor_profile, name='supervisor-profile'),
-    #re_path(r'^/developer/profile/notifications/$', views.view_developer_notifications, name='developer-notifications'),
-    #re_path(r'^/developer/profile/courses/$', views.view_developer_courses, name='developer-courses'),
-    #re_path(r'^/developer/profile/calendar/$', views.view_developer_calendar, name='developer-calendar'),
-    #re_path(r'^/developer/profile/comments/$', views.view_developer_comments, name='developer-comments'),
-    #re_path(r'^/developer/profile/grades/$', views.view_developer_grades, name='developer-grades'),
+    re_path(r'^team/rename/(?P<team_id>[0-9])+/$', views.TeamRenameView.as_view(), name='rename-team'),
+
+
 ]
