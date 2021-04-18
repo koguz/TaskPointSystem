@@ -312,6 +312,15 @@ class Task(models.Model):
             differences[attribute] = self.__getattribute__(attribute)
 
         print(differences)
+        return differences
+
+    def is_different_from(self, task):
+        differences = self.get_differences_from(task)
+        for value in differences.values():
+            if value != "":
+                return True
+
+        return False
 
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
@@ -385,10 +394,13 @@ class ActionRecord(models.Model):
         (3, 'Task Submit'),
         (4, 'Task Comment'),
         (5, 'Task Final Comment'),
-        (6, 'Task Accept'),
-        (7, 'Task No Vote'),
-        (8, 'Task Request Change'),
-        (9, 'Task Reject'),
+        (6, 'Task Creation Accept'),
+        (7, 'Task Creation No Vote'),
+        (8, 'Task Creation Request Change'),
+        (9, 'Task Submission Accept'),
+        (10, 'Task Submission No Vote'),
+        (11, 'Task Submission Request Change'),
+        (12, 'Task Reject'),
     )
     action_type = models.PositiveSmallIntegerField("Vote Type", choices=ACTION_TYPE, default=0)
     actor = models.ForeignKey(User, on_delete=models.RESTRICT)
@@ -407,6 +419,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_edit(action_type, actor, object):
@@ -420,6 +433,61 @@ class ActionRecord(models.Model):
         action_record.save()
         return action_record
 
+    @staticmethod
+    def task_submit(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' SUBMITTED the task: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor.user,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+
+    @staticmethod
+    def task_comment(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' COMMENTED on the task: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+
+    @staticmethod
+    def task_comment_final(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' FINAL COMMENTED on the task: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+
+    @staticmethod
+    def task_vote(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' VOTED for the task: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+
+    @staticmethod
+    def task_approval(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' ACTED on the task: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+
 
 class TaskDifference(models.Model):
     PRIORITY = (
@@ -432,8 +500,8 @@ class TaskDifference(models.Model):
         (2, 'Normal'),
         (1, 'Easy'),
     )
-    action_record_id = models.ForeignKey(ActionRecord, on_delete=models.RESTRICT)
-    task_id = models.ForeignKey(Task, on_delete=models.RESTRICT)
+    action_record = models.ForeignKey(ActionRecord, on_delete=models.RESTRICT)
+    task = models.ForeignKey(Task, on_delete=models.RESTRICT)
     assignee = models.ForeignKey(Developer, on_delete=models.RESTRICT)
     title = models.CharField("Brief task name", max_length=256)
     description = models.TextField("Description")
@@ -442,7 +510,14 @@ class TaskDifference(models.Model):
     datetime = models.DateTimeField("Created on", auto_now=True)
 
     @staticmethod
-    def record_task_difference(self, task, action_record_id):
+    def record_task_difference(task, action_record):
         task_difference = TaskDifference(
-
+            action_record=action_record,
+            task=task,
+            assignee=task.assignee,
+            title=task.title,
+            description=task.description,
+            priority=task.priority,
+            difficulty=task.difficulty,
         )
+        task_difference.save()

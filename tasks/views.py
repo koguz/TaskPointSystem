@@ -159,18 +159,23 @@ def supervisor_create(request, team_id):
     team_name = dev_team.name
     course = dev_team.course
     milestone = course.get_current_milestone()
+
     if request.method == 'POST':
         form = TaskSupervisorForm(dev_team, request.POST)
+
         if form.is_valid():
             task = form.save(commit=False)
             task.creator = request.user
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
-            ActionRecord.task_create(1, s, task)
+            action_record = ActionRecord.task_create(1, s, task)
+            TaskDifference.record_task_difference(task, action_record)
+
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team)
+
     return render(
         request,
         'tasks/supervisor_task_form.html',
@@ -201,6 +206,7 @@ def developer_create(request, team_id):
 
     if request.method == 'POST':
         form = TaskDeveloperForm(request.POST)
+
         if form.is_valid():
             task = form.save(commit=False)
             task.creator = request.user
@@ -208,8 +214,9 @@ def developer_create(request, team_id):
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
-            ActionRecord.task_create(1, developer, task)
             task.apply_self_accept(task.assignee, 1)
+            action_record = ActionRecord.task_create(1, developer, task)
+            TaskDifference.record_task_difference(task, action_record)
 
             return HttpResponseRedirect(reverse('tasks:team-home', args=(team_id,)))
 
@@ -231,6 +238,7 @@ def developer_create(request, team_id):
 @login_required
 def update(request, task_id, status_id):
     developer = None
+
     if Developer.objects.filter(user=request.user):
         developer = Developer.objects.get(user=request.user)
 
@@ -247,8 +255,19 @@ def update(request, task_id, status_id):
 
     if developer is not None and status_id == '3':
         task.apply_self_accept(developer, 3)
+
     task.status = status_id
     task.save()
+
+    if developer is not None and status_id == '3':
+        ActionRecord.task_submit(3, developer, task)
+    elif status_id == '2':
+        ActionRecord.task_approval(6, request.user, task)
+    elif status_id == '5':
+        ActionRecord.task_approval(12, request.user, task)
+    elif status_id == '6':
+        ActionRecord.task_approval(9, request.user, task)
+
     return HttpResponseRedirect('/tasks/choose/')
 
 
@@ -322,12 +341,18 @@ def view_task(request, task_id):
 def send_comment(request, task_id):
     if request.method == 'POST':
         form = CommentForm(request.POST)
+
         if form.is_valid():
             ct = form.save(commit=False)
             ct.owner = request.user  # Developer.objects.get(user=request.user)
             ct.task = Task.objects.get(pk=task_id)
             ct.save()
-            logger.info(request.user.get_username() + ' SENT COMMENT ON TASK ID:' + str(task_id))
+
+            if form.cleaned_data['is_final']:
+                ActionRecord.task_comment_final(5, ct.owner, ct.task)
+            else:
+                ActionRecord.task_comment(4, ct.owner, ct.task)
+
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 
@@ -443,27 +468,37 @@ def send_vote(request, task_id, status_id, button_id):
     button_id = int(button_id)
     vote = Vote(voter=request.user, task=Task.objects.get(pk=task_id))
     task = get_object_or_404(Task, pk=task_id)
+    action_type = 0
 
     if status_id == 1 and button_id == 1:
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 1
+        action_type = 6
     elif status_id == 1 and button_id == 2:
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 2
+        action_type = 8
     elif status_id == 3 and button_id == 3:
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 3
+        action_type = 9
     elif status_id == 3 and button_id == 4:
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 4
+        action_type = 11
     elif status_id == 1 and button_id == 0:
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
+        action_type = 7
     elif status_id == 3 and button_id == 0:
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
+        action_type = 10
 
     if button_id > 0:
         vote.save()
         task.check_for_status_change()
+
+    ActionRecord.task_vote(action_type, request.user, task)
+
     logger.info(
         request.user.get_username() + " VOTED ON TASK ID: " + str(task_id) + ", VOTE TYPE: " + str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
@@ -473,6 +508,7 @@ def send_vote(request, task_id, status_id, button_id):
 def developer_edit_task(request, task_id):
     task_id = int(task_id)
     task_to_edit = Task.objects.get(pk=task_id)
+
     try:
         developer = Developer.objects.get(user=request.user)
     except ObjectDoesNotExist:
@@ -491,18 +527,21 @@ def developer_edit_task(request, task_id):
         # instance argument allows existing entry to be edited
         old_task = deepcopy(task_to_edit)
         form = TaskDeveloperForm(request.POST, instance=task_to_edit)
+
         if form.is_valid():
             task = form.save(commit=False)
             task.creator = request.user
             task.team = dev_team
+            # TODO: votes are reset even if there is no change, we should fix this
             Vote.objects.filter(task=task).delete()  # votes are reset here
             task.milestone = course.get_current_milestone()
             task.save()
-            task_differences = task.get_differences_from(old_task)
-            # if (len(task_differences)):
-            #     action_record = ActionRecord.task_edit(2, developer, task)
-            #     TaskDifference.record_task_difference(task, action_record.id)
             task.apply_self_accept(developer, 1)
+
+            if task.is_different_from(old_task):
+                action_record = ActionRecord.task_edit(2, developer, task)
+                TaskDifference.record_task_difference(task, action_record)
+
             return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
     else:
         form = TaskDeveloperForm(initial={'title': task_to_edit.title,
@@ -511,6 +550,7 @@ def developer_edit_task(request, task_id):
                                           'priority': task_to_edit.priority,
                                           'difficulty': task_to_edit.difficulty
                                           })
+
     return render(
         request,
         'tasks/developer_task_form.html',
@@ -538,9 +578,12 @@ def supervisor_edit_task(request, task_id):
     dev_team = Team.objects.get(pk=task_to_edit.team.id, developerteam__developer=developer)
     course = dev_team.course
     milestone = course.get_current_milestone()
+
     if request.method == 'POST':
         # instance argument allows existing entry to be edited
+        old_task = deepcopy(task_to_edit)
         form = TaskSupervisorForm(dev_team, request.POST, instance=task_to_edit)
+
         if form.is_valid():
             s = request.user
             task = form.save(commit=False)
@@ -552,7 +595,11 @@ def supervisor_edit_task(request, task_id):
                 Vote.objects.filter(task=task).delete()  # reset all votes
 
             task.save()
-            ActionRecord.task_edit(2, s, task)
+
+            if task.is_different_from(old_task):
+                action_record = ActionRecord.task_edit(2, s, task)
+                TaskDifference.record_task_difference(task, action_record)
+
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
