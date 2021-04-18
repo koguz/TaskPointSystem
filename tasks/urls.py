@@ -1,5 +1,8 @@
-from django.conf.urls import re_path
+from django.conf.urls import re_path,include,url
 from django.http import HttpResponseRedirect
+from django.urls import path
+from django.contrib.auth import views as auth_views
+
 from . import views
 
 app_name = 'tasks'
@@ -36,4 +39,32 @@ urlpatterns = [
     re_path(r'^team/rename/(?P<team_id>[0-9])+/$', views.TeamRenameView.as_view(), name='rename-team'),
 
 
+
+
+    re_path(r'^password_change/done/$',
+         auth_views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'),
+         name='password_change_done'),
+
+    re_path(r'^password_change/$', auth_views.PasswordChangeView.as_view(template_name='registration/password_change.html'),
+         name='password_change'),
+
+    re_path(r'^password_reset/done/$',
+         auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_done.html'),
+         name='password_reset_done'),
+
+    re_path(r'^reset/<uidb64>/<token>/$', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    re_path(r'^password_reset/$', auth_views.PasswordResetView.as_view(), name='password_reset'),
+
+    re_path(r'^reset/done/$',
+         auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
+         name='password_reset_complete'),
+
+    # re_path(r'^edit/(?P<team_id>[0-9])/$', views.supervisor_create, name='task-create'),
+    # re_path(r'^/developer/profile/$', views.view_developer_profile, name='developer-profile'),
+    # re_path(r'^/supervisor/profile/$', views.view_supervisor_profile, name='supervisor-profile'),
+    # re_path(r'^/developer/profile/notifications/$', views.view_developer_notifications, name='developer-notifications'),
+    # re_path(r'^/developer/profile/courses/$', views.view_developer_courses, name='developer-courses'),
+    # re_path(r'^/developer/profile/calendar/$', views.view_developer_calendar, name='developer-calendar'),
+    # re_path(r'^/developer/profile/comments/$', views.view_developer_comments, name='developer-comments'),
+    # re_path(r'^/developer/profile/grades/$', views.view_developer_grades, name='developer-grades'),
 ]
