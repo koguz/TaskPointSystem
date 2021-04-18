@@ -2,10 +2,16 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth import authenticate, logout, login, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.utils.decorators import method_decorator
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from .utilities import *
+from bootstrap_modal_forms.mixins import PassRequestMixin
+from bootstrap_modal_forms.generic import BSModalUpdateView
+from .forms import TeamRenameForm, CommentForm
 import logging
 
 logger = logging.getLogger('task')
@@ -108,9 +114,11 @@ def team(request, team_id):  # this view is for the developer only...
     for mate in teammates:
         teammates_task_dict.update({mate.get_name(): team_task_list.filter(assignee=mate)})
 
+    name_change_count = dev_team.name_change_count
     context = {
         'page_title': page_title,
         'team_name': dev_team.name,
+        'name_change_count': name_change_count,
         'team_id': team_id,
         'github_url': dev_team.github,
         'current_user': developer.id,
@@ -158,7 +166,7 @@ def supervisor_create(request, team_id):
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
-            return HttpResponseRedirect('/tasks/supervisor/')
+            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team)
     return render(
@@ -488,7 +496,7 @@ def developer_edit_task(request, task_id):
             task.milestone = course.get_current_milestone()
             task.save()
             task.apply_self_accept(developer, 1)
-            return HttpResponseRedirect('/tasks/team')
+            return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
     else:
         form = TaskDeveloperForm(initial={'title': task_to_edit.title,
                                           'description': task_to_edit.description,
@@ -536,7 +544,7 @@ def supervisor_edit_task(request, task_id):
             task_to_edit.unflag_final_comment()
             task_to_edit.supervisor_edit_actions()
             task.save()
-            return HttpResponseRedirect('/tasks/supervisor/')
+            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
                                                      'title': task_to_edit.title,
@@ -646,3 +654,21 @@ def sort_active_tasks(request):
         return JsonResponse({"sorted_tasks": sorted_tasks}, status=200)
     else:
         return JsonResponse({"error": ""}, status=400)
+
+@method_decorator(login_required, name='dispatch')
+class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
+    model = Team
+    form_class = TeamRenameForm
+    pk_url_kwarg = 'team_id'
+    template_name = 'form_templates/team_rename_form.html'
+    success_message = 'Success: Team Renamed'
+
+    def get_success_url(self):
+        return reverse_lazy('tasks:team-home', kwargs={'team_id': self.kwargs['team_id']})
+
+    def test_func(self):
+        developer = Developer.objects.get(user=self.request.user)
+        team = self.get_object()
+        if DeveloperTeam.objects.get(developer=developer, team=team):
+            return True
+        return False

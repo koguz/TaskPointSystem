@@ -1,5 +1,4 @@
 import datetime
-
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
@@ -81,6 +80,11 @@ class Team(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     # will we show these in teams.html
     name = models.CharField("Team Name", max_length=128)
+    name_change_count = models.PositiveSmallIntegerField(
+        "Name Change Count",
+        default=0,
+        validators=[MaxValueValidator(3), MinValueValidator(0)]
+    )
     github = models.CharField("Git Page", max_length=256, null=True)
     supervisor = models.ForeignKey(Supervisor, on_delete=models.SET_NULL, blank=True, null=True)
     team_size = models.PositiveSmallIntegerField(
