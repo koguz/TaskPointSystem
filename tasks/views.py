@@ -11,7 +11,8 @@ from django.urls import reverse, reverse_lazy
 from .utilities import *
 from bootstrap_modal_forms.mixins import PassRequestMixin
 from bootstrap_modal_forms.generic import BSModalUpdateView
-from .forms import TeamRenameForm, CommentForm
+from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
+from copy import deepcopy
 import logging
 
 logger = logging.getLogger('task')
@@ -149,7 +150,7 @@ def view_all_teams(request):
 @login_required
 def supervisor_create(request, team_id):
     try:
-        Supervisor.objects.get(user=request.user)
+        s = Supervisor.objects.get(user=request.user)
     except ObjectDoesNotExist:
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
@@ -166,6 +167,7 @@ def supervisor_create(request, team_id):
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
+            ActionRecord.task_create(1, s, task)
             return HttpResponseRedirect('/tasks/supervisor/')
     else:
         form = TaskSupervisorForm(dev_team)
@@ -206,6 +208,7 @@ def developer_create(request, team_id):
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
+            ActionRecord.task_create(1, developer, task)
             task.apply_self_accept(task.assignee, 1)
 
             return HttpResponseRedirect(reverse('tasks:team-home', args=(team_id,)))
@@ -486,6 +489,7 @@ def developer_edit_task(request, task_id):
 
     if request.method == 'POST':
         # instance argument allows existing entry to be edited
+        old_task = deepcopy(task_to_edit)
         form = TaskDeveloperForm(request.POST, instance=task_to_edit)
         if form.is_valid():
             task = form.save(commit=False)
@@ -494,6 +498,10 @@ def developer_edit_task(request, task_id):
             Vote.objects.filter(task=task).delete()  # votes are reset here
             task.milestone = course.get_current_milestone()
             task.save()
+            task_differences = task.get_differences_from(old_task)
+            # if (len(task_differences)):
+            #     action_record = ActionRecord.task_edit(2, developer, task)
+            #     TaskDifference.record_task_difference(task, action_record.id)
             task.apply_self_accept(developer, 1)
             return HttpResponseRedirect('/tasks/team')
     else:
@@ -534,8 +542,9 @@ def supervisor_edit_task(request, task_id):
         # instance argument allows existing entry to be edited
         form = TaskSupervisorForm(dev_team, request.POST, instance=task_to_edit)
         if form.is_valid():
+            s = request.user
             task = form.save(commit=False)
-            task.creator = request.user
+            task.creator = s
             task.team = dev_team
             task.milestone = course.get_current_milestone()
 
@@ -543,6 +552,7 @@ def supervisor_edit_task(request, task_id):
                 Vote.objects.filter(task=task).delete()  # reset all votes
 
             task.save()
+            ActionRecord.task_edit(2, s, task)
             return HttpResponseRedirect('/tasks/supervisor/')
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
@@ -653,6 +663,7 @@ def sort_active_tasks(request):
         return JsonResponse({"sorted_tasks": sorted_tasks}, status=200)
     else:
         return JsonResponse({"error": ""}, status=400)
+
 
 @method_decorator(login_required, name='dispatch')
 class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):

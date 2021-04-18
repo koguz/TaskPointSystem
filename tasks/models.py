@@ -296,6 +296,23 @@ class Task(models.Model):
     def get_final_answer(self):
         return Comment.objects.get(task=self, is_final=1)
 
+    def get_differences_from(self, task):
+        differences = {
+            "assignee": "",
+            "title": "",
+            "description": "",
+            "due_date": "",
+            "priority": "",
+            "difficulty": "",
+        }
+
+        different_attributes = filter(lambda field: getattr(self, field, None) != getattr(task, field, None), differences.keys())
+
+        for attribute in different_attributes:
+            differences[attribute] = self.__getattribute__(attribute)
+
+        print(differences)
+
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 
@@ -359,3 +376,73 @@ class DeveloperTeam(models.Model):
 
     class Meta:
         unique_together = ['developer', 'team']
+
+
+class ActionRecord(models.Model):
+    ACTION_TYPE = (
+        (1, 'Task Create'),
+        (2, 'Task Edit'),
+        (3, 'Task Submit'),
+        (4, 'Task Comment'),
+        (5, 'Task Final Comment'),
+        (6, 'Task Accept'),
+        (7, 'Task No Vote'),
+        (8, 'Task Request Change'),
+        (9, 'Task Reject'),
+    )
+    action_type = models.PositiveSmallIntegerField("Vote Type", choices=ACTION_TYPE, default=0)
+    actor = models.ForeignKey(User, on_delete=models.RESTRICT)
+    object = models.ForeignKey(Task, on_delete=models.RESTRICT)
+    action_description = models.CharField("Action Description", max_length=256)
+    # TODO: make datetime turkey time
+    action_datetime = models.DateTimeField("Created on", auto_now=True)
+
+    @staticmethod
+    def task_create(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' CREATED a new task called: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor.user,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+
+    @staticmethod
+    def task_edit(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' EDITED the task: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor.user,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+        return action_record
+
+
+class TaskDifference(models.Model):
+    PRIORITY = (
+        (3, 'Urgent'),
+        (2, 'Planned'),
+        (1, 'Low'),
+    )
+    DIFFICULTY = (
+        (3, 'Difficult'),
+        (2, 'Normal'),
+        (1, 'Easy'),
+    )
+    action_record_id = models.ForeignKey(ActionRecord, on_delete=models.RESTRICT)
+    task_id = models.ForeignKey(Task, on_delete=models.RESTRICT)
+    assignee = models.ForeignKey(Developer, on_delete=models.RESTRICT)
+    title = models.CharField("Brief task name", max_length=256)
+    description = models.TextField("Description")
+    priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY)
+    difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY)
+    datetime = models.DateTimeField("Created on", auto_now=True)
+
+    @staticmethod
+    def record_task_difference(self, task, action_record_id):
+        task_difference = TaskDifference(
+
+        )
