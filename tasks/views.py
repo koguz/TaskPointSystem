@@ -166,7 +166,7 @@ def supervisor_create(request, team_id):
             task.team = dev_team
             task.milestone = course.get_current_milestone()
             task.save()
-            return HttpResponseRedirect('/tasks/supervisor/')
+            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team)
     return render(
@@ -495,7 +495,7 @@ def developer_edit_task(request, task_id):
             task.milestone = course.get_current_milestone()
             task.save()
             task.apply_self_accept(developer, 1)
-            return HttpResponseRedirect('/tasks/team')
+            return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
     else:
         form = TaskDeveloperForm(initial={'title': task_to_edit.title,
                                           'description': task_to_edit.description,
@@ -543,7 +543,7 @@ def supervisor_edit_task(request, task_id):
                 Vote.objects.filter(task=task).delete()  # reset all votes
 
             task.save()
-            return HttpResponseRedirect('/tasks/supervisor/')
+            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
                                                      'title': task_to_edit.title,
