@@ -168,7 +168,7 @@ def supervisor_create(request, team_id):
             task.milestone = course.get_current_milestone()
             task.save()
             ActionRecord.task_create(1, s, task)
-            return HttpResponseRedirect('/tasks/supervisor/')
+            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team)
     return render(
@@ -503,7 +503,7 @@ def developer_edit_task(request, task_id):
             #     action_record = ActionRecord.task_edit(2, developer, task)
             #     TaskDifference.record_task_difference(task, action_record.id)
             task.apply_self_accept(developer, 1)
-            return HttpResponseRedirect('/tasks/team')
+            return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
     else:
         form = TaskDeveloperForm(initial={'title': task_to_edit.title,
                                           'description': task_to_edit.description,
@@ -553,7 +553,7 @@ def supervisor_edit_task(request, task_id):
 
             task.save()
             ActionRecord.task_edit(2, s, task)
-            return HttpResponseRedirect('/tasks/supervisor/')
+            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
                                                      'title': task_to_edit.title,
