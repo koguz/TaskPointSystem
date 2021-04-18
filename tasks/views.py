@@ -554,7 +554,8 @@ def supervisor_edit_task(request, task_id):
 
             if task.status == 1:  # if task is in review state reset all votes and remain in current state
                 Vote.objects.filter(task=task).delete()  # reset all votes
-            task_to_edit.unflag_final_comment()
+            if task.status == 3:
+                task_to_edit.unflag_final_comment()
             task_to_edit.supervisor_edit_actions()
             task.save()
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
