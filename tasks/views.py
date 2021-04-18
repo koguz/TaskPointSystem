@@ -1,4 +1,5 @@
 from django.http import HttpResponseRedirect, JsonResponse
+
 from django.contrib.auth import authenticate, logout, login, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
@@ -13,6 +14,7 @@ from bootstrap_modal_forms.mixins import PassRequestMixin
 from bootstrap_modal_forms.generic import BSModalUpdateView
 from .forms import TeamRenameForm, CommentForm
 import logging
+from django.contrib import messages
 
 logger = logging.getLogger('task')
 
@@ -245,9 +247,21 @@ def update(request, task_id, status_id):
     if developer is not None and status_id == '3':
         task.apply_self_accept(developer, 3)
 
-    task.status = status_id
-    task.save()
+    try:
+        final_comment = Comment.objects.get(task=task, is_final=True)
+    except Comment.DoesNotExist:
+        final_comment = None
+
+    if final_comment is not None:
+        task.status = status_id
+        task.save()
+    else:
+        messages.error(request, 'Task can not be submitted without a final comment.')
+        return redirect(request.META['HTTP_REFERER'])
+
     return HttpResponseRedirect('/tasks/choose/')
+
+
 
 
 @login_required

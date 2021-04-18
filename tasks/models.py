@@ -300,7 +300,6 @@ class Task(models.Model):
 
     def unflag_final_comment(self):
         final_comment = Comment.objects.get(task=self, is_final=True)
-        print("Final Comment is  ", final_comment)
         final_comment.is_final = False
         final_comment.save()
         self.save()
