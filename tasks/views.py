@@ -1,5 +1,4 @@
 from django.http import HttpResponseRedirect, JsonResponse
-
 from django.contrib.auth import authenticate, logout, login, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
@@ -12,7 +11,7 @@ from django.urls import reverse, reverse_lazy
 from .utilities import *
 from bootstrap_modal_forms.mixins import PassRequestMixin
 from bootstrap_modal_forms.generic import BSModalUpdateView
-from .forms import TeamRenameForm, CommentForm
+from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
 import logging
 from django.contrib import messages
 
