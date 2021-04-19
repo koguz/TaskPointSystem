@@ -505,6 +505,7 @@ class TaskDifference(models.Model):
     assignee = models.ForeignKey(Developer, on_delete=models.RESTRICT)
     title = models.CharField("Brief task name", max_length=256)
     description = models.TextField("Description")
+    due = models.DateField("Due Date")
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY)
     datetime = models.DateTimeField("Created on", auto_now=True)
@@ -517,6 +518,7 @@ class TaskDifference(models.Model):
             assignee=task.assignee,
             title=task.title,
             description=task.description,
+            due=task.due,
             priority=task.priority,
             difficulty=task.difficulty,
         )
