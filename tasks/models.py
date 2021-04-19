@@ -293,6 +293,17 @@ class Task(models.Model):
             self.status = 2
             self.save()
 
+    def supervisor_edit_actions(self):
+        Vote.objects.filter(task=self, vote_type__range=(3, 4)).delete()
+        self.status = 2
+        self.save()
+
+    def unflag_final_comment(self):
+        final_comment = Comment.objects.get(task=self, is_final=True)
+        final_comment.is_final = False
+        final_comment.save()
+        self.save()
+
     def get_final_answer(self):
         return Comment.objects.get(task=self, is_final=1)
 

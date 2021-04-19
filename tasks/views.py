@@ -14,6 +14,7 @@ from bootstrap_modal_forms.generic import BSModalUpdateView
 from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
 from copy import deepcopy
 import logging
+from django.contrib import messages
 
 logger = logging.getLogger('task')
 
@@ -253,22 +254,33 @@ def update(request, task_id, status_id):
     if req_status_id > 6 or req_status_id < 1:
         status_id = "5"  # reject it because this is probably a scam...
 
-    if developer is not None and status_id == '3':
-        task.apply_self_accept(developer, 3)
+    try:
+        final_comment = Comment.objects.get(task=task, is_final=True)
+    except Comment.DoesNotExist:
+        final_comment = None
 
-    task.status = status_id
-    task.save()
+    if final_comment is not None:
+        if developer is not None and status_id == '3':
+            task.apply_self_accept(developer, 3)
 
-    if developer is not None and status_id == '3':
-        ActionRecord.task_submit(3, developer, task)
-    elif status_id == '2':
-        ActionRecord.task_approval(6, request.user, task)
-    elif status_id == '5':
-        ActionRecord.task_approval(12, request.user, task)
-    elif status_id == '6':
-        ActionRecord.task_approval(9, request.user, task)
+        task.status = status_id
+        task.save()
+
+        if developer is not None and status_id == '3':
+            ActionRecord.task_submit(3, developer, task)
+        elif status_id == '2':
+            ActionRecord.task_approval(6, request.user, task)
+        elif status_id == '5':
+            ActionRecord.task_approval(12, request.user, task)
+        elif status_id == '6':
+            ActionRecord.task_approval(9, request.user, task)
+    else:
+        messages.error(request, 'Task can not be submitted without a final comment.')
+        return redirect(request.META['HTTP_REFERER'])
 
     return HttpResponseRedirect('/tasks/choose/')
+
+
 
 
 @login_required
@@ -574,7 +586,6 @@ def supervisor_edit_task(request, task_id):
     if Supervisor.objects.get(user=request.user) is None:
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
-
     dev_team = Team.objects.get(pk=task_to_edit.team.id, developerteam__developer=developer)
     course = dev_team.course
     milestone = course.get_current_milestone()
@@ -593,7 +604,9 @@ def supervisor_edit_task(request, task_id):
 
             if task.status == 1:  # if task is in review state reset all votes and remain in current state
                 Vote.objects.filter(task=task).delete()  # reset all votes
-
+            if task.status == 3:
+                task_to_edit.unflag_final_comment()
+            task_to_edit.supervisor_edit_actions()
             task.save()
 
             if task.is_different_from(old_task):

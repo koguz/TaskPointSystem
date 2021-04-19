@@ -91,7 +91,7 @@
             <form action="{% url 'tasks:send-comment' tid %}" method="post">
                 {% csrf_token %}
                 {% for field in form %}
-                    {% if final_comment|length < 1 and field.name == "is_final" and user_d == task.assignee %}
+                    {% if final_comment|length < 1 and field.name == "is_final" and user_d == task.assignee and task.status == 2 %}
                         {{ field.label_tag }}{{ field }}
                     {% elif field.name != "is_final" %}
                         {{ field.label_tag }}{{ field }}
@@ -149,6 +149,15 @@
             </ul>
             {% endif %}
         </div>
+    </div>
+
+    <div style="margin-top: 20px">
+        {% for message in messages %}
+            <div class="alert alert-danger">
+                <a class="close" href="#" data-dismiss="alert">×</a>
+                {{ message }}
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}
 {% block scriptcontent %}
