@@ -9,6 +9,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse, reverse_lazy
 from .utilities import *
+from .models import PointPool
 from bootstrap_modal_forms.mixins import PassRequestMixin
 from bootstrap_modal_forms.generic import BSModalUpdateView
 from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
@@ -65,6 +66,10 @@ def supervisor(request):  # this view is for the supervisors only...
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
     all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
+    developer = all_teammates[0][0]
+    developer_teams = developer.get_teams()
+    developer_team = developer_teams[0]
+    PointPool.get_all_tasks(developer_team, developer)
 
 
     context = {
@@ -267,6 +272,7 @@ def update(request, task_id, status_id):
             task.apply_self_accept(developer, 3)
 
         task.status = status_id
+        task.completed = datetime.datetime.now()
         task.save()
 
         if developer is not None and status_id == '3':

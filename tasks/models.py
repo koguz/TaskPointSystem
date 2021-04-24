@@ -1,7 +1,7 @@
 import datetime
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from anytree import Node
@@ -232,7 +232,7 @@ class Task(models.Model):
     description = models.TextField("Description")
     due = models.DateField("Due Date", validators=[past_date_validator])
     date = models.DateTimeField("Created on", auto_now_add=True)
-    completed = models.DateTimeField("Completed on", auto_now=True, blank=True, null=True)
+    completed = models.DateTimeField("Completed on", blank=True, null=True)
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY, default=2)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY, default=2)
     modifier = models.PositiveSmallIntegerField(
@@ -539,7 +539,6 @@ class TaskDifference(models.Model):
         )
         task_difference.save()
 
-
 class PointPool(models.Model):
     developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
@@ -547,10 +546,40 @@ class PointPool(models.Model):
 
     @staticmethod
     def get_all_tasks(team, developer):
-        point_pool_entry = PointPool.objects.get(developer=developer, team=team)
-        all_accepted_tasks_list = Task.objects.filter(assignee=developer, team=team, status=6)  # All tasks that are accpeted
-        all_rejected_tasks_list = Task.objects.filter(assignee=developer, team=team, status=5)  # All tasks that are rejected
-        point_pool_entry.point += len(all_accepted_tasks_list)
-        point_pool_entry.point -= len(all_rejected_tasks_list)
+        try:
+            point_pool_entry = PointPool.objects.get(developer=developer, team=team)
+            all_accepted_tasks_list = Task.objects.filter(assignee=developer, team=team,
+                                                          status=6)  # All tasks that are accpeted
+            all_rejected_tasks_list = Task.objects.filter(assignee=developer, team=team,
+                                                          status=5)  # All tasks that are rejected
+            for task in all_accepted_tasks_list:
+                total_duration = (task.due - task.date.date())*0.50
+                submission_duration = task.completed.date()-task.date.date()
+
+                if total_duration.days <= submission_duration.days:
+                    point_pool_entry.point += 5
+
+            point_pool_entry.point += len(all_accepted_tasks_list)  # All accepted tasks are equal to 1 point.
+            point_pool_entry.point -= len(all_rejected_tasks_list)  # All rejected tasks are equal to -1 point.
+
+            print("Point Pool of " + developer.get_name() + ": " + str(point_pool_entry.point))
+        except ObjectDoesNotExist:
+            point_pool_entry = PointPool(team=team, developer=developer)
+
+        point_pool_entry.save()
+
+    @staticmethod
+    def get_all_votes(team, developer):
+        try:
+            point_pool_entry = PointPool(team=team, developer=developer)
+            all_votes_list = Vote.objects.filter(voter_id=developer.id)  # All votes that are voted.
+
+            for vote in all_votes_list:
+                task = Task.objects.get(id=vote.task_id)
+                if task.status == 5 and (vote.vote_type == 1 or vote.vote_type == 3): # If a rejected task is voted as accept decrease points by 4.
+                    point_pool_entry.point -= 4
+
+        except ObjectDoesNotExist:
+            point_pool_entry = PointPool(team=team, developer=developer)
 
         point_pool_entry.save()
