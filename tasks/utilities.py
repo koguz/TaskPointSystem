@@ -22,15 +22,23 @@ def get_priority_or_difficulty_color(priority_or_difficulty):
         return "#E83535"
 
 
-def get_all_teammates_of_each_team(teams_list, current_developer_id):
+def get_all_teammates_of_each_team(teams_list, current_user_id):
     all_teams_developers = []
-
-    for team in teams_list:
-        all_teams_developers.append(
-            list(
-                team.get_team_members().exclude(user_id=current_developer_id)
+    try:
+        s = Supervisor.objects.get(user_id=current_user_id)
+        for team in teams_list:
+            all_teams_developers.append(
+                list(
+                    team.get_team_members()
+                )
             )
-        )
+    except ObjectDoesNotExist:
+        for team in teams_list:
+            all_teams_developers.append(
+                list(
+                    team.get_team_members().exclude(user_id=current_user_id)
+                )
+            )
 
     return all_teams_developers
 

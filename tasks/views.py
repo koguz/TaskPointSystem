@@ -64,12 +64,15 @@ def supervisor(request):  # this view is for the supervisors only...
     page_title = "Supervisor page"
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
+    all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
+
 
     context = {
         'page_title': page_title,
         'supervisor_name': supervisor_name,
         'completed_task_list': completed_task_list,
         'supervised_teams': supervised_teams,
+        'all_teammates': all_teammates,
     }
     return render(request, 'tasks/supervisor.html', context)
 
@@ -278,7 +281,7 @@ def update(request, task_id, status_id):
         messages.error(request, 'Task can not be submitted without a final comment.')
         return redirect(request.META['HTTP_REFERER'])
 
-    return HttpResponseRedirect('/tasks/choose/')
+    return redirect(request.META['HTTP_REFERER'])
 
 
 

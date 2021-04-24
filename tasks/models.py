@@ -76,6 +76,10 @@ class Supervisor(models.Model):
         return self.user.first_name + " " + self.user.last_name
 
 
+
+
+
+
 class Team(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     # will we show these in teams.html
@@ -534,3 +538,19 @@ class TaskDifference(models.Model):
             difficulty=task.difficulty,
         )
         task_difference.save()
+
+
+class PointPool(models.Model):
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    point = models.PositiveIntegerField(default=0)
+
+    @staticmethod
+    def get_all_tasks(team, developer):
+        point_pool_entry = PointPool.objects.get(developer=developer, team=team)
+        all_accepted_tasks_list = Task.objects.filter(assignee=developer, team=team, status=6)  # All tasks that are accpeted
+        all_rejected_tasks_list = Task.objects.filter(assignee=developer, team=team, status=5)  # All tasks that are rejected
+        point_pool_entry.point += len(all_accepted_tasks_list)
+        point_pool_entry.point -= len(all_rejected_tasks_list)
+
+        point_pool_entry.save()
