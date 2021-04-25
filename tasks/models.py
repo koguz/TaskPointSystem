@@ -228,11 +228,13 @@ class Task(models.Model):
         verbose_name="Assigned to"
     )
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    title = models.CharField("Brief task name", max_length=256)
+    title = models.CharField("Task title", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date", validators=[past_date_validator])
-    date = models.DateTimeField("Created on", auto_now_add=True)
-    completed = models.DateTimeField("Completed on", blank=True, null=True)
+    created_on = models.DateTimeField("Created on", auto_now_add=True, validators=[past_date_validator])
+    creation_approved_on = models.DateTimeField("Creation approved on", auto_now_add=True, validators=[past_date_validator])
+    submission_approved_on = models.DateTimeField("Submission approved on", auto_now_add=True, validators=[past_date_validator])
+    completed_on = models.DateTimeField("Completed on", blank=True, null=True, validators=[past_date_validator])
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY, default=2)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY, default=2)
     modifier = models.PositiveSmallIntegerField(
@@ -241,7 +243,6 @@ class Task(models.Model):
         validators=[MaxValueValidator(5), MinValueValidator(1)]
     )
     status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=1)
-    valid = models.BooleanField("Is Valid", default=False)
 
     def get_points(self):
         return (self.difficulty * self.priority) + self.modifier
@@ -279,6 +280,7 @@ class Task(models.Model):
                 self.status == 1
         ):
             self.status = 2
+            self.creation_approved_on = datetime.datetime.now()
             self.save()
 
         elif (
@@ -286,6 +288,7 @@ class Task(models.Model):
                 self.status == 3
         ):
             self.status = 4
+            self.submission_approved_on = datetime.datetime.now()
             self.save()
 
         elif (
@@ -539,6 +542,7 @@ class TaskDifference(models.Model):
         )
         task_difference.save()
 
+
 class PointPool(models.Model):
     developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
@@ -553,8 +557,8 @@ class PointPool(models.Model):
             all_rejected_tasks_list = Task.objects.filter(assignee=developer, team=team,
                                                           status=5)  # All tasks that are rejected
             for task in all_accepted_tasks_list:
-                total_duration = (task.due - task.date.date())*0.50
-                submission_duration = task.completed.date()-task.date.date()
+                total_duration = (task.due - task.created_on.date())*0.50
+                submission_duration = task.completed_on.date()-task.created_on.date()
 
                 if total_duration.days <= submission_duration.days:
                     point_pool_entry.point += 5

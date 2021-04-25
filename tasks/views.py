@@ -272,7 +272,7 @@ def update(request, task_id, status_id):
             task.apply_self_accept(developer, 3)
 
         task.status = status_id
-        task.completed = datetime.datetime.now()
+        task.completed_on = datetime.datetime.now()
         task.save()
 
         if developer is not None and status_id == '3':
