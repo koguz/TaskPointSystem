@@ -15,6 +15,7 @@ from bootstrap_modal_forms.generic import BSModalUpdateView
 from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
 from copy import deepcopy
 import logging
+import matplotlib.pyplot as plt
 from django.contrib import messages
 
 logger = logging.getLogger('task')
@@ -69,7 +70,7 @@ def supervisor(request):  # this view is for the supervisors only...
     developer = all_teammates[0][0]
     developer_teams = developer.get_teams()
     developer_team = developer_teams[0]
-    PointPool.get_all_tasks(developer_team, developer)
+    # PointPool.get_all_tasks(developer_team, developer)
 
 
     context = {
@@ -705,6 +706,14 @@ def grades(request):
     return render(
         request,
         'tasks/grades.html',
+    )
+
+
+def data_analytics(request):
+    get_all_task_time_diff()
+    return render(
+        request,
+        'tasks/data_analytics.html'
     )
 
 

@@ -16,6 +16,8 @@
         <tr><td>Created on</td><td>:</td><td>{{ task.created_on }}</td></tr>
         <tr><td>Due Date</td><td>:</td><td>{{ task.due }}</td></tr>
         <tr><td>Last Modified</td><td>:</td><td>{{ task.completed_on }}</td></tr>
+        <tr><td>Creation Approved On</td><td>:</td><td>{{ task.creation_approved_on }}</td></tr>
+        <tr><td>Submission Approved On</td><td>:</td><td>{{ task.submission_approved_on }}</td></tr>
         <tr><td>Priority</td><td>:</td><td bgcolor={{ priority_color }}>{{ task.get_priority_display }}</td></tr>
         <tr><td>Difficulty</td><td>:</td><td bgcolor={{ difficulty_color }}>{{ task.get_difficulty_display }}</td></tr>
         <tr><td>Modifier</td><td>:</td><td>{{ task.modifier }}</td></tr>

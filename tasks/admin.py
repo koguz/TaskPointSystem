@@ -8,7 +8,8 @@ from .models import \
     Comment,\
     Supervisor,\
     Vote,\
-    DeveloperTeam
+    DeveloperTeam,\
+    PointPool
 
 # Register your models here.
 
@@ -21,3 +22,4 @@ admin.site.register(Comment)
 admin.site.register(Supervisor)
 admin.site.register(Vote)
 admin.site.register(DeveloperTeam)
+admin.site.register(PointPool)

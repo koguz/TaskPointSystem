@@ -231,10 +231,10 @@ class Task(models.Model):
     title = models.CharField("Task title", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date", validators=[past_date_validator])
-    created_on = models.DateTimeField("Created on", auto_now_add=True, validators=[past_date_validator])
-    creation_approved_on = models.DateTimeField("Creation approved on", null=True, auto_now_add=True, validators=[past_date_validator])
-    submission_approved_on = models.DateTimeField("Submission approved on", null=True, auto_now_add=True, validators=[past_date_validator])
-    completed_on = models.DateTimeField("Completed on", blank=True, null=True, validators=[past_date_validator])
+    created_on = models.DateTimeField("Created on", null=False)
+    creation_approved_on = models.DateTimeField("Creation approved on", blank=True, null=True)
+    submission_approved_on = models.DateTimeField("Submission approved on", blank=True, null=True)
+    completed_on = models.DateTimeField("Completed on", blank=True, null=True)
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY, default=2)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY, default=2)
     modifier = models.PositiveSmallIntegerField(
@@ -421,8 +421,8 @@ class ActionRecord(models.Model):
         (12, 'Task Reject'),
     )
     action_type = models.PositiveSmallIntegerField("Vote Type", choices=ACTION_TYPE, default=0)
-    actor = models.ForeignKey(User, on_delete=models.RESTRICT)
-    object = models.ForeignKey(Task, on_delete=models.RESTRICT)
+    actor = models.ForeignKey(User, on_delete=models.CASCADE)
+    object = models.ForeignKey(Task, on_delete=models.CASCADE)
     action_description = models.CharField("Action Description", max_length=256)
     # TODO: make datetime turkey time
     action_datetime = models.DateTimeField("Created on", auto_now=True)
@@ -518,9 +518,9 @@ class TaskDifference(models.Model):
         (2, 'Normal'),
         (1, 'Easy'),
     )
-    action_record = models.ForeignKey(ActionRecord, on_delete=models.RESTRICT)
-    task = models.ForeignKey(Task, on_delete=models.RESTRICT)
-    assignee = models.ForeignKey(Developer, on_delete=models.RESTRICT)
+    action_record = models.ForeignKey(ActionRecord, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    assignee = models.ForeignKey(Developer, on_delete=models.CASCADE)
     title = models.CharField("Brief task name", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date")
