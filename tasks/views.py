@@ -482,6 +482,9 @@ def send_vote(request, task_id, status_id, button_id):
     task = get_object_or_404(Task, pk=task_id)
     action_type = 0
 
+    if not task.can_be_voted_by(request.user):
+        return HttpResponseRedirect('/tasks/choose/')
+
     if status_id == 1 and button_id == 1:
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 1

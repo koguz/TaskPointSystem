@@ -333,6 +333,25 @@ class Task(models.Model):
 
         return False
 
+    def can_be_voted_by(self, user):
+        supervisor = Supervisor.objects.filter(user=user).first()
+        if Team.objects.filter(supervisor=supervisor, pk=self.team.pk).first():
+            return True
+        elif supervisor:
+            return False
+
+        developer = Developer.objects.get(user=user)
+        # self.status and vote_types are coincidentally matches thus only task's status is used for checking
+        developer_not_voted_before = Vote.objects.all().filter(
+            vote_type__range=(self.status, self.status + 1),
+            voter__developer=developer
+        )
+        developer_is_in_tasks_team = DeveloperTeam.objects.filter(developer=developer, team=self.team)
+        if developer_is_in_tasks_team and developer_not_voted_before:
+            return True
+
+        return False
+
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 
