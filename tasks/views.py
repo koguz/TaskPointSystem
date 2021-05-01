@@ -304,26 +304,26 @@ def view_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
     priority_color = get_priority_or_difficulty_color(task.priority)
     difficulty_color = get_priority_or_difficulty_color(task.difficulty)
+    current_user = request.user
+    user_d = Developer.objects.filter(user=current_user).first()
+    user_s = Supervisor.objects.filter(user=current_user).first()
     can_edit = None
-    user_d = None
-    user_s = None
     needs_change = False
+    user_can_vote = task.can_be_voted_by(current_user)
 
-    if Developer.objects.filter(user=request.user):
-        user_d = Developer.objects.get(user=request.user)
+    if user_d:
         if task.assignee == user_d:
             can_edit = 'developer'
+
         if not user_d.is_in_team(task.team):
             leave_site(request)
             return HttpResponseRedirect('/tasks/')
-    elif Supervisor.objects.filter(user=request.user):
-        can_edit = 'supervisor'
-        user_s = Supervisor.objects.get(user=request.user)
 
-    # THIS PART CAN BE ADDED TO send_vote FUNCTION AND needs_change boolean can be added to Task model
-    if user_d:
+        # THIS PART CAN BE ADDED TO send_vote FUNCTION AND needs_change boolean can be added to Task model
         if task.get_creation_change_votes().count() >= 1:
             needs_change = True
+    elif user_s:
+        can_edit = 'supervisor'
 
     comment_list = task.comment_set.all().order_by("-date")
     final_comment, all_comments_but_final = check_is_final(comment_list)
@@ -345,6 +345,7 @@ def view_task(request, task_id):
             'needs_change': needs_change,
             'priority_color': priority_color,
             'difficulty_color': difficulty_color,
+            'can_vote': user_can_vote,
         }
     )
 

@@ -191,7 +191,7 @@ class Developer(models.Model):
         return Team.objects.all().filter(developerteam__developer=self)
 
     def is_in_team(self, team):
-        if DeveloperTeam.objects.all().filter(developer_id=self.id, team_id=team.id):
+        if DeveloperTeam.objects.all().filter(developer=self, team=team):
             return True
         return False
 
@@ -334,19 +334,23 @@ class Task(models.Model):
         return False
 
     def can_be_voted_by(self, user):
+        if user is None:
+            return False
+
         supervisor = Supervisor.objects.filter(user=user).first()
         if Team.objects.filter(supervisor=supervisor, pk=self.team.pk).first():
             return True
         elif supervisor:
             return False
 
-        developer = Developer.objects.get(user=user)
+        developer = Developer.objects.filter(user=user).first()
         # self.status and vote_types are coincidentally matches thus only task's status is used for checking
         developer_not_voted_before = Vote.objects.all().filter(
+            task=self,
             vote_type__range=(self.status, self.status + 1),
-            voter__developer=developer
-        )
-        developer_is_in_tasks_team = DeveloperTeam.objects.filter(developer=developer, team=self.team)
+            voter__developer=developer,
+        ).count() < 1
+        developer_is_in_tasks_team = developer.is_in_team(self.team)
         if developer_is_in_tasks_team and developer_not_voted_before:
             return True
 
