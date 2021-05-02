@@ -137,6 +137,15 @@ class Team(models.Model):
     def get_tasks(self):
         return self.task_set.all()
 
+    def is_in_team(self, user):
+        developer = Developer.objects.filter(user=user).first()
+        supervisor = Supervisor.objects.filter(user=user).first()
+
+        if developer:
+            return DeveloperTeam.objects.all().filter(developer=developer, team=self).count() > 0
+        elif supervisor:
+            return Team.objects.filter(supervisor=supervisor, pk=self.id).count() > 0
+
 
 class Developer(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
@@ -189,11 +198,6 @@ class Developer(models.Model):
 
     def get_teams(self):
         return Team.objects.all().filter(developerteam__developer=self)
-
-    def is_in_team(self, team):
-        if DeveloperTeam.objects.all().filter(developer=self, team=team):
-            return True
-        return False
 
 
 class Task(models.Model):
@@ -270,38 +274,21 @@ class Task(models.Model):
         vote.save()
 
     def check_for_status_change(self):
-        if (
-                Vote.objects.filter(task=self, vote_type=1).count() > self.team.get_team_size() * 0.50 and
-                self.status == 1
-        ):
-            self.status = 2
+        if Vote.objects.filter(task=self, vote_type=self.status).count() >= self.team.get_team_size():
+            self.status = self.status + 1
             self.save()
-
         elif (
-                Vote.objects.filter(task=self, vote_type=3).count() > self.team.get_team_size() * 0.50 and
-                self.status == 3
+            Vote.objects.filter(task=self, vote_type=4).count() >= self.team.get_team_size() - 1 and
+            self.status == 3
         ):
-            self.status = 4
-            self.save()
-
-        elif (
-                Vote.objects.filter(task=self, vote_type=4).count() >= self.team.get_team_size() * 0.50 and
-                self.status == 3
-        ):
-            # resetting request change votes for submission so that when submitted again team members can vote
-            Vote.objects.filter(task=self, vote_type__range=(3, 4)).delete()
-            self.status = 2
-            self.save()
-
-    def supervisor_edit_actions(self):
-        Vote.objects.filter(task=self, vote_type__range=(3, 4)).delete()
-        self.status = 2
-        self.save()
+            self.unflag_final_comment()
 
     def unflag_final_comment(self):
         final_comment = Comment.objects.get(task=self, is_final=True)
         final_comment.is_final = False
         final_comment.save()
+        Vote.objects.filter(task=self, vote_type__range=(3, 4)).delete()
+        self.status = 2
         self.save()
 
     def get_final_answer(self):
@@ -333,14 +320,19 @@ class Task(models.Model):
 
         return False
 
-    def can_be_voted_by(self, user):
-        if user is None:
-            return False
-
+    def can_be_changed_status_by(self, user):
+        developer = Developer.objects.filter(user=user).first()
         supervisor = Supervisor.objects.filter(user=user).first()
-        if Team.objects.filter(supervisor=supervisor, pk=self.team.pk).first():
+
+        if developer == self.assignee and self.team.is_in_team(user):
             return True
-        elif supervisor:
+        elif supervisor and self.team.is_in_team(user):
+            return True
+
+        return False
+
+    def can_be_voted_by(self, user):
+        if user is None or Supervisor.objects.filter(user=user).first():
             return False
 
         developer = Developer.objects.filter(user=user).first()
@@ -350,11 +342,19 @@ class Task(models.Model):
             vote_type__range=(self.status, self.status + 1),
             voter__developer=developer,
         ).count() < 1
-        developer_is_in_tasks_team = developer.is_in_team(self.team)
+        developer_is_in_tasks_team = self.team.is_in_team(user)
+
         if developer_is_in_tasks_team and developer_not_voted_before:
             return True
 
         return False
+
+    def half_the_team_accepted(self):
+        team_size = Team.objects.get(pk=self.team.id).team_size
+        return Vote.objects.all().filter(
+            task=self,
+            vote_type=self.status,
+        ).count() >= team_size * 0.50
 
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
@@ -429,10 +429,10 @@ class ActionRecord(models.Model):
         (4, 'Task Comment'),
         (5, 'Task Final Comment'),
         (6, 'Task Creation Accept'),
-        (7, 'Task Creation No Vote'),
+        (7, 'Task Status Change To Working On It'),
         (8, 'Task Creation Request Change'),
         (9, 'Task Submission Accept'),
-        (10, 'Task Submission No Vote'),
+        (10, 'Task Status Change To Waiting For Review'),
         (11, 'Task Submission Request Change'),
         (12, 'Task Reject'),
     )
@@ -517,6 +517,17 @@ class ActionRecord(models.Model):
         action_record = ActionRecord(
             action_type=action_type,
             actor=actor,
+            object=object,
+            action_description=action_description,
+        )
+        action_record.save()
+
+    @staticmethod
+    def task_status_change_by_developer(action_type, actor, object):
+        action_description = "'" + actor.__str__() + "' CHANGED THE STATUS of the task: '" + object.title + "'"
+        action_record = ActionRecord(
+            action_type=action_type,
+            actor=actor.user,
             object=object,
             action_description=action_description,
         )

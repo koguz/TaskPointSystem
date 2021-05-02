@@ -246,41 +246,56 @@ def update(request, task_id, status_id):
     task = get_object_or_404(Task, pk=task_id)
     req_status_id = int(status_id)
 
-    if developer is not None:
-        if not developer.is_in_team(task.team) or req_status_id != 3:
-            leave_site(request)
-            return HttpResponseRedirect('/tasks/')
-
-    if req_status_id > 6 or req_status_id < 1:
-        status_id = "5"  # reject it because this is probably a scam...
+    if (
+        not task.can_be_changed_status_by(request.user) or
+        req_status_id > 6 or
+        req_status_id < 1 or
+        (0 < req_status_id < 3 and not task.half_the_team_accepted() and task.get_submission_change_votes() < 1)
+    ):
+        return HttpResponseRedirect('/tasks/choose/')
 
     try:
         final_comment = Comment.objects.get(task=task, is_final=True)
     except Comment.DoesNotExist:
         final_comment = None
 
-    if final_comment is not None:
-        if developer is not None and status_id == '3':
-            task.apply_self_accept(developer, 3)
-
+    if final_comment is not None and task.assignee == developer and status_id == '3' and task.status == 2:
+        task.apply_self_accept(developer, 3)
+        task.status = status_id
+        task.save()
+        ActionRecord.task_submit(3, developer, task)
+    elif task.assignee == developer and status_id == '2' and task.status == 1:
+        task.status = status_id
+        task.save()
+        ActionRecord.task_status_change_by_developer(7, developer, task)
+    elif task.assignee == developer and status_id == '2' and task.status == 3:
+        task.status = status_id
+        task.unflag_final_comment()
+        task.save()
+        ActionRecord.task_status_change_by_developer(7, developer, task)
+    elif task.assignee == developer and status_id == '4' and task.status == 3:
+        task.status = status_id
+        task.save()
+        ActionRecord.task_status_change_by_developer(10, developer, task)
+    elif Supervisor.objects.filter(user=request.user).first() is None:
+        messages.error(request, 'Task can not be submitted without a final comment.')
+        try:
+            return redirect(request.META['HTTP_REFERER'])
+        except KeyError:
+            return HttpResponseRedirect('/tasks/choose/')
+    else:
+        # TODO: supervisor can change the status no matter what the current status of the task is with urls
         task.status = status_id
         task.save()
 
-        if developer is not None and status_id == '3':
-            ActionRecord.task_submit(3, developer, task)
-        elif status_id == '2':
+        if status_id == '2':
             ActionRecord.task_approval(6, request.user, task)
         elif status_id == '5':
             ActionRecord.task_approval(12, request.user, task)
         elif status_id == '6':
             ActionRecord.task_approval(9, request.user, task)
-    else:
-        messages.error(request, 'Task can not be submitted without a final comment.')
-        return redirect(request.META['HTTP_REFERER'])
 
     return HttpResponseRedirect('/tasks/choose/')
-
-
 
 
 @login_required
@@ -308,20 +323,20 @@ def view_task(request, task_id):
     user_d = Developer.objects.filter(user=current_user).first()
     user_s = Supervisor.objects.filter(user=current_user).first()
     can_edit = None
-    needs_change = False
+    creation_needs_change = False
+    submission_needs_change = False
     user_can_vote = task.can_be_voted_by(current_user)
+    half_the_team_accepted = task.half_the_team_accepted()
+    can_change_status = task.can_be_changed_status_by(current_user)
+
+    if not task.team.is_in_team(current_user):
+        return HttpResponseRedirect('/tasks/choose/')
 
     if user_d:
         if task.assignee == user_d:
             can_edit = 'developer'
-
-        if not user_d.is_in_team(task.team):
-            leave_site(request)
-            return HttpResponseRedirect('/tasks/')
-
-        # THIS PART CAN BE ADDED TO send_vote FUNCTION AND needs_change boolean can be added to Task model
-        if task.get_creation_change_votes().count() >= 1:
-            needs_change = True
+            submission_needs_change = task.get_submission_change_votes().count() >= 1
+            creation_needs_change = task.get_creation_change_votes().count() >= 1
     elif user_s:
         can_edit = 'supervisor'
 
@@ -334,7 +349,8 @@ def view_task(request, task_id):
         'tasks/view_task.html',
         {
             'page_title': 'View task',
-            'task': task, 'tid': task_id,
+            'task': task,
+            'tid': task_id,
             'all_comments_but_final': all_comments_but_final,
             'final_comment': final_comment,
             'votes': vote_list,
@@ -342,10 +358,13 @@ def view_task(request, task_id):
             'user_d': user_d,
             'user_s': user_s,
             'can_edit': can_edit,
-            'needs_change': needs_change,
+            'creation_needs_change': creation_needs_change,
+            'submission_needs_change': submission_needs_change,
             'priority_color': priority_color,
             'difficulty_color': difficulty_color,
             'can_vote': user_can_vote,
+            'half_the_team_accepted': half_the_team_accepted,
+            'can_change_status': can_change_status,
         }
     )
 
@@ -502,21 +521,14 @@ def send_vote(request, task_id, status_id, button_id):
         Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 4
         action_type = 11
-    elif status_id == 1 and button_id == 0:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
-        action_type = 7
-    elif status_id == 3 and button_id == 0:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
-        action_type = 10
 
-    if button_id > 0:
+    if 0 <= button_id <= 4 and (status_id == 1 or status_id == 3):
         vote.save()
         task.check_for_status_change()
+        ActionRecord.task_vote(action_type, request.user, task)
+    else:
+        return HttpResponseRedirect('/tasks/choose/')
 
-    ActionRecord.task_vote(action_type, request.user, task)
-
-    logger.info(
-        request.user.get_username() + " VOTED ON TASK ID: " + str(task_id) + ", VOTE TYPE: " + str(vote.vote_type))
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 
@@ -600,21 +612,20 @@ def supervisor_edit_task(request, task_id):
         form = TaskSupervisorForm(dev_team, request.POST, instance=task_to_edit)
 
         if form.is_valid():
-            s = request.user
             task = form.save(commit=False)
-            task.creator = s
+            task.creator = request.user
             task.team = dev_team
             task.milestone = course.get_current_milestone()
 
             if task.status == 1:  # if task is in review state reset all votes and remain in current state
                 Vote.objects.filter(task=task).delete()  # reset all votes
-            if task.status == 3:
+            elif task.status != 2 or task.status != 5 or task.status != 6:
                 task_to_edit.unflag_final_comment()
-            task_to_edit.supervisor_edit_actions()
+
             task.save()
 
             if task.is_different_from(old_task):
-                action_record = ActionRecord.task_edit(2, s, task)
+                action_record = ActionRecord.task_edit(2, Supervisor.objects.get(user=request.user), task)
                 TaskDifference.record_task_difference(task, action_record)
 
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
