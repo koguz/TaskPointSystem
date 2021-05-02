@@ -1,0 +1,63 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-sm-6">
+            {% if difficulty_and_priority == '1_1' %}
+                <img src="{% static 'tasks/gaussian_plots/easy_low_figure.png' %}">
+            {% elif difficulty_and_priority == '1_2'%}
+                <img src="{% static 'tasks/gaussian_plots/easy_planned_figure.png' %}">
+            {% elif difficulty_and_priority == '1_3'%}
+                <img src="{% static 'tasks/gaussian_plots/easy_urgent_figure.png' %}">
+            {% elif difficulty_and_priority == '2_1'%}
+                <img src="{% static 'tasks/gaussian_plots/normal_low_figure.png' %}">
+            {% elif difficulty_and_priority == '2_2'%}
+                <img src="{% static 'tasks/gaussian_plots/normal_planned_figure.png' %}">
+            {% elif difficulty_and_priority == '2_3'%}
+                <img src="{% static 'tasks/gaussian_plots/normal_urgent_figure.png' %}">
+            {% elif difficulty_and_priority == '3_1'%}
+                <img src="{% static 'tasks/gaussian_plots/difficult_low_figure.png' %}">
+            {% elif difficulty_and_priority == '3_2'%}
+                <img src="{% static 'tasks/gaussian_plots/difficult_planned_figure.png' %}">
+            {% elif difficulty_and_priority == '3_3'%}
+                <img src="{% static 'tasks/gaussian_plots/difficult_urgent_figure.png' %}">
+            {% endif %}
+        <table class="task-info-table">
+            <tr><td>Average Task Completion : {{ average_completion_time }} hours </td></tr>
+            <tr><td>Maximum Completion Time : {{ max }} hours</td></tr>
+            <tr><td>Minimum Completion Time : {{ min }} hours</td></tr>
+            <tr><td>Total task : {{ task_list|length }}</td></tr>
+
+        </table>
+        </div>
+
+        <div class="col-sm-6 user-feed">
+            {% if task_list %}
+                <div style="margin-top: 50px; overflow: auto; padding-right: 20px">
+                    <ul>
+                        {% for task in task_list %}
+                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                                <li>
+                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                    <div class="task-header">
+                                        <h4>{{ task.title }}</h4>
+                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
+                                    </div>
+                                    <hr class="content-separator">
+                                    <div class="task-content">
+                                        <p class="content-text">{{ task.description }}</p>
+                                    </div>
+                                </li>
+                            </a>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <p>There are no such tasks finished with these parameters.</p>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

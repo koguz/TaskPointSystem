@@ -19,6 +19,7 @@ urlpatterns = [
     re_path(r'^comments/$', views.comments, name='comments'),
     re_path(r'^grades/$', views.grades, name='grades'),
     re_path(r'^data-analytics/$', views.data_analytics, name='data-analytics'),
+    re_path(r'^data-analytics/(?P<difficulty_and_priority>[0-9]+_[0-9]+)/$', views.data_analytics_diff_prio, name='data_analytics_diff_prio'),
     re_path(r'^team/(?P<team_id>[0-9])/$', views.team, name='team-home'),
     re_path(r'^supervisor/$', views.supervisor, name='supervisor-home'),
     re_path(r'^team/(?P<team_id>[0-9])/all/(?P<order_by>[a-z]+_*[a-z]+)/$', views.task_all, name='task-all'),

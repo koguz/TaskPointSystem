@@ -15,7 +15,7 @@ from bootstrap_modal_forms.generic import BSModalUpdateView
 from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
 from copy import deepcopy
 import logging
-import matplotlib.pyplot as plt
+import os.path
 from django.contrib import messages
 
 logger = logging.getLogger('task')
@@ -709,14 +709,6 @@ def grades(request):
     )
 
 
-def data_analytics(request):
-    get_all_task_time_diff()
-    return render(
-        request,
-        'tasks/data_analytics.html'
-    )
-
-
 def comments(request):
     return render(
         request,
@@ -741,6 +733,37 @@ def sort_active_tasks(request):
         return JsonResponse({"sorted_tasks": sorted_tasks}, status=200)
     else:
         return JsonResponse({"error": ""}, status=400)
+
+
+@login_required
+def data_analytics(request):
+    if not os.path.isfile('tasks/static/tasks/gaussian_plots/difficult_low_figure.png'):
+        calculate_time_diff_and_plot()
+    return render(
+        request,
+        'tasks/data_analytics.html'
+    )
+
+
+@login_required
+def data_analytics_diff_prio(request, difficulty_and_priority):
+    difficulty_and_priority_temp = difficulty_and_priority.split("_")
+    difficulty = difficulty_and_priority_temp[0]
+    priority = difficulty_and_priority_temp[1]
+    task_list = Task.objects.filter(difficulty=difficulty, priority=priority, status=6)
+    average = get_average_completion_time(task_list)
+    max, min = get_max_min_completion_time(task_list)
+    return render(
+        request,
+        'tasks/data_analytics_grap.html',
+        {
+            'difficulty_and_priority': difficulty_and_priority,
+            'task_list': task_list,
+            'average_completion_time': average,
+            'max': max,
+            'min': min,
+        }
+    )
 
 
 @method_decorator(login_required, name='dispatch')

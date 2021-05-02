@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from .models import *
 import numpy as np
+import math
 
 
 def reset_task_submission_change_votes(task):
@@ -95,81 +96,70 @@ def check_is_final(comment_list):
     return final_comment, comments
 
 
-def get_all_task_time_diff():
+def calculate_time_diff_and_plot():
+    time_diff_list = np.array([])
 
-    easy_low_list_time_diff = np.array([])
-    easy_planned_list_time_diff = np.array([])
-    easy_urgent_list_time_diff = np.array([])
-    normal_low_list_time_diff = np.array([])
-    normal_planned_list_time_diff = np.array([])
-    normal_urgent_list_time_diff = np.array([])
-    difficult_low_list_time_diff = np.array([])
-    difficult_planned_list_time_diff = np.array([])
-    difficult_urgent_list_time_diff = np.array([])
-
-    easy_low_list = Task.objects.filter(priority=1, difficulty=1, status=6)
-    easy_planned_list = Task.objects.filter(priority=2, difficulty=1, status=6)
-    easy_urgent_list = Task.objects.filter(priority=3, difficulty=1, status=6)
-
-    normal_low_list = Task.objects.filter(priority=1, difficulty=2, status=6)
-    normal_planned_list = Task.objects.filter(priority=2, difficulty=2, status=6)
-    normal_urgent_list = Task.objects.filter(priority=3, difficulty=2, status=6)
-
-    difficult_low_list = Task.objects.filter(priority=1, difficulty=3, status=6)
-    difficult_planned_list = Task.objects.filter(priority=2, difficulty=3, status=6)
-    difficult_urgent_list = Task.objects.filter(priority=3, difficulty=3, status=6)
-
-    for task in easy_low_list:
-        easy_low_list_time_diff = np.append(easy_low_list_time_diff, ((task.completed_on-task.created_on).total_seconds())/3600)
-
-    for task in easy_planned_list:
-        easy_planned_list_time_diff = np.append(easy_planned_list_time_diff, ((task.completed_on-task.created_on).total_seconds())/3600)
-
-    for task in easy_urgent_list:
-        easy_urgent_list_time_diff = np.append(easy_urgent_list_time_diff, ((task.completed_on-task.created_on).total_seconds())/3600)
-
-    for task in normal_low_list:
-        normal_low_list_time_diff = np.append(normal_low_list_time_diff, ((task.completed_on-task.created_on).total_seconds())/3600)
-
-    for task in normal_planned_list:
-        normal_planned_list_time_diff = np.append(normal_planned_list_time_diff, ((task.completed_on - task.created_on).total_seconds())/3600)
-
-    for task in normal_urgent_list:
-        normal_urgent_list_time_diff = np.append(normal_urgent_list_time_diff, ((task.completed_on - task.created_on).total_seconds())/3600)
-
-    for task in difficult_low_list:
-        difficult_low_list_time_diff = np.append(difficult_low_list_time_diff, ((task.completed_on - task.created_on).total_seconds())/3600)
-
-    for task in difficult_planned_list:
-        difficult_planned_list_time_diff = np.append(difficult_planned_list_time_diff,
-                                                     ((task.completed_on - task.created_on).total_seconds())/3600)
-
-    for task in difficult_urgent_list:
-        difficult_urgent_list_time_diff = np.append(difficult_urgent_list_time_diff,
-                                                    ((task.completed_on - task.created_on).total_seconds())/3600)
-
-    plot_gaussian(easy_low_list_time_diff, 'easy_low')
-    plot_gaussian(easy_planned_list_time_diff, 'easy_planned')
-    plot_gaussian(easy_urgent_list_time_diff, 'easy_urgent')
-    plot_gaussian(normal_low_list_time_diff, 'normal_low')
-    plot_gaussian(normal_planned_list_time_diff, 'normal_planned')
-    plot_gaussian(normal_urgent_list_time_diff, 'normal_urgent')
-    plot_gaussian(difficult_low_list_time_diff, 'difficult_low')
-    plot_gaussian(difficult_planned_list_time_diff, 'difficult_planned')
-    plot_gaussian(difficult_urgent_list_time_diff, 'difficult_urgent')
+    for difficulty in range(1, 4):
+        for priority in range(1, 4):
+            task_list = Task.objects.filter(priority=priority, difficulty=difficulty, status=6)
+            for task in task_list:
+                time_diff_list = np.append(time_diff_list,
+                                           ((task.completed_on - task.created_on).total_seconds()) / 3600)
+            difficulty_and_priority = str(difficulty) + "_" + str(priority)
+            plot_gaussian(time_diff_list, difficulty_and_priority)
 
 
-def plot_gaussian(time_diff_list, title):
-
+def plot_gaussian(time_diff_list, difficulty_and_priority):
     time_diff_list = np.sort(time_diff_list)
 
     mean = statistics.mean(time_diff_list)
     standard_deviation = statistics.stdev(time_diff_list)
 
-    x_values = np.arange((time_diff_list[0]-10), (time_diff_list[len(time_diff_list)-1]+10), 1)
-    # x_values = np.arange(20, 100, 0.001)
+    x_values = np.arange((time_diff_list[0]), (time_diff_list[len(time_diff_list) - 1]), 1)
     y_values = stats.norm.pdf(x_values, mean, standard_deviation)
     plt.plot(x_values, y_values)
+
+    if difficulty_and_priority == "1_1":
+        title = "easy_low"
+    elif difficulty_and_priority == "1_2":
+        title = "easy_planned"
+    elif difficulty_and_priority == "1_3":
+        title = "easy_urgent"
+    elif difficulty_and_priority == "2_1":
+        title = "normal_low"
+    elif difficulty_and_priority == "2_2":
+        title = "normal_planned"
+    elif difficulty_and_priority == "2_3":
+        title = "normal_urgent"
+    elif difficulty_and_priority == "3_1":
+        title = "difficult_low"
+    elif difficulty_and_priority == "3_2":
+        title = "difficult_planned"
+    elif difficulty_and_priority == "3_3":
+        title = "difficult_urgent"
+    else:
+        title = "invalid difficulty and priority"
+
     plt.title(title)
-    plt.savefig('tasks/static/tasks/' + title + '_figure.png')
+    plt.savefig('tasks/static/tasks/gaussian_plots' + title + '_figure.png')
     plt.close()
+
+
+def get_average_completion_time(task_list):
+    total_time = 0
+    counter = 0
+
+    for task in task_list:
+        total_time += ((task.completed_on - task.created_on).total_seconds()/3600)
+        counter += 1
+
+    return math.floor(total_time/counter)
+
+
+def get_max_min_completion_time(task_list):
+    time_diff = np.array([])
+
+    for task in task_list:
+        time_diff = np.append(time_diff, ((task.completed_on - task.created_on).total_seconds() / 3600))
+
+    return math.floor(max(time_diff)), math.floor(min(time_diff))
