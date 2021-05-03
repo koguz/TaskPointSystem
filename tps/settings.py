@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bootstrap_modal_forms',
     'widget_tweaks',
+    'webpush',
 ]
 
 MIDDLEWARE = [
@@ -136,6 +137,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+#TODO, will get new keys before deployment from https://web-push-codelab.glitch.me/
+WEBPUSH_SETTINGS = {
+   "VAPID_PUBLIC_KEY": "BPHLZEYXDzDVavydFuKSN11ZpToobL7S0xzkn1w7pOA4kqZ3tRnjODHIiBMqWsa1J14mP0jxR7SYly-NmKkOzzY",
+   "VAPID_PRIVATE_KEY": "SHia1BtmmmaZWvVVLzxN6q_0whKRYjbYj-e6eZPDdNQ",
+   "VAPID_ADMIN_EMAIL": "utku.isil1@gmail.com"
+}
 
 # authentication backends
 

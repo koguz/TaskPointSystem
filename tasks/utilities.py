@@ -81,3 +81,8 @@ def check_is_final(comment_list):
         else:
             comments.append(comment)
     return final_comment, comments
+
+def send_push_notification_to_user(user, description):
+    payload = {"head": "Welcome!", "body": description}
+    send_user_notification(user=user, payload=payload, ttl=1000)
+
