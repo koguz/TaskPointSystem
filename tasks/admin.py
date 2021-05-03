@@ -9,7 +9,8 @@ from .models import \
     Supervisor,\
     Vote,\
     DeveloperTeam,\
-    PointPool
+    PointPool,\
+    GraphIntervals
 
 # Register your models here.
 
@@ -23,3 +24,4 @@ admin.site.register(Supervisor)
 admin.site.register(Vote)
 admin.site.register(DeveloperTeam)
 admin.site.register(PointPool)
+admin.site.register(GraphIntervals)

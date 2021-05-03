@@ -3,14 +3,14 @@
 
 {% block content %}
     <div class="row" style="justify-content: center; align-items: center; height: 100vh">
-        <a href="{% url 'tasks:data_analytics_diff_prio' '1_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_low_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '1_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_planned_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '1_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_urgent_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '2_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_low_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '2_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_planned_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '2_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_urgent_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '3_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_low_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '3_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_planned_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_analytics_diff_prio' '3_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_urgent_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '1_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_low_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '1_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_planned_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '1_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_urgent_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '2_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_low_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '2_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_planned_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '2_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_urgent_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '3_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_low_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '3_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_planned_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' '3_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_urgent_figure.png' %}"></a>
     </div>
 {% endblock %}

@@ -324,7 +324,8 @@ class Task(models.Model):
             "difficulty": "",
         }
 
-        different_attributes = filter(lambda field: getattr(self, field, None) != getattr(task, field, None), differences.keys())
+        different_attributes = filter(lambda field: getattr(self, field, None) != getattr(task, field, None),
+                                      differences.keys())
 
         for attribute in different_attributes:
             differences[attribute] = self.__getattribute__(attribute)
@@ -546,22 +547,29 @@ class TaskDifference(models.Model):
 class PointPool(models.Model):
     developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, default=1, on_delete=models.CASCADE)
     point = models.PositiveIntegerField(default=0)
 
     @staticmethod
-    def get_all_tasks(team, developer):
+    def get_all_tasks(course_id, team, developer):
         try:
-            point_pool_entry = PointPool.objects.get(developer=developer, team=team)
-            all_accepted_tasks_list = Task.objects.filter(assignee=developer, team=team,
-                                                          status=6)  # All tasks that are accpeted
-            all_rejected_tasks_list = Task.objects.filter(assignee=developer, team=team,
-                                                          status=5)  # All tasks that are rejected
-            for task in all_accepted_tasks_list:
-                total_duration = (task.due - task.created_on.date())*0.50
-                submission_duration = task.completed_on.date()-task.created_on.date()
+            point_pool_entry = PointPool.objects.get(developer=developer, course=course_id, team=team)
+            all_accepted_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer, team=team,
+                                                                                         status=6)  # All tasks that are accpeted
+            all_rejected_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer, team=team,
+                                                                                         status=5)  # All tasks that are rejected
 
-                if total_duration.days <= submission_duration.days:
-                    point_pool_entry.point += 5
+            for task in all_accepted_tasks_list:
+                try:
+                    entry = GraphIntervals.objects.filter(task=task.id, difficulty=task.difficulty, priority=task.priority).first()
+                    lower_bound = entry.lower_bound
+                    upper_bound = entry.upper_bound
+                    submission_duration = task.completed_on.date() - task.created_on.date()
+                    if lower_bound <= submission_duration <= upper_bound:
+                        point_pool_entry.point += 2
+
+                except ObjectDoesNotExist:
+                    print("yok")
 
             point_pool_entry.point += len(all_accepted_tasks_list)  # All accepted tasks are equal to 1 point.
             point_pool_entry.point -= len(all_rejected_tasks_list)  # All rejected tasks are equal to -1 point.
@@ -580,10 +588,21 @@ class PointPool(models.Model):
 
             for vote in all_votes_list:
                 task = Task.objects.get(id=vote.task_id)
-                if task.status == 5 and (vote.vote_type == 1 or vote.vote_type == 3): # If a rejected task is voted as accept decrease points by 4.
+                if task.status == 5 and (
+                        vote.vote_type == 1 or vote.vote_type == 3):  # If a rejected task is voted as accept decrease points by 4.
                     point_pool_entry.point -= 4
 
         except ObjectDoesNotExist:
             point_pool_entry = PointPool(team=team, developer=developer)
 
         point_pool_entry.save()
+
+#  TODO: Calculate point pool of all students that are in that course give %100 to the TOP 1 and scale others accordingly.
+
+
+class GraphIntervals(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    difficulty = models.SmallIntegerField("Difficulty", default=0)
+    priority = models.SmallIntegerField("Priority", default=0)
+    lower_bound = models.IntegerField("Lower Bound", default=-1)
+    upper_bound = models.IntegerField("Upper Bound", default=-1)

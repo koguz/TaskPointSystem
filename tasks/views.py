@@ -69,8 +69,8 @@ def supervisor(request):  # this view is for the supervisors only...
     all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
     developer = all_teammates[0][0]
     developer_teams = developer.get_teams()
-    developer_team = developer_teams[0]
-    # PointPool.get_all_tasks(developer_team, developer)
+    developer_team = developer_teams[2]
+    PointPool.get_all_tasks(1, developer_team, developer)
 
 
     context = {
@@ -746,24 +746,52 @@ def data_analytics(request):
 
 
 @login_required
-def data_analytics_diff_prio(request, difficulty_and_priority):
+def data_graph_inspect(request, difficulty_and_priority):
     difficulty_and_priority_temp = difficulty_and_priority.split("_")
     difficulty = difficulty_and_priority_temp[0]
     priority = difficulty_and_priority_temp[1]
     task_list = Task.objects.filter(difficulty=difficulty, priority=priority, status=6)
     average = get_average_completion_time(task_list)
     max, min = get_max_min_completion_time(task_list)
+    lower_bound = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first().lower_bound
+    upper_bound = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first().upper_bound
     return render(
         request,
-        'tasks/data_analytics_grap.html',
+        'tasks/data_graph_inspect.html',
         {
             'difficulty_and_priority': difficulty_and_priority,
             'task_list': task_list,
             'average_completion_time': average,
             'max': max,
             'min': min,
+            'lower_bound': lower_bound,
+            'upper_bound': upper_bound,
         }
     )
+
+
+def set_point_pool_interval(request):
+    if 'lower_bound' in request.POST and 'upper_bound' in request.POST:
+        lower_bound = request.POST['lower_bound']
+        upper_bound = request.POST['upper_bound']
+        difficulty_and_priority = request.POST['difficulty_and_priority']
+        difficulty_and_priority_split = difficulty_and_priority.split("_")
+        difficulty = difficulty_and_priority_split[0]
+        priority = difficulty_and_priority_split[1]
+        task_list = Task.objects.filter(difficulty=difficulty, priority=priority)
+        try:
+            for task in task_list:
+                entry = GraphIntervals.objects.get(task_id=task.id, difficulty=str(difficulty), priority=str(priority))
+                if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
+                    entry.upper_bound = upper_bound
+                    entry.lower_bound = lower_bound
+                entry.save()
+        except ObjectDoesNotExist:
+            for task in task_list:
+                entry = GraphIntervals(task_id=task.id, difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
+                entry.save()
+
+    return redirect(request.META['HTTP_REFERER'])
 
 
 @method_decorator(login_required, name='dispatch')

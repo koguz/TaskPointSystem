@@ -1,4 +1,5 @@
 {% extends "tasks/base.html" %}
+{% load mathfilters %}
 {% load static %}
 
 {% block content %}
@@ -24,13 +25,23 @@
             {% elif difficulty_and_priority == '3_3'%}
                 <img src="{% static 'tasks/gaussian_plots/difficult_urgent_figure.png' %}">
             {% endif %}
-        <table class="task-info-table">
-            <tr><td>Average Task Completion : {{ average_completion_time }} hours </td></tr>
-            <tr><td>Maximum Completion Time : {{ max }} hours</td></tr>
-            <tr><td>Minimum Completion Time : {{ min }} hours</td></tr>
-            <tr><td>Total task : {{ task_list|length }}</td></tr>
-
-        </table>
+            <table class="task-info-table">
+                <tr><td>Average Task Completion : {{ average_completion_time }} hours </td></tr>
+                <tr><td>Maximum Completion Time : {{ max }} hours</td></tr>
+                <tr><td>Minimum Completion Time : {{ min }} hours</td></tr>
+                <tr><td>Total task : {{ task_list|length }}</td></tr>
+            </table>
+            <div>
+                <form action="{% url 'tasks:set_point_pool_interval' %}" method="post">
+                    {% csrf_token %}
+                    <label for="lower">Lower Bound: </label>
+                    <input type="number" name="lower_bound" value="{{ lower_bound }}">
+                    <label for="upper">Upper Bound: </label>
+                    <input type="number" name="upper_bound" value="{{ upper_bound }}">
+                    <input name="difficulty_and_priority" style="display: none" value={{ difficulty_and_priority }}>
+                    <button type="submit" class="btn btn-default btn-success">Submit</button>
+                </form>
+            </div>
         </div>
 
         <div class="col-sm-6 user-feed">
@@ -40,15 +51,18 @@
                         {% for task in task_list %}
                             <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
                                 <li>
-                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                    <p class="task-date-supervisor"><span class="bold-span">Completed On: </span>{{ task.created_on }}</p>
                                     <div class="task-header">
                                         <h4>{{ task.title }}</h4>
-                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
+                                        <p><span class="bold-span">Assignee: </span>{{ task.assignee }}</p>
                                     </div>
+                                    <p class="task-date-supervisor" style="margin-top: -40px"><span class="bold-span">Duration: </span>{{ task.completed_on|sub:task.created_on }}</p>
                                     <hr class="content-separator">
-                                    <div class="task-content">
-                                        <p class="content-text">{{ task.description }}</p>
+                                    <div>
+                                        <p><span class="bold-span">Course: </span>{{ task.team.course }}</p>
+                                        <p style="margin-top: -15px"><span class="bold-span">Team: </span>{{ task.team }}</p>
                                     </div>
+
                                 </li>
                             </a>
                         {% endfor %}
