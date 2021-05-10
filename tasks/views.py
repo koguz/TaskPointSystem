@@ -328,6 +328,7 @@ def view_task(request, task_id):
     user_can_vote = task.can_be_voted_by(current_user)
     half_the_team_accepted = task.half_the_team_accepted()
     can_change_status = task.can_be_changed_status_by(current_user)
+    task_history = task.get_history()
 
     if not task.team.is_in_team(current_user):
         return HttpResponseRedirect('/tasks/choose/')
@@ -340,7 +341,7 @@ def view_task(request, task_id):
     elif user_s:
         can_edit = 'supervisor'
 
-    comment_list = task.comment_set.all().order_by("-date")
+    comment_list = task.comment_set.all().order_by("-created_on")
     final_comment, all_comments_but_final = check_is_final(comment_list)
     vote_list = task.vote_set.all()
     form = CommentForm()
@@ -365,6 +366,7 @@ def view_task(request, task_id):
             'can_vote': user_can_vote,
             'half_the_team_accepted': half_the_team_accepted,
             'can_change_status': can_change_status,
+            'task_history': task_history,
         }
     )
 

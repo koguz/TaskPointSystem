@@ -3,13 +3,17 @@ $(function($) {
       $(this).html($(this).html().substring(0,150));
     });
 
-    $('#sidebarCollapse').click(function () {
+    $('#sidebar-collapse').click(function () {
         $('#sidebar').toggleClass('sidebar-active');
         $('.main-screen').toggleClass('main-screen-active');
     });
 
-    $('#task-more-details').click(function () {
+    $('#task-more-details-button').click(function () {
        $('.task-additional-details').slideToggle();
+    });
+
+    $('#task-history-button').click(function () {
+       $('.task-history').slideToggle();
     });
 
     $(window).resize(function () {

@@ -231,7 +231,7 @@ class Task(models.Model):
     title = models.CharField("Brief task name", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date", validators=[past_date_validator])
-    date = models.DateTimeField("Created on", auto_now_add=True)
+    created_on = models.DateTimeField("Created on", auto_now_add=True)
     completed = models.DateTimeField("Completed on", auto_now=True, blank=True, null=True)
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY, default=2)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY, default=2)
@@ -356,6 +356,43 @@ class Task(models.Model):
             vote_type=self.status,
         ).count() >= team_size * 0.50
 
+    def get_history(self):
+        task_difference_elements = TaskDifference.objects.filter(task=self).order_by('-created_on').values()
+        task_difference_elements_length = len(task_difference_elements)
+        task_history = []
+
+        if task_difference_elements_length < 2:
+            return
+
+        # TaskDifference entries
+        for index in range(0, task_difference_elements_length):
+            if index == task_difference_elements_length - 1:
+                break
+
+            task_one_dict = task_difference_elements[index]
+            task_two_dict = task_difference_elements[index + 1]
+            task_one_dict.pop('action_record_id', None)
+            task_one_dict.pop('task_id', None)
+            task_one_dict.pop('id', None)
+
+            task_one_set = set(task_one_dict.items())
+            task_two_set = set(task_two_dict.items())
+            task_difference = task_one_set - task_two_set
+            task_history.append(dict(task_difference))
+
+        task_actions = ActionRecord.objects.filter(object=self).order_by('-created_on').values()
+
+        for task_action in task_actions:
+            task_history.append({
+                'action_description': task_action['action_description'],
+                'created_on': task_action['created_on'],
+            })
+
+        task_history_sorted = sorted(task_history, key=lambda i: i['created_on'])
+        task_history_sorted.reverse()
+        print(task_history_sorted)
+        return task_history_sorted
+
     def __str__(self):
         return self.team.__str__() + ": " + self.title + " " + self.description[0:15]
 
@@ -366,7 +403,7 @@ class Comment(models.Model):
     response_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
     body = models.TextField("Comment")
     file_url = models.URLField("File URL", max_length=512, blank=True, null=True)
-    date = models.DateTimeField("Date", auto_now_add=True)
+    created_on = models.DateTimeField("Date", auto_now_add=True)
     points = models.IntegerField("Upvotes", default=0)
     is_final = models.BooleanField(default=False)
 
@@ -401,7 +438,7 @@ class Vote(models.Model):
     voter = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     vote_type = models.PositiveSmallIntegerField("Vote Type", choices=VOTE_TYPE, default=1)
-    date = models.DateTimeField("Date", auto_now_add=True)
+    created_on = models.DateTimeField("Date", auto_now_add=True)
 
     # should we add is active for votes?
     # is_active = models.BooleanField("Is Active", default=True)
@@ -441,7 +478,7 @@ class ActionRecord(models.Model):
     object = models.ForeignKey(Task, on_delete=models.RESTRICT)
     action_description = models.CharField("Action Description", max_length=256)
     # TODO: make datetime turkey time
-    action_datetime = models.DateTimeField("Created on", auto_now=True)
+    created_on = models.DateTimeField("Created on", auto_now=True)
 
     @staticmethod
     def task_create(action_type, actor, object):
@@ -553,7 +590,7 @@ class TaskDifference(models.Model):
     due = models.DateField("Due Date")
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY)
-    datetime = models.DateTimeField("Created on", auto_now=True)
+    created_on = models.DateTimeField("Created on", auto_now=True)
 
     @staticmethod
     def record_task_difference(task, action_record):

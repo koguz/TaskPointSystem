@@ -15,11 +15,11 @@ def reset_task_submission_change_votes(task):
 
 def get_priority_or_difficulty_color(priority_or_difficulty):
     if priority_or_difficulty == 1:
-        return "#F3F169"
+        return "#FFC107"
     elif priority_or_difficulty == 2:
-        return "#64F564"
+        return "#28A745"
     elif priority_or_difficulty == 3:
-        return "#E83535"
+        return "#DC3545"
 
 
 def get_all_teammates_of_each_team(teams_list, current_developer_id):
