@@ -361,24 +361,22 @@ class Task(models.Model):
         task_difference_elements_length = len(task_difference_elements)
         task_history = []
 
-        if task_difference_elements_length < 2:
-            return
+        if task_difference_elements_length > 1:
+            # TaskDifference entries
+            for index in range(0, task_difference_elements_length):
+                if index == task_difference_elements_length - 1:
+                    break
 
-        # TaskDifference entries
-        for index in range(0, task_difference_elements_length):
-            if index == task_difference_elements_length - 1:
-                break
+                task_one_dict = task_difference_elements[index]
+                task_two_dict = task_difference_elements[index + 1]
+                task_one_dict.pop('action_record_id', None)
+                task_one_dict.pop('task_id', None)
+                task_one_dict.pop('id', None)
 
-            task_one_dict = task_difference_elements[index]
-            task_two_dict = task_difference_elements[index + 1]
-            task_one_dict.pop('action_record_id', None)
-            task_one_dict.pop('task_id', None)
-            task_one_dict.pop('id', None)
-
-            task_one_set = set(task_one_dict.items())
-            task_two_set = set(task_two_dict.items())
-            task_difference = task_one_set - task_two_set
-            task_history.append(dict(task_difference))
+                task_one_set = set(task_one_dict.items())
+                task_two_set = set(task_two_dict.items())
+                task_difference = task_one_set - task_two_set
+                task_history.append(dict(task_difference))
 
         task_actions = ActionRecord.objects.filter(object=self).order_by('-created_on').values()
 
