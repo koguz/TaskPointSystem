@@ -1,7 +1,24 @@
 $(function($) {
     $('.content-text').each(function(index, value) {
       $(this).html($(this).html().substring(0,150));
-    })
+    });
+
+    $('#sidebarCollapse').click(function () {
+        $('#sidebar').toggleClass('sidebar-active');
+        $('.main-screen').toggleClass('main-screen-active');
+    });
+
+    $('#task-more-details').click(function () {
+       $('.task-additional-details').slideToggle();
+    });
+
+    $(window).resize(function () {
+      if (window.innerWidth < 580) {
+        $('.team-name').removeClass('float-right');
+      } else {
+        $('.team-name').addClass('float-right');
+      }
+    });
 
     addListenersToTeamMemberAccordions();
 });

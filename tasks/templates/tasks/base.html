@@ -21,35 +21,42 @@
 </head>
 
 <body>
-    <div id="sidebar">
+    <nav id="sidebar">
         <ul>
-            {% if is_developer %}
-                <li id="brand-item"><a href="{% url 'tasks:profile' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
-                <hr>
-                <li><a href="{% url 'tasks:profile' %}"><i class="fas fa-user fa-2x"></i><span id="sidebar-user">{% developer_name request %}</span></a></li>
-                <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
-                <li><a href="{% url 'tasks:teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
-                <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
-                <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
-                <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Contributions</span></a></li>
-            {% else %}
-                <li id="brand-item"><a href="{% url 'tasks:supervisor-home' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
-                <hr>
-                <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
-                <li><a href="{% url 'tasks:supervisor-view-teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
-{#                <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>#}
-                <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
-                <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Contributions</span></a></li>
-            {% endif %}
+        {% if is_developer %}
+            <li id="brand-item"><a href="{% url 'tasks:profile' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
+            <hr>
+            <li><a href="{% url 'tasks:profile' %}"><i class="fas fa-user fa-2x"></i><span id="sidebar-user">{% developer_name request %}</span></a></li>
+            <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
+            <li><a href="{% url 'tasks:teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
+            <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
+            <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
+            <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Contributions</span></a></li>
+        {% else %}
+            <li id="brand-item"><a href="{% url 'tasks:supervisor-home' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
+            <hr>
+            <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
+            <li><a href="{% url 'tasks:supervisor-view-teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
+            <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
+            <li><a href="{% url 'tasks:comments' %}"><i class="fas fa-comment fa-2x"></i><span id="sidebar-comments">Comments</span></a></li>
+            <li><a href="{% url 'tasks:grades' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-grades">Contributions</span></a></li>
+        {% endif %}
+            <li><a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i><span id="sidebar-sign-out">Sign Out</span></a></li>
         </ul>
-        <a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i><span id="sidebar-sign-out">Sign Out</span></a>
-    </div>
+    </nav>
     <div class="container main-screen">
+        <nav class="navbar navbar-expand-lg sidebar-toggle sticky">
+          <div class="container-fluid">
+            <button type="button" id="sidebarCollapse" class="btn btn-dark">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+        </nav>
         {% block content %}{% endblock %}
     </div>
 
-{#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>#}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+{#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>#}
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
     <script src="{% static 'tasks/scripts.js' %}"></script>
