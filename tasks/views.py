@@ -757,3 +757,37 @@ class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
         if DeveloperTeam.objects.get(developer=developer, team=team):
             return True
         return False
+
+
+@login_required
+def account_settings(request):
+    user = User.objects.values('first_name', 'last_name', 'email').get(username=request.user)
+    user_first_name = str(user['first_name'])
+    user_last_name = str(user['last_name'])
+    user_email = str(user['email'])
+
+    print(user_first_name)
+    print(user_last_name)
+    print(user_email)
+
+    return render(
+        request,
+        'tasks/account_settings.html',
+        {
+            'first_name': user_first_name,
+            'last_name': user_last_name,
+            'email': user_email,
+        }
+
+    )
+
+
+@login_required()
+def set_email(request):
+    if 'email' in request.POST:
+        print(request.POST['email'])
+        user = User.objects.get(username=request.user)
+        user.email = request.POST['email']
+        user.save()
+
+    return redirect(request.META['HTTP_REFERER'])

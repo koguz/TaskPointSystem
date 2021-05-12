@@ -37,6 +37,9 @@ urlpatterns = [
     re_path(r'^edit/supervisor/(?P<task_id>[0-9]+)/$', views.supervisor_edit_task, name='task-edit-supervisor'),
     re_path(r'^teams/supervisor/', views.supervisor_teams, name='supervisor-view-teams'),
     re_path(r'^team/rename/(?P<team_id>[0-9])+/$', views.TeamRenameView.as_view(), name='rename-team'),
+    re_path(r'^account-settings$', views.account_settings, name='account_settings'),
+    re_path(r'^account-settings/#$', views.set_email, name='set_email'),
+
 
 
 
