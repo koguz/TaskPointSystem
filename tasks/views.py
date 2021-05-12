@@ -70,8 +70,8 @@ def supervisor(request):  # this view is for the supervisors only...
     developer = all_teammates[0][0]
     developer_teams = developer.get_teams()
     developer_team = developer_teams[2]
-    PointPool.get_all_tasks(1, developer_team, developer)
-
+    # PointPool.get_all_tasks(1, developer_team, developer)
+    s.calculate_point_pool(3)
 
     context = {
         'page_title': page_title,
@@ -781,7 +781,7 @@ def set_point_pool_interval(request):
         task_list = Task.objects.filter(difficulty=difficulty, priority=priority)
         try:
             for task in task_list:
-                entry = GraphIntervals.objects.get(task_id=task.id, difficulty=str(difficulty), priority=str(priority))
+                entry = GraphIntervals.objects.get(difficulty=str(difficulty), priority=str(priority))
                 if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
                     entry.upper_bound = upper_bound
                     entry.lower_bound = lower_bound

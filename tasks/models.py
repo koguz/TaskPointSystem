@@ -75,10 +75,20 @@ class Supervisor(models.Model):
     def get_name(self):
         return self.user.first_name + " " + self.user.last_name
 
+    def calculate_point_pool(self, course_id):
+        developer_team = []
+        supervised_teams = Team.objects.all().filter(supervisor=self.id, course_id=course_id)
+        for team in supervised_teams:
+            developer_team.append(team.get_team_members())
+        for team in developer_team:
+            for developer in team:
+                print("Course ID:", course_id)
+                print("Developer ID: ", developer.id)
 
+                PointPool.get_all_tasks(course_id, developer)
+                PointPool.get_all_votes(course_id, developer)
 
-
-
+        PointPool.scale_point_pool_grades(course_id)
 
 class Team(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -383,7 +393,7 @@ class Vote(models.Model):
     )
 
     # VOTES WILL BE DELETED IF EITHER THE VOTER OR THE TASK IS DELETED !
-    voter = models.ForeignKey(User, on_delete=models.CASCADE)
+    voter = models.ForeignKey(Developer, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     vote_type = models.PositiveSmallIntegerField("Vote Type", choices=VOTE_TYPE, default=1)
     date = models.DateTimeField("Date", auto_now_add=True)
@@ -545,63 +555,74 @@ class TaskDifference(models.Model):
 
 
 class PointPool(models.Model):
-    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    developer = models.OneToOneField(Developer, on_delete=models.CASCADE, unique=True)
     course = models.ForeignKey(Course, default=1, on_delete=models.CASCADE)
     point = models.PositiveIntegerField(default=0)
 
     @staticmethod
-    def get_all_tasks(course_id, team, developer):
+    def get_all_tasks(course_id, developer):
         try:
-            point_pool_entry = PointPool.objects.get(developer=developer, course=course_id, team=team)
-            all_accepted_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer, team=team,
-                                                                                         status=6)  # All tasks that are accpeted
-            all_rejected_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer, team=team,
-                                                                                         status=5)  # All tasks that are rejected
+            point_pool_entry = PointPool.objects.get(developer=developer, course__id=course_id)
+        except PointPool.DoesNotExist:
+            point_pool_entry = PointPool(developer=developer, course_id=course_id)
+            point_pool_entry.save()
 
-            for task in all_accepted_tasks_list:
-                try:
-                    entry = GraphIntervals.objects.filter(task=task.id, difficulty=task.difficulty, priority=task.priority).first()
-                    lower_bound = entry.lower_bound
-                    upper_bound = entry.upper_bound
-                    submission_duration = task.completed_on.date() - task.created_on.date()
-                    if lower_bound <= submission_duration <= upper_bound:
-                        point_pool_entry.point += 2
+        all_accepted_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer,
+                                                                                     status=6)  # All tasks that are accpeted
+        all_rejected_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer,
+                                                                                     status=5)  # All tasks that are rejected
+        for task in all_accepted_tasks_list:
+            entry = GraphIntervals.objects.filter(difficulty=task.difficulty, priority=task.priority)
 
-                except ObjectDoesNotExist:
-                    print("yok")
+            if len(entry) == 0:
+                entry = GraphIntervals(difficulty=task.difficulty, priority=task.priority)
+                entry.save()
 
-            point_pool_entry.point += len(all_accepted_tasks_list)  # All accepted tasks are equal to 1 point.
-            point_pool_entry.point -= len(all_rejected_tasks_list)  # All rejected tasks are equal to -1 point.
+            submission_duration = ((task.completed_on.date() - task.created_on.date()).total_seconds() / 3600)
+            lower_bound = entry[0].lower_bound
+            upper_bound = entry[0].upper_bound
 
-            print("Point Pool of " + developer.get_name() + ": " + str(point_pool_entry.point))
-        except ObjectDoesNotExist:
-            point_pool_entry = PointPool(team=team, developer=developer)
+            if lower_bound == -1 and upper_bound == -1:  # No special point pool interval given.
+                point_pool_entry.point += 1
+            elif lower_bound < submission_duration < upper_bound:  # An interval is given for that priority-difficulty task.
+                point_pool_entry.point += 2
+
+        point_pool_entry.point -= len(all_rejected_tasks_list)*1.50
 
         point_pool_entry.save()
 
     @staticmethod
-    def get_all_votes(team, developer):
-        try:
-            point_pool_entry = PointPool(team=team, developer=developer)
-            all_votes_list = Vote.objects.filter(voter_id=developer.id)  # All votes that are voted.
+    def get_all_votes(course_id, developer):
+        point_pool_entry = PointPool.objects.get(course_id=course_id, developer_id=developer.id)
 
-            for vote in all_votes_list:
-                task = Task.objects.get(id=vote.task_id)
-                if task.status == 5 and (
-                        vote.vote_type == 1 or vote.vote_type == 3):  # If a rejected task is voted as accept decrease points by 4.
-                    point_pool_entry.point -= 4
+        print("Point Pool Entry in Votes: ", point_pool_entry)
+        print("Developer of Point Pool : ", point_pool_entry.developer)
 
-        except ObjectDoesNotExist:
-            point_pool_entry = PointPool(team=team, developer=developer)
+        all_votes_list = Vote.objects.filter(task__team__course=course_id, voter=developer)  # All votes that are voted.
+        for vote in all_votes_list:
+            task = Task.objects.get(id=vote.task_id)
+            if task.status == 5 and (
+                    vote.vote_type == 1 or vote.vote_type == 3):  # If a rejected task is voted as accept decrease points by 4.
+                point_pool_entry.point -= 4
 
-        point_pool_entry.save()
+        # point_pool_entry.save()
 
-#  TODO: Calculate point pool of all students that are in that course give %100 to the TOP 1 and scale others accordingly.
+    @staticmethod
+    def scale_point_pool_grades(course_id):
+        points_and_developers = {}
+        point_pool_of_course = PointPool.objects.values('point', 'developer__user__first_name', 'developer__user__last_name').filter(course_id=course_id).order_by('-point')
+        highest_grade = point_pool_of_course[0]['point']
+        for point_pool in point_pool_of_course:
+            if point_pool['point'] == point_pool_of_course[0]['point']:
+                points_and_developers.update({point_pool['developer__user__first_name'] + point_pool['developer__user__last_name']: 100})
+            else:
+                scaled_grade = (point_pool['point'] * 100)/highest_grade
+                points_and_developers.update({point_pool['developer__user__first_name'] + point_pool['developer__user__last_name']: scaled_grade})
+
+        print(points_and_developers)
 
 
 class GraphIntervals(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
     difficulty = models.SmallIntegerField("Difficulty", default=0)
     priority = models.SmallIntegerField("Priority", default=0)
     lower_bound = models.IntegerField("Lower Bound", default=-1)
