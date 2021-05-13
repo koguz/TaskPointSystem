@@ -6,6 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from .models import *
+from webpush import send_user_notification
+from webpush.utils import send_to_subscription
 
 
 def reset_task_submission_change_votes(task):
@@ -83,6 +85,16 @@ def check_is_final(comment_list):
     return final_comment, comments
 
 def send_push_notification_to_user(user, description):
-    payload = {"head": "Welcome!", "body": description}
+    payload = {"head": "TPS Notification!", "body": description}
     send_user_notification(user=user, payload=payload, ttl=1000)
+
+def send_push_notification_to_team(team, description, excluded_user=None):
+    payload = {"head": "TPS Notification!", "body": description}
+    developers = [developer_team.developer for developer_team in DeveloperTeam.objects.filter(team=team)]
+    users = [developer.user for developer in developers]
+
+    if excluded_user:
+        users.remove(excluded_user)
+    for user in users:
+        send_user_notification(user=user, payload=payload, ttl=1000)
 

@@ -139,9 +139,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 #TODO, will get new keys before deployment from https://web-push-codelab.glitch.me/
 WEBPUSH_SETTINGS = {
-   "VAPID_PUBLIC_KEY": "BPHLZEYXDzDVavydFuKSN11ZpToobL7S0xzkn1w7pOA4kqZ3tRnjODHIiBMqWsa1J14mP0jxR7SYly-NmKkOzzY",
-   "VAPID_PRIVATE_KEY": "SHia1BtmmmaZWvVVLzxN6q_0whKRYjbYj-e6eZPDdNQ",
-   "VAPID_ADMIN_EMAIL": "utku.isil1@gmail.com"
+   "VAPID_PUBLIC_KEY":  "BPSOW6M5vuYZ2ktrtfOmaTiRwtb06MRouSRwC1iVHA-OdqgPup3h810kYgF5Ey8N_ajmb7nwo0oeijVrsE9pn9Y",
+   "VAPID_PRIVATE_KEY": "your_private_key",
+   "VAPID_ADMIN_EMAIL": "your_email"
 }
 
 # authentication backends

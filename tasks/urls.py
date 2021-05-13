@@ -2,7 +2,6 @@ from django.conf.urls import re_path,include,url
 from django.http import HttpResponseRedirect
 from django.urls import path
 from django.contrib.auth import views as auth_views
-
 from . import views
 
 app_urls = (
