@@ -9,7 +9,6 @@ from .models import *
 from webpush import send_user_notification
 from webpush.utils import send_to_subscription
 
-
 def reset_task_submission_change_votes(task):
     # reset submission change votes if the task is once changed (waiting for rev -> working on it -> waiting for rev)
     Vote.objects.filter(task=task, vote_type__range=(3, 4)).delete()
@@ -98,4 +97,3 @@ def send_push_notification_to_team(team, description, excluded_user=None):
 
     for user in users:
         send_user_notification(user=user, payload=payload, ttl=1000)
-
