@@ -477,6 +477,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_comment(action_type, actor, object):
@@ -488,6 +489,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_comment_final(action_type, actor, object):
@@ -499,6 +501,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_vote(action_type, actor, object):
@@ -510,6 +513,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_approval(action_type, actor, object):
@@ -521,6 +525,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_status_change_by_developer(action_type, actor, object):
@@ -532,6 +537,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
 
 class TaskDifference(models.Model):

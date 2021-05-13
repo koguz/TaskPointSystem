@@ -93,8 +93,9 @@ def send_push_notification_to_team(team, description, excluded_user=None):
     developers = [developer_team.developer for developer_team in DeveloperTeam.objects.filter(team=team)]
     users = [developer.user for developer in developers]
 
-    if excluded_user:
+    if excluded_user and excluded_user in users:
         users.remove(excluded_user)
+
     for user in users:
         send_user_notification(user=user, payload=payload, ttl=1000)
 

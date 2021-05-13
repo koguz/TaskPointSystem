@@ -172,7 +172,8 @@ def supervisor_create(request, team_id):
             task.save()
             action_record = ActionRecord.task_create(1, s, task)
             TaskDifference.record_task_difference(task, action_record)
-
+            notification_body = request.user.get_full_name() + " acted on task " + task.title + ": " +action_record.get_action_type_display()
+            send_push_notification_to_team(dev_team, notification_body)
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team)
@@ -218,6 +219,8 @@ def developer_create(request, team_id):
             task.apply_self_accept(task.assignee, 1)
             action_record = ActionRecord.task_create(1, developer, task)
             TaskDifference.record_task_difference(task, action_record)
+            notification_body = request.user.get_full_name() + " acted on task " + task.title + ": " + action_record.get_action_type_display()
+            send_push_notification_to_team(dev_team, notification_body, request.user)
 
             return HttpResponseRedirect(reverse('tasks:team-home', args=(team_id,)))
 
@@ -259,24 +262,25 @@ def update(request, task_id, status_id):
     except Comment.DoesNotExist:
         final_comment = None
 
+
     if final_comment is not None and task.assignee == developer and status_id == '3' and task.status == 2:
         task.apply_self_accept(developer, 3)
         task.status = status_id
         task.save()
-        ActionRecord.task_submit(3, developer, task)
+        action_record = ActionRecord.task_submit(3, developer, task)
     elif task.assignee == developer and status_id == '2' and task.status == 1:
         task.status = status_id
         task.save()
-        ActionRecord.task_status_change_by_developer(7, developer, task)
+        action_record = ActionRecord.task_status_change_by_developer(7, developer, task)
     elif task.assignee == developer and status_id == '2' and task.status == 3:
         task.status = status_id
         task.unflag_final_comment()
         task.save()
-        ActionRecord.task_status_change_by_developer(7, developer, task)
+        action_record = ActionRecord.task_status_change_by_developer(7, developer, task)
     elif task.assignee == developer and status_id == '4' and task.status == 3:
         task.status = status_id
         task.save()
-        ActionRecord.task_status_change_by_developer(10, developer, task)
+        action_record = ActionRecord.task_status_change_by_developer(10, developer, task)
     elif Supervisor.objects.filter(user=request.user).first() is None:
         messages.error(request, 'Task can not be submitted without a final comment.')
         try:
@@ -289,12 +293,15 @@ def update(request, task_id, status_id):
         task.save()
 
         if status_id == '2':
-            ActionRecord.task_approval(6, request.user, task)
+            action_record = ActionRecord.task_approval(6, request.user, task)
         elif status_id == '5':
-            ActionRecord.task_approval(12, request.user, task)
+            action_record = ActionRecord.task_approval(12, request.user, task)
         elif status_id == '6':
-            ActionRecord.task_approval(9, request.user, task)
+            action_record = ActionRecord.task_approval(9, request.user, task)
 
+
+    notification_body = request.user.get_full_name() + " acted on task " + task.title + ": " + action_record.get_action_type_display()
+    send_push_notification_to_team(dev_team, notification_body, request.user)
     return HttpResponseRedirect('/tasks/choose/')
 
 
@@ -381,10 +388,13 @@ def send_comment(request, task_id):
             ct.save()
 
             if form.cleaned_data['is_final']:
-                ActionRecord.task_comment_final(5, ct.owner, ct.task)
+                action_record = ActionRecord.task_comment_final(5, ct.owner, ct.task)
             else:
-                ActionRecord.task_comment(4, ct.owner, ct.task)
+                action_record = ActionRecord.task_comment(4, ct.owner, ct.task)
 
+            if ct.task.assignee != Developer.objects.filter(user=request.user).first():
+                notification_body = request.user.get_full_name() + " acted on task " + task.title + ": " + action_record.get_action_type_display()
+                send_push_notification_to_user(ct.task.assignee.user, notification_body)
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 
@@ -525,7 +535,9 @@ def send_vote(request, task_id, status_id, button_id):
     if 0 <= button_id <= 4 and (status_id == 1 or status_id == 3):
         vote.save()
         task.check_for_status_change()
-        ActionRecord.task_vote(action_type, request.user, task)
+        action_record = ActionRecord.task_vote(action_type, request.user, task)
+        notification_body = request.user.get_full_name() + " acted on task " + task.title + ": " + action_record.get_action_type_display()
+        send_push_notification_to_user(task.assignee.user, notification_body)
     else:
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -569,6 +581,8 @@ def developer_edit_task(request, task_id):
             if task.is_different_from(old_task):
                 action_record = ActionRecord.task_edit(2, developer, task)
                 TaskDifference.record_task_difference(task, action_record)
+                notification_body = request.user.get_full_name() + " acted on task " + task.title + ": " + action_record.get_action_type_display()
+                send_push_notification_to_team(dev_team, notification_body, request.user)
 
             return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
     else:
@@ -627,6 +641,8 @@ def supervisor_edit_task(request, task_id):
             if task.is_different_from(old_task):
                 action_record = ActionRecord.task_edit(2, Supervisor.objects.get(user=request.user), task)
                 TaskDifference.record_task_difference(task, action_record)
+                notification_body = request.user.get_full_name() + " acted on task " + task.title + ": " + action_record.get_action_type_display()
+                send_push_notification_to_team(dev_team, notification_body)
 
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
     else:
