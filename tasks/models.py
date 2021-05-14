@@ -68,6 +68,7 @@ class Milestone(models.Model):
 class Supervisor(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    photo_url = models.CharField("Photo URL:", null= True,max_length=2038)
 
     def __str__(self):
         return self.get_name()
@@ -150,6 +151,7 @@ class Team(models.Model):
 class Developer(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    photo_url = models.CharField("Photo URL:", null=True, max_length=2038)
     # team = models.ForeignKey(Team, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):

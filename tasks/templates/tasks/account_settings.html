@@ -19,7 +19,11 @@
                         <label for="email">Email:</label>
                         <input type="email" class="form-control" name="email" value="{{ email }}">
                     </div>
-                    <button type="submit" class="btn btn-default">Change e-mail</button>
+                    <div class="form-group" >
+                        <label for="email">Photo URL:</label>
+                        <input type="text" class="form-control" name="photo_url" value="{{ user_photo_url }}">
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit Changes</button>
                     <a href="{% url 'tasks:password_change' %}" class="btn btn-default" role="button">Change Password</a>
                 </form>
             </div>

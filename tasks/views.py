@@ -654,13 +654,14 @@ def supervisor_edit_task(request, task_id):
 def profile(request):
     developer = Developer.objects.get(user=request.user)
     user_task_list = developer.assignee.all().filter(status__lt=5).order_by('due')[:5]
-
+    developer_photo_url = developer.photo_url
     return render(
         request,
         'tasks/profile.html',
         {
             'user_task_list': user_task_list,
             'developer': developer,
+            'developer_photo_url': developer_photo_url,
         }
     )
 
@@ -761,19 +762,23 @@ class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
 
 @login_required
 def account_settings(request):
-    user = User.objects.values('first_name', 'last_name', 'email').get(username=request.user)
+    if Developer.objects.filter(user=request.user):
+        user = User.objects.values('first_name', 'last_name', 'email', 'developer__photo_url').get(
+            username=request.user)
+        user_photo_url = str(user['developer__photo_url'])
+    else:
+        user = User.objects.values('first_name', 'last_name', 'email', 'supervisor__photo_url').get(
+            username=request.user)
+        user_photo_url = str(user['supervisor__photo_url'])
     user_first_name = str(user['first_name'])
     user_last_name = str(user['last_name'])
     user_email = str(user['email'])
-
-    print(user_first_name)
-    print(user_last_name)
-    print(user_email)
 
     return render(
         request,
         'tasks/account_settings.html',
         {
+            'user_photo_url': user_photo_url,
             'first_name': user_first_name,
             'last_name': user_last_name,
             'email': user_email,
@@ -789,5 +794,12 @@ def set_email(request):
         user = User.objects.get(username=request.user)
         user.email = request.POST['email']
         user.save()
-
+    if 'photo_url' in request.POST and Developer.objects.filter(user=request.user):
+        developer = Developer.objects.get(user=request.user)
+        developer.photo_url = request.POST['photo_url']
+        developer.save()
+    elif 'photo_url' in request.POST and Supervisor.objects.filter(user=request.user):
+        supervisor = Supervisor.objects.get(user=request.user)
+        supervisor.photo_url = request.POST['photo_url']
+        supervisor.save()
     return redirect(request.META['HTTP_REFERER'])
