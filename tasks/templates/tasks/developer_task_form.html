@@ -5,25 +5,28 @@
     <div class="row">
         <div class="col-sm-6 user-feed" style="padding: 30px 100px 0 10px">
             <h3>{{page_title}}</h3>
-
-            <hr />
-                {% if is_edit %}
-                    <form action="{% url 'tasks:task-edit-developer' task_id %}" method="post">
-                {% else %}
-                    <form action="{% url 'tasks:task-create-developer' team_id %}" method="post">
-                {% endif %}
-              <table>
-                {% csrf_token %}
-                {{ form }}
-                <tr>
-                  <td>&nbsp;</td>
-                  <td style="text-align: right;">
-                    <input type="submit" value="Submit" class="btn btn-success" id="send" />
-                    <a href="{% url 'tasks:choose' %}" class="btn btn-default btn-danger" role="button">Cancel</a>
-                  </td>
-                </tr>
-              </table>
-            </form>
+            <hr>
+            {% if is_edit %}
+                <form action="{% url 'tasks:task-edit-developer' task_id %}" method="post">
+            {% else %}
+                <form action="{% url 'tasks:task-create-developer' team_id %}" method="post">
+            {% endif %}
+                    <table>
+                        {% csrf_token %}
+                        {{ form }}
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td style="text-align: right;">
+                                <input type="submit" value="Submit" class="btn btn-success" id="send" />
+                                {% if is_edit %}
+                                    <a href="{% url 'tasks:view-task' task_id %}" class="btn btn-default btn-danger" role="button">Cancel</a>
+                                {% else %}
+                                    <a href="{% url 'tasks:team-home' team_id %}" class="btn btn-default btn-danger" role="button">Cancel</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </form>
         </div>
 
         <div class="col-sm-6 user-feed" style="padding: 30px 0 0 20px">

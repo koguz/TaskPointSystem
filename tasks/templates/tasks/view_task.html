@@ -4,21 +4,21 @@
 {% block content %}
     <div class="row">
         <div class="col-sm-2"></div>
-        <div class="col-sm-8" style="padding: 30px 20px 0 30px">
+        <div class="col-lg-8 view-task-main-column">
 
             <div class="row task-status-bar mg-b-10">
-                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as image_static %}
-                    <img src="{% static image_static %}" alt="Review status" id="task-status">
-                {% endwith %}
+{#                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as image_static %}#}
+{#                    <img src="{% static image_static %}" alt="Review status" id="task-status">#}
+{#                {% endwith %}#}
             </div>
 
-            <div class="row task-and-team-name mg-b-10">
+            <div class="row task-and-team-name no-style-links mg-b-10">
                 <div class="col-sm-6">
-                    <h3>{{ task.title }}</h3>
+                    <h3><a href="{% url 'tasks:view-task' task.id %}">{{ task.title }}</a></h3>
                 </div>
                 <div class="col-sm-6">
                     <div class="team-name float-right">
-                        <h3>{{ task.team }}</h3>
+                        <h3><a href="{% url 'tasks:team-home' task.team.id %}">{{ task.team }}</a></h3>
                     </div>
                 </div>
             </div>
@@ -26,59 +26,70 @@
             <div class="row task-details-card mg-b-10">
                 <div class="col-sm-6">
                     <table class="task-info-table">
-                        <tr><td>Assigned to</td><td>:</td><td>{{ task.assignee }}</td></tr>
-                        <tr><td>Priority</td><td>:</td><td bgcolor={{ priority_color }}>{{ task.get_priority_display }}</td></tr>
-                        <tr><td>Difficulty</td><td>:</td><td bgcolor={{ difficulty_color }}>{{ task.get_difficulty_display }}</td></tr>
-                        <tr><td>Due Date</td><td>:</td><td>{{ task.due }}</td></tr>
-                        <tr>
-                            <td><button type="button" class="btn btn-info" id="task-more-details-button"><i>More details</i></button></td>
-                            <td></td>
-                            <td><button type="button" class="btn btn-info" id="task-history-button"><i>History</i></button></td>
-                        </tr>
+                        <tr><td><b>Assigned to</b></td><td>:</td><td>{{ task.assignee }}</td></tr>
+                        <tr><td><b>Priority</b></td><td>:</td><td bgcolor={{ priority_color }}>{{ task.get_priority_display }}</td></tr>
+                        <tr><td><b>Difficulty</b></td><td>:</td><td bgcolor={{ difficulty_color }}>{{ task.get_difficulty_display }}</td></tr>
+                        <tr><td><b>Due Date</b></td><td>:</td><td>{{ task.due }}</td></tr>
                     </table>
                 </div>
                 <div class="col-sm-6">
                     <table class="task-info-table">
-                        <tr><td>Description</td><td>:</td><td>{{ task.description|linebreaksbr }}</td></tr>
+                        <tr><td><b>Description</b></td><td>:</td><td>{{ task.description|linebreaksbr }}</td></tr>
                         {% if task.status == 1 or task.status == 2 %}
-                            <tr><td>Creation Accept Votes</td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
-                            <tr><td>Creation Change Votes</td><td>:</td><td>{{ task.get_creation_change_votes.count }}</td></tr>
+                            <tr><td><b>Creation Accept Votes</b></td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
+                            <tr><td><b>Creation Change Votes</b></td><td>:</td><td>{{ task.get_creation_change_votes.count }}</td></tr>
                         {% else %}
-                            <tr><td>Submission Accept Votes</td><td>:</td><td>{{ task.get_submission_accept_votes.count }}</td></tr>
-                            <tr><td>Submission Change Votes</td><td>:</td><td>{{ task.get_submission_change_votes.count }}</td></tr>
+                            <tr><td><b>Submission Accept Votes</b></td><td>:</td><td>{{ task.get_submission_accept_votes.count }}</td></tr>
+                            <tr><td><b>Submission Change Votes</b></td><td>:</td><td>{{ task.get_submission_change_votes.count }}</td></tr>
                         {% endif %}
                     </table>
+                </div>
+                <div class="row task-detail-buttons">
+                    <button type="button" class="btn btn-info" id="task-more-details-button"><i>More details</i></button>
+                    <button type="button" class="btn btn-info" id="task-history-button"><i>History</i></button>
                 </div>
             </div>
 
             <div class="row task-additional-details mg-b-10">
                 <h4>Additional Details</h4>
                 <table class="task-info-table">
-                    <tr><td>Created on</td><td>:</td><td>{{ task.created_on }}</td></tr>
-                    <tr><td>Milestone</td><td>:</td><td>{{ task.milestone }}</td></tr>
-                    <tr><td>Modifier</td><td>:</td><td>{{ task.modifier }}</td></tr>
-                    <tr><td>Task Point ((p*d) + m)</td><td>:</td><td>{{ task.get_points }}</td></tr>
-                    <tr><td>Last Modified by</td><td>:</td><td>{{ task.creator }}</td></tr>
-                    <tr><td>Last Modified</td><td>:</td><td>{{ task.completed }}</td></tr>
+                    <tr><td><b>Created on</b></td><td>:</td><td>{{ task.created_on }}</td></tr>
+                    <tr><td><b>Milestone</b></td><td>:</td><td>{{ task.milestone }}</td></tr>
+                    <tr><td><b>Modifier</b></td><td>:</td><td>{{ task.modifier }}</td></tr>
+                    <tr><td><b>Task Point ((p*d) + m)</b></td><td>:</td><td>{{ task.get_points }}</td></tr>
+                    <tr><td><b>Last Modified by</b></td><td>:</td><td>{{ task.creator }}</td></tr>
+                    <tr><td><b>Last Modified</b></td><td>:</td><td>{{ task.completed }}</td></tr>
                 </table>
             </div>
-
             <div class="row task-history mg-b-10">
-                <h4>Task History</h4>
-                <hr>
+                <h4 class="mg-b-10">Task History</h4>
                 {% for task_history_element in task_history %}
                     {% if task_history_element.action_description %}
-                        <p>{{ task_history_element.action_description }}</p>
-                        <p><b>{{ task_history_element.created_on }}</b></p>
-                        <hr>
+                        <div class="row task-history-element mg-b-10">
+                            <div class="col-sm-8">
+                                <p>{{ task_history_element.action_description }}</p>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="float-right">
+                                    <p><b>{{ task_history_element.created_on }}</b></p>
+                                </div>
+                            </div>
+                        </div>
                     {% else %}
-                        {% for key, value in task_history_element.items %}
-                            {% if key != 'created_on' %}
-                                <p>{{ key }}: {{ value }}</p>
-                            {% endif %}
-                        {% endfor %}
-                            <p><b>{{ task_history_element.created_on }}</b></p>
-                        <hr>
+                        <div class="row task-history-element mg-b-10">
+                            <div class="col-sm-12">
+                                {% for key, value in task_history_element.items %}
+                                    {% if key != 'created_on' %}
+                                        <p><b>{{ key | title }}</b>: {{ value }}</p>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12 difference-edit-connection-line">
+                                <div class="vl mg-b-10"></div>
+                            </div>
+                        </div>
                     {% endif %}
                 {% endfor %}
             </div>
@@ -149,8 +160,6 @@
                     {% if creation_needs_change %}
                         <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-primary btn-lg" role="button" title="Edit your task details">Edit</a>
                     {% endif %}
-                {% elif user_d %}
-                    <p>You can not vote anymore</p>
                 {% endif %}
 
                 {# SUPERVISOR #}

@@ -10,10 +10,12 @@ $(function($) {
 
     $('#task-more-details-button').click(function () {
        $('.task-additional-details').slideToggle();
+       $('.task-history').slideUp();
     });
 
     $('#task-history-button').click(function () {
        $('.task-history').slideToggle();
+       $('.task-additional-details').slideUp();
     });
 
     $(window).resize(function () {

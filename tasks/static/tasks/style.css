@@ -133,9 +133,8 @@ body {
 }
 
 .sidebar-toggle {
-  display: inline-flex;
-  margin-left: -35px;
-  padding-top: 4px;
+  padding: 4px 0 0 0;
+  margin-left: -10px;
   z-index: 4;
 }
 
@@ -256,17 +255,16 @@ a[aria-expanded="true"] {
 }
 
 .main-screen {
-  margin-left: 200px;
-  padding: 10px 10px;
-  max-width: 88%;
+  margin-left: 0;
+  padding: 10px 20px 10px 220px;
+  max-width: 100%;
   height: 100%;
   transition: all 0.4s;
 }
 
 .main-screen-active {
-  margin-left: 0;
-  padding: 10px 10px;
-  max-width: 98%;
+  padding-left: 20px;
+  max-width: 100%;
   height: 100%;
   transition: all 0.4s;
 }
@@ -413,13 +411,11 @@ a[aria-expanded="true"] {
   }
 
   .main-screen-active {
-    margin-left: 200px !important;
+    margin-left: 220px !important;
   }
 
   .main-screen {
-    max-width: 90%;
-    margin-left: 0;
-    padding: 10px 20px;
+    padding-left: 20px;
   }
 }
 
@@ -480,20 +476,24 @@ a[aria-expanded="true"] {
 }
 
 .vl {
-  border-left: 2px solid rgba(165, 165, 165, 0.2);
-  height: 50px;
-  background-color: rgba(165, 165, 165, 0.2);
-  float: right;
-  text-align: right;
+  border-left: 2px solid #cccccc;
+  height: 30px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.difference-edit-connection-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .disabled {
   pointer-events: none;
 }
 
-.task-info-table {
-  border-collapse: separate;
-  border-spacing: 0 7px;
+.view-task-main-column {
+  padding: 30px 20px;
 }
 
 .task-status-bar {
@@ -502,6 +502,48 @@ a[aria-expanded="true"] {
   margin-left: 100px;
   margin-right: 100px;
 }
+
+.task-and-team-name {
+  border: 1px solid #cccccc;
+  border-radius: 20px;
+  background: #F6F6F6;
+  padding: 10px 5px 5px 5px;
+}
+
+.task-details-card {
+  border: 1px solid #cccccc;
+  border-radius: 20px;
+  background: #F6F6F6;
+  padding: 5px;
+}
+
+.task-info-table {
+  border-collapse: separate;
+  border-spacing: 0 7px;
+}
+
+.task-detail-buttons {
+  margin-left: 20px;
+  padding: 5px 0;
+}
+
+.task-detail-buttons button {
+  margin-right: 10px;
+}
+
+.task-buttons {
+  border: 1px solid #cccccc;
+  border-radius: 20px;
+  background: #F6F6F6;
+  padding: 10px 5px;
+  justify-content: center;
+  align-items: center;
+}
+
+  .task-buttons a {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
 
 .task-additional-details {
   border: 1px solid #cccccc;
@@ -519,38 +561,24 @@ a[aria-expanded="true"] {
   display: none;
 }
 
-/*#task-more-details-button {*/
-/*  border-radius: 50%;*/
-/*  padding: 5px 15px;*/
-/*}*/
+.task-history-element {
+  border: 1px solid #cccccc;
+  border-radius: 20px;
+  background: #FFF;
+  padding: 15px 5px 0 5px;
+}
 
-.task-details-card {
+.task-history .task-history-element:last-child {
+  margin-bottom: -10px;
+}
+
+.task-comment-form {
   border: 1px solid #cccccc;
   border-radius: 20px;
   background: #F6F6F6;
-  padding: 5px;
+  padding: 10px;
+  display: block;
 }
-
-.task-and-team-name {
-  border: 1px solid #cccccc;
-  border-radius: 20px;
-  background: #F6F6F6;
-  padding: 10px 5px 5px 5px;
-}
-
-.task-buttons {
-  border: 1px solid #cccccc;
-  border-radius: 20px;
-  background: #F6F6F6;
-  padding: 10px 5px;
-  justify-content: center;
-  align-items: center;
-}
-
-  .task-buttons a {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
 
 .task-comments {
   border: 1px solid #cccccc;
@@ -568,14 +596,6 @@ a[aria-expanded="true"] {
   .list-group:last-child {
     margin-bottom: -10px;
   }
-
-.task-comment-form {
-  border: 1px solid #cccccc;
-  border-radius: 20px;
-  background: #F6F6F6;
-  padding: 10px;
-  display: block;
-}
 
 .mg-t-10 {
   margin-top: 10px;
@@ -648,4 +668,9 @@ a[aria-expanded="true"] {
   font-size: 12px;
   font-family: sans-serif;
   white-space: nowrap;
+}
+
+.no-style-links a {
+  color: inherit;
+  text-decoration: none;
 }

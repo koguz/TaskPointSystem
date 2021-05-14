@@ -309,7 +309,6 @@ class Task(models.Model):
         for attribute in different_attributes:
             differences[attribute] = self.__getattribute__(attribute)
 
-        print(differences)
         return differences
 
     def is_different_from(self, task):
@@ -361,34 +360,47 @@ class Task(models.Model):
         task_difference_elements_length = len(task_difference_elements)
         task_history = []
 
-        if task_difference_elements_length > 1:
-            # TaskDifference entries
-            for index in range(0, task_difference_elements_length):
-                if index == task_difference_elements_length - 1:
-                    break
+        task_creation_history_element = task_difference_elements[task_difference_elements_length - 1]
+        assignee_id = task_creation_history_element.pop('assignee_id', None)
+        task_creation_history_element['assignee'] = Developer.objects.get(pk=assignee_id)
+        task_creation_history_element.pop('action_record_id', None)
+        task_creation_history_element.pop('task_id', None)
+        task_creation_history_element.pop('id', None)
+        task_history.append(task_creation_history_element)
 
-                task_one_dict = task_difference_elements[index]
-                task_two_dict = task_difference_elements[index + 1]
-                task_one_dict.pop('action_record_id', None)
-                task_one_dict.pop('task_id', None)
-                task_one_dict.pop('id', None)
+        # TaskDifference entries
+        for index in range(0, task_difference_elements_length - 1):
+            task_one_dict = task_difference_elements[index]
+            task_two_dict = task_difference_elements[index + 1]
+            assignee_id = task_one_dict.pop('assignee_id', None)
+            task_one_dict['assignee'] = Developer.objects.get(pk=assignee_id)
+            task_one_dict.pop('action_record_id', None)
+            task_one_dict.pop('task_id', None)
+            task_one_dict.pop('id', None)
 
-                task_one_set = set(task_one_dict.items())
-                task_two_set = set(task_two_dict.items())
-                task_difference = task_one_set - task_two_set
-                task_history.append(dict(task_difference))
+            task_one_set = set(task_one_dict.items())
+            task_two_set = set(task_two_dict.items())
+            task_difference = task_one_set - task_two_set
+            task_history.append(dict(task_difference))
 
         task_actions = ActionRecord.objects.filter(object=self).order_by('-created_on').values()
+        action_types = dict(ActionRecord.ACTION_TYPE)
 
         for task_action in task_actions:
+            action_owner = Developer.objects.filter(user_id=task_action['actor_id']).first()
+
+            if action_owner is None:
+                action_owner = Supervisor.objects.filter(user_id=task_action['actor_id']).first()
+
+            action_desc = action_owner.get_name() + ' performed ' + action_types.get(task_action['action_type'])
             task_history.append({
-                'action_description': task_action['action_description'],
+                'action_description': action_desc,
                 'created_on': task_action['created_on'],
             })
 
         task_history_sorted = sorted(task_history, key=lambda i: i['created_on'])
         task_history_sorted.reverse()
-        print(task_history_sorted)
+
         return task_history_sorted
 
     def __str__(self):

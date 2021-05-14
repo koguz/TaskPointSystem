@@ -173,7 +173,7 @@ def supervisor_create(request, team_id):
             action_record = ActionRecord.task_create(1, s, task)
             TaskDifference.record_task_difference(task, action_record)
 
-            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
     else:
         form = TaskSupervisorForm(dev_team)
 
@@ -219,7 +219,7 @@ def developer_create(request, team_id):
             action_record = ActionRecord.task_create(1, developer, task)
             TaskDifference.record_task_difference(task, action_record)
 
-            return HttpResponseRedirect(reverse('tasks:team-home', args=(team_id,)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
 
     else:
         form = TaskDeveloperForm()
@@ -539,6 +539,9 @@ def developer_edit_task(request, task_id):
     task_id = int(task_id)
     task_to_edit = Task.objects.get(pk=task_id)
 
+    if task_to_edit.status == 1 and task_to_edit.get_creation_change_votes().count() < 1:
+        return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
+
     try:
         developer = Developer.objects.get(user=request.user)
     except ObjectDoesNotExist:
@@ -560,19 +563,17 @@ def developer_edit_task(request, task_id):
 
         if form.is_valid():
             task = form.save(commit=False)
-            task.creator = request.user
-            task.team = dev_team
-            # TODO: votes are reset even if there is no change, we should fix this
-            Vote.objects.filter(task=task).delete()  # votes are reset here
-            task.milestone = course.get_current_milestone()
-            task.save()
-            task.apply_self_accept(developer, 1)
-
             if task.is_different_from(old_task):
+                task.creator = request.user
+                task.team = dev_team
+                Vote.objects.filter(task=task).delete()  # votes are reset here
+                task.milestone = course.get_current_milestone()
+                task.save()
+                task.apply_self_accept(developer, 1)
                 action_record = ActionRecord.task_edit(2, developer, task)
                 TaskDifference.record_task_difference(task, action_record)
 
-            return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:
         form = TaskDeveloperForm(initial={'title': task_to_edit.title,
                                           'description': task_to_edit.description,
@@ -615,22 +616,21 @@ def supervisor_edit_task(request, task_id):
 
         if form.is_valid():
             task = form.save(commit=False)
-            task.creator = request.user
-            task.team = dev_team
-            task.milestone = course.get_current_milestone()
-
-            if task.status == 1:  # if task is in review state reset all votes and remain in current state
-                Vote.objects.filter(task=task).delete()  # reset all votes
-            elif task.status != 2 or task.status != 5 or task.status != 6:
-                task_to_edit.unflag_final_comment()
-
-            task.save()
-
             if task.is_different_from(old_task):
+                task.creator = request.user
+                task.team = dev_team
+                task.milestone = course.get_current_milestone()
+
+                if task.status == 1:  # if task is in review state reset all votes and remain in current state
+                    Vote.objects.filter(task=task).delete()  # reset all votes
+                elif task.status != 2 or task.status != 5 or task.status != 6:
+                    task_to_edit.unflag_final_comment()
+
+                task.save()
                 action_record = ActionRecord.task_edit(2, Supervisor.objects.get(user=request.user), task)
                 TaskDifference.record_task_difference(task, action_record)
 
-            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
                                                      'title': task_to_edit.title,
