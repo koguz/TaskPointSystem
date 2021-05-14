@@ -369,7 +369,7 @@ class Task(models.Model):
         task_history.append(task_creation_history_element)
 
         # TaskDifference entries
-        for index in range(0, task_difference_elements_length - 1):
+        for index in reversed(range(0, task_difference_elements_length - 1)):
             task_one_dict = task_difference_elements[index]
             task_two_dict = task_difference_elements[index + 1]
             assignee_id = task_one_dict.pop('assignee_id', None)

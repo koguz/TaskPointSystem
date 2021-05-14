@@ -264,19 +264,23 @@ def update(request, task_id, status_id):
         task.status = status_id
         task.save()
         ActionRecord.task_submit(3, developer, task)
+        return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
     elif task.assignee == developer and status_id == '2' and task.status == 1:
         task.status = status_id
         task.save()
         ActionRecord.task_status_change_by_developer(7, developer, task)
+        return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
     elif task.assignee == developer and status_id == '2' and task.status == 3:
         task.status = status_id
         task.unflag_final_comment()
         task.save()
         ActionRecord.task_status_change_by_developer(7, developer, task)
+        return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
     elif task.assignee == developer and status_id == '4' and task.status == 3:
         task.status = status_id
         task.save()
         ActionRecord.task_status_change_by_developer(10, developer, task)
+        return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
     elif Supervisor.objects.filter(user=request.user).first() is None:
         messages.error(request, 'Task can not be submitted without a final comment.')
         try:
@@ -295,7 +299,7 @@ def update(request, task_id, status_id):
         elif status_id == '6':
             ActionRecord.task_approval(9, request.user, task)
 
-    return HttpResponseRedirect('/tasks/choose/')
+    return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
 
 
 @login_required

@@ -94,6 +94,15 @@
                 {% endfor %}
             </div>
 
+            <div class="row alert-messages">
+                {% for message in messages %}
+                    <div class="alert alert-danger">
+                        <a class="close" href="#" data-dismiss="alert">&nbsp;×</a>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+
             <div class="row task-buttons mg-b-10">
                 {# SUPERVISOR #}
                 {% if user_s and task.status == 1 or user_s and task.status == 3 or user_s and task.status == 4 %}
@@ -233,15 +242,6 @@
             </div>
         <div class="col-sm-2"></div>
     </div>
-
-    <div style="margin-top: 20px">
-        {% for message in messages %}
-            <div class="alert alert-danger">
-                <a class="close" href="#" data-dismiss="alert">×</a>
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
 {% endblock %}
 {% block scriptcontent %}
     <script>
@@ -250,6 +250,9 @@
 
         const taskComments = $('.task-comments');
         if (taskComments.children().length < 1) taskComments.hide(0);
+
+        const alertMessages = $('.alert-messages');
+        if (alertMessages.children().length < 1) alertMessages.hide(0);
 
         $("input, select, textarea").addClass("form-control");
         $("#send").removeClass("form-control");

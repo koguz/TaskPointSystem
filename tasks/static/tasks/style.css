@@ -531,6 +531,11 @@ a[aria-expanded="true"] {
   margin-right: 10px;
 }
 
+.alert-messages {
+  align-items: center;
+  justify-content: center;
+}
+
 .task-buttons {
   border: 1px solid #cccccc;
   border-radius: 20px;
