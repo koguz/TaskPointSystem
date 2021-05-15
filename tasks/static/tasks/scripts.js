@@ -18,14 +18,6 @@ $(function($) {
        $('.task-additional-details').slideUp();
     });
 
-    $(window).resize(function () {
-      if (window.innerWidth < 580) {
-        $('.team-name').removeClass('float-right');
-      } else {
-        $('.team-name').addClass('float-right');
-      }
-    });
-
     addListenersToTeamMemberAccordions();
 });
 

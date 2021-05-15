@@ -6,10 +6,15 @@
         <div class="col-sm-2"></div>
         <div class="col-lg-8 view-task-main-column">
 
-            <div class="row task-status-bar mg-b-10">
-{#                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as image_static %}#}
-{#                    <img src="{% static image_static %}" alt="Review status" id="task-status">#}
-{#                {% endwith %}#}
+            <div class="row task-status-bar mg-b-10 mg-t-10">
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as image_static %}
+                    <img
+                        src="{% static image_static %}"
+                        alt="Task's current status: {{ task.get_status_display }}"
+                        title="Task's current status: {{ task.get_status_display }}"
+                        id="task-status"
+                    >
+                {% endwith %}
             </div>
 
             <div class="row task-and-team-name no-style-links mg-b-10">
@@ -253,6 +258,36 @@
 
         const alertMessages = $('.alert-messages');
         if (alertMessages.children().length < 1) alertMessages.hide(0);
+
+        $(window).resize(function () {
+            if (window.innerWidth < 580) {
+                $('.team-name').removeClass('float-right');
+            } else {
+                $('.team-name').addClass('float-right');
+            }
+
+            if (window.innerWidth < 1215) {
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'_mobile.png' as imageStatic %}
+                    $('#task-status').attr('src', '{% static imageStatic %}')
+                {% endwith %}
+            } else {
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as imageStatic %}
+                    $('#task-status').attr('src', '{% static imageStatic %}')
+                {% endwith %}
+            }
+        });
+
+        $(function () {
+            if (window.innerWidth < 1215) {
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'_mobile.png' as imageStatic %}
+                    $('#task-status').attr('src', '{% static imageStatic %}')
+                {% endwith %}
+            }
+
+            if (window.innerWidth < 580) {
+                $('.team-name').removeClass('float-right');
+            }
+        });
 
         $("input, select, textarea").addClass("form-control");
         $("#send").removeClass("form-control");
