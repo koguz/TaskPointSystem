@@ -16,7 +16,7 @@
                             <div class="panel">
                                 <a style="text-decoration: none; color: #1A1A1A">
                                     <li>
-                                        <p>{{ dev }}</p>
+                                        <a href="{% url 'tasks:developer_point_pool_activities' course dev.id  %}">{{ dev }}</a>
                                     </li>
                                 </a>
                             </div>

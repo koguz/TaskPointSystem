@@ -851,3 +851,26 @@ def calculate_point_pool(request, course_id):
             'developers_and_grades': developers_and_grades,
         }
     )
+
+
+def developer_point_pool_activities(request, course_name, developer_id):
+
+    developer = Developer.objects.get(id=developer_id)
+    accepted_tasks = Task.objects.filter(status=6, assignee=developer)
+    rejected_tasks = Task.objects.filter(status=5, assignee=developer)
+    comments = Comment.objects.filter(owner=developer.user)
+    votes = Vote.objects.filter(voter=developer)
+    developer_name = developer.get_name()
+
+    return render(
+        request,
+        'tasks/developer_point_pool_activities.html',
+        {
+            'accepted_tasks': accepted_tasks,
+            'rejected_tasks': rejected_tasks,
+            'developer_name': developer_name,
+            'votes': votes,
+            'comments': comments,
+            'developer': developer,
+        }
+    )

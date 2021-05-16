@@ -42,7 +42,8 @@ urlpatterns = [
     re_path(r'^data-analytics/(?P<difficulty_and_priority>[0-9]+_[0-9]+)/$', views.data_graph_inspect,
             name='data_graph_inspect'),
     re_path(r'^point_pool/$', views.point_pool, name='point_pool'),
-    re_path(r'^point_pool/(?P<course_id>[0-9]+)/$', views.calculate_point_pool, name='calculate_point_pool'),
+    re_path(r'^point_pool/course/(?P<course_id>[0-9]+)/$', views.calculate_point_pool, name='calculate_point_pool'),
+    re_path(r'^point_pool/developer/(?P<course_name>(.*))/(?P<developer_id>[0-9]+)/$', views.developer_point_pool_activities, name='developer_point_pool_activities'),
 
 
 
