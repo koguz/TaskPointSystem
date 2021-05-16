@@ -88,7 +88,8 @@ class Supervisor(models.Model):
                 PointPool.get_all_tasks(course_id, developer)
                 PointPool.get_all_votes(course_id, developer)
 
-        PointPool.scale_point_pool_grades(course_id)
+        return PointPool.scale_point_pool_grades(course_id)
+
 
 class Team(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -572,15 +573,15 @@ class PointPool(models.Model):
         all_rejected_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer,
                                                                                      status=5)  # All tasks that are rejected
         for task in all_accepted_tasks_list:
-            entry = GraphIntervals.objects.filter(difficulty=task.difficulty, priority=task.priority)
+            entry = GraphIntervals.objects.filter(difficulty=task.difficulty, priority=task.priority).first()
 
-            if len(entry) == 0:
+            if entry is None:
                 entry = GraphIntervals(difficulty=task.difficulty, priority=task.priority)
                 entry.save()
 
             submission_duration = ((task.completed_on.date() - task.created_on.date()).total_seconds() / 3600)
-            lower_bound = entry[0].lower_bound
-            upper_bound = entry[0].upper_bound
+            lower_bound = entry.lower_bound
+            upper_bound = entry.upper_bound
 
             if lower_bound == -1 and upper_bound == -1:  # No special point pool interval given.
                 point_pool_entry.point += 1
@@ -619,7 +620,7 @@ class PointPool(models.Model):
                 scaled_grade = (point_pool['point'] * 100)/highest_grade
                 points_and_developers.update({point_pool['developer__user__first_name'] + point_pool['developer__user__last_name']: scaled_grade})
 
-        print(points_and_developers)
+        return points_and_developers
 
 
 class GraphIntervals(models.Model):

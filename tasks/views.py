@@ -67,11 +67,7 @@ def supervisor(request):  # this view is for the supervisors only...
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
     all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
-    developer = all_teammates[0][0]
-    developer_teams = developer.get_teams()
-    developer_team = developer_teams[2]
-    # PointPool.get_all_tasks(1, developer_team, developer)
-    s.calculate_point_pool(3)
+
 
     context = {
         'page_title': page_title,
@@ -811,3 +807,47 @@ class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
         if DeveloperTeam.objects.get(developer=developer, team=team):
             return True
         return False
+
+
+def point_pool(request):
+    supervisor = Supervisor.objects.get(user=request.user)
+    course_list = Team.objects.values('course__name', 'name', 'course_id').filter(supervisor=supervisor)
+    course_dict = {}
+    course_id_name_dict = {}
+    for course in course_list:
+        team = Team.objects.filter(supervisor=supervisor, name=course['name'])
+        all_teammates = get_all_teammates_of_each_team(team, supervisor.user_id)
+
+        if course['course__name'] in course_dict:
+            course_dict[course['course__name']].append({course['name']: all_teammates})
+
+        else:
+            course_dict.update({course['course__name']: [{course['name']: all_teammates}]})
+            course_id_name_dict.update({course['course__name']: course['course_id']})
+
+    print(course_id_name_dict)
+
+    return render(
+        request,
+        'tasks/point_pool.html',
+        {
+            'course_dict': course_dict,
+            'course_id_name_dict': course_id_name_dict,
+        }
+    )
+
+
+def calculate_point_pool(request, course_id):
+    s = Supervisor.objects.get(user=request.user)
+    course = Course.objects.get(id=course_id)
+    if s:
+        developers_and_grades = s.calculate_point_pool(course_id)
+
+    return render(
+        request,
+        'tasks/point_pool_course_grade.html',
+        {
+            'course': course,
+            'developers_and_grades': developers_and_grades,
+        }
+    )

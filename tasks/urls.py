@@ -18,9 +18,6 @@ urlpatterns = [
     re_path(r'^calendar/$', views.calendar, name='calendar'),
     re_path(r'^comments/$', views.comments, name='comments'),
     re_path(r'^grades/$', views.grades, name='grades'),
-    re_path(r'^data-analytics/$', views.data_analytics, name='data-analytics'),
-    re_path(r'^data-analytics/#$', views.set_point_pool_interval, name='set_point_pool_interval'),
-    re_path(r'^data-analytics/(?P<difficulty_and_priority>[0-9]+_[0-9]+)/$', views.data_graph_inspect, name='data_graph_inspect'),
     re_path(r'^team/(?P<team_id>[0-9])/$', views.team, name='team-home'),
     re_path(r'^supervisor/$', views.supervisor, name='supervisor-home'),
     re_path(r'^team/(?P<team_id>[0-9])/all/(?P<order_by>[a-z]+_*[a-z]+)/$', views.task_all, name='task-all'),
@@ -40,6 +37,13 @@ urlpatterns = [
     re_path(r'^edit/supervisor/(?P<task_id>[0-9]+)/$', views.supervisor_edit_task, name='task-edit-supervisor'),
     re_path(r'^teams/supervisor/', views.supervisor_teams, name='supervisor-view-teams'),
     re_path(r'^team/rename/(?P<team_id>[0-9])+/$', views.TeamRenameView.as_view(), name='rename-team'),
+    re_path(r'^data-analytics/$', views.data_analytics, name='data-analytics'),
+    re_path(r'^data-analytics/#$', views.set_point_pool_interval, name='set_point_pool_interval'),
+    re_path(r'^data-analytics/(?P<difficulty_and_priority>[0-9]+_[0-9]+)/$', views.data_graph_inspect,
+            name='data_graph_inspect'),
+    re_path(r'^point_pool/$', views.point_pool, name='point_pool'),
+    re_path(r'^point_pool/(?P<course_id>[0-9]+)/$', views.calculate_point_pool, name='calculate_point_pool'),
+
 
 
 
