@@ -82,8 +82,6 @@ class Supervisor(models.Model):
             developer_team.append(team.get_team_members())
         for team in developer_team:
             for developer in team:
-                print("Course ID:", course_id)
-                print("Developer ID: ", developer.id)
 
                 PointPool.get_all_tasks(course_id, developer)
                 PointPool.get_all_votes(course_id, developer)
@@ -341,7 +339,6 @@ class Task(models.Model):
         for attribute in different_attributes:
             differences[attribute] = self.__getattribute__(attribute)
 
-        print(differences)
         return differences
 
     def is_different_from(self, task):
@@ -556,7 +553,7 @@ class TaskDifference(models.Model):
 
 
 class PointPool(models.Model):
-    developer = models.OneToOneField(Developer, on_delete=models.CASCADE, unique=True)
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, default=1, on_delete=models.CASCADE)
     point = models.PositiveIntegerField(default=0)
 
@@ -586,9 +583,9 @@ class PointPool(models.Model):
             if lower_bound == -1 and upper_bound == -1:  # No special point pool interval given.
                 point_pool_entry.point += 1
             elif lower_bound < submission_duration < upper_bound:  # An interval is given for that priority-difficulty task.
-                point_pool_entry.point += 2
+                point_pool_entry.point += 1
 
-        point_pool_entry.point -= len(all_rejected_tasks_list)*1.50
+        point_pool_entry.point -= len(all_rejected_tasks_list)
 
         point_pool_entry.save()
 
@@ -596,17 +593,16 @@ class PointPool(models.Model):
     def get_all_votes(course_id, developer):
         point_pool_entry = PointPool.objects.get(course_id=course_id, developer_id=developer.id)
 
-        print("Point Pool Entry in Votes: ", point_pool_entry)
-        print("Developer of Point Pool : ", point_pool_entry.developer)
-
         all_votes_list = Vote.objects.filter(task__team__course=course_id, voter=developer)  # All votes that are voted.
         for vote in all_votes_list:
             task = Task.objects.get(id=vote.task_id)
             if task.status == 5 and (
                     vote.vote_type == 1 or vote.vote_type == 3):  # If a rejected task is voted as accept decrease points by 4.
-                point_pool_entry.point -= 4
+                point_pool_entry.point -= 1
+            elif task.status == 6 and (vote.vote_type == 1 or vote.vote_type == 3):
+                point_pool_entry.point += 1
 
-        # point_pool_entry.save()
+        point_pool_entry.save()
 
     @staticmethod
     def scale_point_pool_grades(course_id):
@@ -628,3 +624,8 @@ class GraphIntervals(models.Model):
     priority = models.SmallIntegerField("Priority", default=0)
     lower_bound = models.IntegerField("Lower Bound", default=-1)
     upper_bound = models.IntegerField("Upper Bound", default=-1)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['difficulty', 'priority'], name='name of constraint')
+        ]

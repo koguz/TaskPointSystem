@@ -141,7 +141,7 @@ def plot_gaussian(time_diff_list, difficulty_and_priority):
         title = "invalid difficulty and priority"
 
     plt.title(title)
-    plt.savefig('tasks/static/tasks/gaussian_plots' + title + '_figure.png')
+    plt.savefig('tasks/static/tasks/gaussian_plots/' + title + '_figure.png')
     plt.close()
 
 

@@ -749,8 +749,15 @@ def data_graph_inspect(request, difficulty_and_priority):
     task_list = Task.objects.filter(difficulty=difficulty, priority=priority, status=6)
     average = get_average_completion_time(task_list)
     max, min = get_max_min_completion_time(task_list)
-    lower_bound = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first().lower_bound
-    upper_bound = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first().upper_bound
+    entry = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first()
+
+    if entry is None:
+        entry = GraphIntervals(difficulty=difficulty, priority=priority)
+        entry.save()
+
+    lower_bound = entry.lower_bound
+    upper_bound = entry.upper_bound
+
     return render(
         request,
         'tasks/data_graph_inspect.html',
@@ -774,18 +781,15 @@ def set_point_pool_interval(request):
         difficulty_and_priority_split = difficulty_and_priority.split("_")
         difficulty = difficulty_and_priority_split[0]
         priority = difficulty_and_priority_split[1]
-        task_list = Task.objects.filter(difficulty=difficulty, priority=priority)
         try:
-            for task in task_list:
-                entry = GraphIntervals.objects.get(difficulty=str(difficulty), priority=str(priority))
-                if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
-                    entry.upper_bound = upper_bound
-                    entry.lower_bound = lower_bound
-                entry.save()
+            entry = GraphIntervals.objects.get(difficulty=str(difficulty), priority=str(priority))
+            if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
+                entry.upper_bound = upper_bound
+                entry.lower_bound = lower_bound
+            entry.save()
         except ObjectDoesNotExist:
-            for task in task_list:
-                entry = GraphIntervals(task_id=task.id, difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
-                entry.save()
+            entry = GraphIntervals(difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
+            entry.save()
 
     return redirect(request.META['HTTP_REFERER'])
 
@@ -824,8 +828,6 @@ def point_pool(request):
         else:
             course_dict.update({course['course__name']: [{course['name']: all_teammates}]})
             course_id_name_dict.update({course['course__name']: course['course_id']})
-
-    print(course_id_name_dict)
 
     return render(
         request,
