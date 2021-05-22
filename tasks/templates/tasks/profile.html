@@ -1,8 +1,11 @@
 {% extends "tasks/base.html" %}
 {% block content %}
     {% load tags %}
+    {% load webpush_notifications %}
+    {% webpush_header %}
       <div class="row">
           <div class="col-sm-12 profile-row">
+                      {% webpush_button %}
               <div class="profile-card" style="float: left">
                   <img src="../../static/tasks/Default_Profile.jpg" alt="Profile Picture">
                   <div>

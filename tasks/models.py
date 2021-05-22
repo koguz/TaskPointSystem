@@ -524,6 +524,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_comment(action_type, actor, object):
@@ -535,6 +536,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_comment_final(action_type, actor, object):
@@ -546,6 +548,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_vote(action_type, actor, object):
@@ -557,6 +560,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_approval(action_type, actor, object):
@@ -568,6 +572,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_status_change_by_developer(action_type, actor, object):
@@ -579,6 +584,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
 
 class TaskDifference(models.Model):
@@ -615,3 +621,10 @@ class TaskDifference(models.Model):
             difficulty=task.difficulty,
         )
         task_difference.save()
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, related_name='user', on_delete=models.SET_NULL, null=True)
+    body = models.CharField("Notification Body", max_length=256)
+    related_task = models.ForeignKey(Task, related_name='user', on_delete=models.SET_NULL, null=True)
+    timestamp = models.DateTimeField("Sent on", auto_now=True)
+    is_seen = models.BooleanField("Seen", default=False)
