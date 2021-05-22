@@ -298,30 +298,31 @@ a[aria-expanded="true"] {
   min-width: 350px;
 }
 
-.user-feed ul {
-  list-style: none;
-  margin-left: -37.5px;
-}
+  .user-feed ul {
+    list-style: none;
+    margin-left: -37.5px;
+  }
 
-.user-feed ul li {
-  margin: 10px 0;
-  border: 1px solid rgba(22, 22, 22, 0.2);
-  font-size: 20px;
-  padding-left: 10px;
-  min-height: 50px;
-  box-shadow: 3px 2px #CFCFCF;
-  border-radius: 20px;
-  transition: 0.3s;
-  background-color: #fff;
-}
+    .user-feed ul li {
+      margin: 10px 0;
+      border: 1px solid rgba(22, 22, 22, 0.2);
+      font-size: 20px;
+      padding-left: 10px;
+      min-height: 50px;
+      box-shadow: 3px 2px #CFCFCF;
+      border-radius: 20px;
+      transition: 0.3s;
+      background-color: #fff;
+    }
 
-.user-feed ul li:hover {
-  background-color: rgba(185, 185, 185, 1);
-  box-shadow: none;
-}
+    .user-feed ul li:hover {
+      background-color: rgba(185, 185, 185, 1);
+      box-shadow: none;
+    }
 
 .task-header {
   display: block;
+  padding-top: 5px;
 }
 
 .task-header p {
@@ -341,7 +342,7 @@ a[aria-expanded="true"] {
 .task-date {
   float: right;
   padding-right: 5px;
-  padding-top: 2px;
+  padding-top: 5px;
   font-weight: 500;
 }
 
