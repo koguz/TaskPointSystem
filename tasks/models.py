@@ -248,6 +248,7 @@ class Task(models.Model):
     creation_approved_on = models.DateTimeField("Creation approved on", blank=True, null=True)
     submission_approved_on = models.DateTimeField("Submission approved on", blank=True, null=True)
     completed_on = models.DateTimeField("Completed on", blank=True, null=True)
+    last_modified = models.DateTimeField("Last Modified", auto_now=True)
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY, default=2)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY, default=2)
     modifier = models.PositiveSmallIntegerField(
@@ -283,7 +284,7 @@ class Task(models.Model):
         return Vote.objects.filter(task=self, vote_type=4)
 
     def apply_self_accept(self, task_assignee, vote_type):
-        vote = Vote(voter=task_assignee.user, task=self)
+        vote = Vote(voter=task_assignee, task=self)
         vote.vote_type = vote_type
         vote.save()
 
@@ -358,7 +359,7 @@ class Task(models.Model):
         developer_not_voted_before = Vote.objects.all().filter(
             task=self,
             vote_type__range=(self.status, self.status + 1),
-            voter__developer=developer,
+            voter=developer,
         ).count() < 1
         developer_is_in_tasks_team = self.team.is_in_team(user)
 
@@ -508,7 +509,7 @@ class ActionRecord(models.Model):
     object = models.ForeignKey(Task, on_delete=models.CASCADE)
     action_description = models.CharField("Action Description", max_length=256)
     # TODO: make datetime turkey time
-    created_on = models.DateTimeField("Created on", auto_now=True)
+    created_on = models.DateTimeField("Created on", auto_now_add=True)
 
     @staticmethod
     def task_create(action_type, actor, object):
@@ -626,7 +627,7 @@ class TaskDifference(models.Model):
     due = models.DateField("Due Date")
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY)
-    created_on = models.DateTimeField("Created on", auto_now=True)
+    created_on = models.DateTimeField("Created on", auto_now_add=True)
 
     @staticmethod
     def record_task_difference(task, action_record):
@@ -642,12 +643,14 @@ class TaskDifference(models.Model):
         )
         task_difference.save()
 
+
 class Notification(models.Model):
     user = models.ForeignKey(User, related_name='user', on_delete=models.SET_NULL, null=True)
     body = models.CharField("Notification Body", max_length=256)
     related_task = models.ForeignKey(Task, related_name='user', on_delete=models.SET_NULL, null=True)
-    timestamp = models.DateTimeField("Sent on", auto_now=True)
+    timestamp = models.DateTimeField("Sent on", auto_now_add=True)
     is_seen = models.BooleanField("Seen", default=False)
+
 
 class PointPool(models.Model):
     developer = models.ForeignKey(Developer, on_delete=models.CASCADE)

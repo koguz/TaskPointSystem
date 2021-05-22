@@ -221,12 +221,13 @@ def developer_create(request, team_id):
             task.assignee = developer
             task.team = dev_team
             task.milestone = course.get_current_milestone()
+            task.created_on = datetime.datetime.now()
             task.save()
             task.apply_self_accept(task.assignee, 1)
             action_record = ActionRecord.task_create(1, developer, task)
             TaskDifference.record_task_difference(task, action_record)
             notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-            send_push_notification_to_team(dev_team, notification_body, request.user,task, mail=True)
+            send_push_notification_to_team(dev_team, notification_body, request.user, task, mail=True)
 
             return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
 
@@ -267,7 +268,6 @@ def update(request, task_id, status_id):
         final_comment = Comment.objects.get(task=task, is_final=True)
     except Comment.DoesNotExist:
         final_comment = None
-
 
     if final_comment is not None and task.assignee == developer and status_id == '3' and task.status == 2:
         task.apply_self_accept(developer, 3)
@@ -405,7 +405,7 @@ def send_comment(request, task_id):
                 action_record = ActionRecord.task_comment(4, ct.owner, ct.task)
 
             if ct.task.assignee != Developer.objects.filter(user=request.user).first():
-                notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
+                notification_body = request.user.get_full_name() + " acted on task '" + ct.task.title + "': " + action_record.get_action_type_display()
                 send_push_notification_to_user(ct.task.assignee.user, notification_body, ct.task, mail=True)
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
@@ -451,7 +451,7 @@ def team_all_tasks(request, team_id, order_by="due"):
     elif order_by == 'status':
         task_list = Task.objects.all().filter(team=current_team).order_by("status")
     elif order_by == 'last_modified':
-        task_list = Task.objects.all().filter(team=current_team).order_by("-completed")
+        task_list = Task.objects.all().filter(team=current_team).order_by("-last_modified")
     return render(
         request,
         'tasks/task_all_supervisor.html',
@@ -482,8 +482,8 @@ def task_all(request, team_id, order_by):
         user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('status')
         task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("status")
     elif order_by == 'last_modified':
-        user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('-completed')
-        task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("-completed")
+        user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('-last_modified')
+        task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("-last_modified")
 
     return render(
         request,

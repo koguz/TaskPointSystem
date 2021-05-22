@@ -69,7 +69,7 @@
                         {% for task in task_list %}
                             <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
                                 <li>
-                                    <p class="task-date-supervisor"><span class="bold-span">Completed On: </span>{{ task.created_on }}</p>
+                                    <p class="task-date-supervisor"><span class="bold-span">Completed On: </span>{{ task.completed_on }}</p>
                                     <div class="task-header">
                                         <h4>{{ task.title }}</h4>
                                         <p><span class="bold-span">Assignee: </span>{{ task.assignee }}</p>
@@ -82,6 +82,7 @@
                                     </div>
 
                                 </li>
+
                             </a>
                         {% endfor %}
                     </ul>
