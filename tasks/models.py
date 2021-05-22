@@ -360,13 +360,14 @@ class Task(models.Model):
         task_difference_elements_length = len(task_difference_elements)
         task_history = []
 
-        task_creation_history_element = task_difference_elements[task_difference_elements_length - 1]
-        assignee_id = task_creation_history_element.pop('assignee_id', None)
-        task_creation_history_element['assignee'] = Developer.objects.get(pk=assignee_id)
-        task_creation_history_element.pop('action_record_id', None)
-        task_creation_history_element.pop('task_id', None)
-        task_creation_history_element.pop('id', None)
-        task_history.append(task_creation_history_element)
+        if task_difference_elements_length > 0:
+            task_creation_history_element = task_difference_elements[task_difference_elements_length - 1]
+            assignee_id = task_creation_history_element.pop('assignee_id', None)
+            task_creation_history_element['assignee'] = Developer.objects.get(pk=assignee_id)
+            task_creation_history_element.pop('action_record_id', None)
+            task_creation_history_element.pop('task_id', None)
+            task_creation_history_element.pop('id', None)
+            task_history.append(task_creation_history_element)
 
         # TaskDifference entries
         for index in reversed(range(0, task_difference_elements_length - 1)):
