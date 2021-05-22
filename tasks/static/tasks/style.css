@@ -358,11 +358,11 @@ body {
 }
 
 
-.your-active-tasks{
+.your-active-tasks.your-notifications{
   padding-top: 1px;
 }
 
-.your-active-tasks-header{
+.your-active-tasks-header.your-notifications-header{
   margin-bottom: 45px;
 }
 

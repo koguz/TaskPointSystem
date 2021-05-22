@@ -309,7 +309,6 @@ class Task(models.Model):
         for attribute in different_attributes:
             differences[attribute] = self.__getattribute__(attribute)
 
-        print(differences)
         return differences
 
     def is_different_from(self, task):
@@ -574,3 +573,10 @@ class TaskDifference(models.Model):
             difficulty=task.difficulty,
         )
         task_difference.save()
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, related_name='user', on_delete=models.SET_NULL, null=True)
+    body = models.CharField("Notification Body", max_length=256)
+    related_task = models.ForeignKey(Task, related_name='user', on_delete=models.SET_NULL, null=True)
+    timestamp = models.DateTimeField("Sent on", auto_now=True)
+    is_seen = models.BooleanField("Seen", default=False)
