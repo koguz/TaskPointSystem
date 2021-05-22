@@ -319,6 +319,30 @@ a[aria-expanded="true"] {
   box-shadow: none;
 }
 
+/* SUPERVOSOR FEED */
+
+.supervisor-feed {
+  position: sticky;
+  left: 200px;
+  min-width: 350px;
+}
+
+.supervisor-feed ul {
+  list-style: none;
+  margin-left: -37.5px;
+}
+
+.supervisor-feed ul li {
+  margin: 10px 0;
+  border: 1px solid rgba(22, 22, 22, 0.2);
+  font-size: 20px;
+  padding-left: 10px;
+  min-height: 50px;
+  box-shadow: 3px 2px #CFCFCF;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
 .task-header {
   display: block;
 }
@@ -340,6 +364,14 @@ a[aria-expanded="true"] {
 .task-date {
   float: right;
   padding-right: 5px;
+  padding-top: 2px;
+  font-weight: 500;
+}
+
+
+.task-date-supervisor {
+  float: right;
+  padding-right: 10px;
   padding-top: 2px;
   font-weight: 500;
 }

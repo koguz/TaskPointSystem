@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'bootstrap_modal_forms',
     'widget_tweaks',
     'webpush',
+    'mathfilters',
 ]
 
 MIDDLEWARE = [

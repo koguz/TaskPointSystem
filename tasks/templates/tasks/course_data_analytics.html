@@ -1,0 +1,16 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="row" style="justify-content: center; align-items: center; height: 100vh">
+        <a href="{% url 'tasks:data_graph_inspect' course_id '1_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/easy_low_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '1_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/easy_planned_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '1_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/easy_urgent_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '2_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/normal_low_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '2_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/normal_planned_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '2_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/normal_urgent_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '3_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/difficult_low_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '3_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/difficult_planned_figure.png' %}"></a>
+        <a href="{% url 'tasks:data_graph_inspect' course_id '3_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/4/difficult_urgent_figure.png' %}"></a>
+    </div>
+{% endblock %}
