@@ -20,10 +20,6 @@ class Migration(migrations.Migration):
         ),
         migrations.RemoveField(
             model_name='task',
-            name='date',
-        ),
-        migrations.RemoveField(
-            model_name='task',
             name='valid',
         ),
         migrations.AddField(
