@@ -1,193 +1,296 @@
 {% extends "tasks/base.html" %}
+{% load static %}
 
 {% block content %}
     <div class="row">
-        <div class="col-sm-4" style="padding: 30px 20px 0 30px">
-        <h3>Task Details</h3>
+        <div class="col-sm-2"></div>
+        <div class="col-lg-8 view-task-main-column">
 
-        <table class="task-info-table">
-        <tr><td>Task Name</td><td>:</td><td>{{ task.title }}</td></tr>
-        <tr><td>Team</td><td>:</td><td>{{ task.team }}</td></tr>
-        <tr><td>Milestone</td><td>:</td><td>{{ task.milestone }}</td></tr>
-        <tr><td>Last Modified by</td><td>:</td><td>{{ task.creator }}</td></tr>
-        <tr><td>Assigned to</td><td>:</td><td>{{ task.assignee }}</td></tr>
-        <tr><td>Title</td><td>:</td><td>{{ task.title }}</td></tr>
-        <tr><td valign="top">Description</td><td valign="top">:</td><td>{{ task.description|linebreaksbr }}</td></tr>
-        <tr><td>Created on</td><td>:</td><td>{{ task.date }}</td></tr>
-        <tr><td>Due Date</td><td>:</td><td>{{ task.due }}</td></tr>
-        <tr><td>Last Modified</td><td>:</td><td>{{ task.completed }}</td></tr>
-        <tr><td>Priority</td><td>:</td><td bgcolor={{ priority_color }}>{{ task.get_priority_display }}</td></tr>
-        <tr><td>Difficulty</td><td>:</td><td bgcolor={{ difficulty_color }}>{{ task.get_difficulty_display }}</td></tr>
-        <tr><td>Modifier</td><td>:</td><td>{{ task.modifier }}</td></tr>
-        <tr><td>Task Point ( (p*d) + m)</td><td>:</td><td>{{ task.get_points }}</td></tr>
-        <tr><td>Status</td><td>:</td><td>{{ task.get_status_display }}</td></tr>
-        {% if task.status == 1 or task.status == 2 %}
-            <tr><td>Creation Accept Votes</td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
-            <tr><td>Creation Change Votes</td><td>:</td><td>{{ task.get_creation_change_votes.count }}</td></tr>
-        {% else %}
-            <tr><td>Submission Accept Votes</td><td>:</td><td>{{ task.get_submission_accept_votes.count }}</td></tr>
-            <tr><td>Submission Change Votes</td><td>:</td><td>{{ task.get_submission_change_votes.count }}</td></tr>
-        {% endif %}
-        </table>
+            <div class="row task-status-bar mg-b-10 mg-t-10">
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as image_static %}
+                    <img
+                        src="{% static image_static %}"
+                        alt="Task's current status: {{ task.get_status_display }}"
+                        title="Task's current status: {{ task.get_status_display }}"
+                        id="task-status"
+                    >
+                {% endwith %}
+            </div>
 
-        <hr />
+            <div class="row task-and-team-name no-style-links mg-b-10">
+                <div class="col-sm-6">
+                    <h3><a href="{% url 'tasks:view-task' task.id %}">{{ task.title }}</a></h3>
+                </div>
+                <div class="col-sm-6">
+                    <div class="team-name float-right">
+                        <h3><a href="{% url 'tasks:team-home' task.team.id %}">{{ task.team }}</a></h3>
+                    </div>
+                </div>
+            </div>
 
-        {# SUPERVISOR #}
-        {% if user_s and task.status == 1 or user_s and task.status == 3 or user_s and task.status == 4 %}
-            {% if user_s and task.status == 3 or user_s and task.status == 4 %}
-                Set Modifier to:
-                <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
-                <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
-                <a href="{% url 'tasks:update-task-mod' task.id 3 %}" class="btn btn-default" role="button">3</a>
-                <a href="{% url 'tasks:update-task-mod' task.id 4 %}" class="btn btn-default" role="button">4</a>
-                <a href="{% url 'tasks:update-task-mod' task.id 5 %}" class="btn btn-default" role="button">5</a>
-                <hr />
-            {% endif %}
-            {% if task.status == 3 or task.status == 4 %}
-                <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
-            {% else %}
-                <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
-            {% endif %}
+            <div class="row task-details-card mg-b-10">
+                <div class="col-sm-6">
+                    <table class="task-info-table">
+                        <tr><td><b>Assigned to</b></td><td>:</td><td>{{ task.assignee }}</td></tr>
+                        <tr><td><b>Priority</b></td><td>:</td><td bgcolor={{ priority_color }}>{{ task.get_priority_display }}</td></tr>
+                        <tr><td><b>Difficulty</b></td><td>:</td><td bgcolor={{ difficulty_color }}>{{ task.get_difficulty_display }}</td></tr>
+                        <tr><td><b>Due Date</b></td><td>:</td><td>{{ task.due }}</td></tr>
+                    </table>
+                </div>
+                <div class="col-sm-6">
+                    <table class="task-info-table">
+                        <tr><td><b>Description</b></td><td>:</td><td>{{ task.description|linebreaksbr }}</td></tr>
+                        {% if task.status == 1 or task.status == 2 %}
+                            <tr><td><b>Creation Accept Votes</b></td><td>:</td><td>{{ task.get_creation_accept_votes.count }}</td></tr>
+                            <tr><td><b>Creation Change Votes</b></td><td>:</td><td>{{ task.get_creation_change_votes.count }}</td></tr>
+                        {% else %}
+                            <tr><td><b>Submission Accept Votes</b></td><td>:</td><td>{{ task.get_submission_accept_votes.count }}</td></tr>
+                            <tr><td><b>Submission Change Votes</b></td><td>:</td><td>{{ task.get_submission_change_votes.count }}</td></tr>
+                        {% endif %}
+                    </table>
+                </div>
+                <div class="row task-detail-buttons">
+                    <button type="button" class="btn btn-info" id="task-more-details-button"><i>More details</i></button>
+                    <button type="button" class="btn btn-info" id="task-history-button"><i>History</i></button>
+                </div>
+            </div>
 
-            <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
-        {% endif %}
-
-        {# DEVELOPER #}
-        {% if user_d and task.status == 1 and can_edit == None and can_vote %}
-            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
-            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
-        {% elif user_d and task.status == 2 and can_edit != None and can_change_status %}
-            <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
-        {% elif user_d and task.status == 3 and can_edit == None and can_vote %}
-            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
-            <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
-        {% elif user_d and task.status == 3 and can_edit == 'developer' %}
-            {% if half_the_team_accepted %}
-                <a
-                    href="{% url 'tasks:update' task.id 4 %}"
-                    class="btn btn-default btn-success"
-                    role="button"
-                    title="Change status to 'Waiting for supervisor grade' without waiting for all your team members"
-                    onclick="return ensure('change the status to \'Waiting for supervisor grade\'')"
-                >Proceed to Wfsg</a>
-            {% endif %}
-            {% if submission_needs_change %}
-                <a
-                    href="{% url 'tasks:update' task.id 2 %}"
-                    class="btn btn-default btn-info"
-                    role="button"
-                    title="Change status back to 'Working on it'"
-                    onclick="return ensure('change the status to \'Working on it\'')"
-                >Back to Woi</a>
-            {% endif %}
-        {% elif user_d and can_edit == 'developer' and task.status == 1 %}
-            {% if can_vote and task.creator != user_d.user%}
-                <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
-                <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
-            {% endif %}
-            {% if half_the_team_accepted %}
-                <a
-                    href="{% url 'tasks:update' task.id 2 %}"
-                    class="btn btn-default btn-success"
-                    role="button"
-                    title="Change status to 'Working on it' without waiting for all your team members"
-                    onclick="return ensure('change the status to \'Working on it\'')"
-                >Proceed to Woi</a>
-            {% endif %}
-            {% if creation_needs_change %}
-                <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-primary" role="button" title="Edit your task details">Edit</a>
-            {% endif %}
-        {% elif user_d %}
-            <p>You can not vote anymore</p>
-        {% endif %}
-
-        {# SUPERVISOR #}
-        {% if can_edit == "supervisor" and task.status != 2 and task.status != 5 and task.status != 6 %}
-            <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-primary" role="button">Edit</a>
-        {% endif %}
-        </div>
-
-        <div class="col-sm-1"></div>
-
-        <div class="col-sm-7" style="padding: 30px 0 0 5px">
-
-            <h3>Comments</h3>
-            <form action="{% url 'tasks:send-comment' tid %}" method="post">
-                {% csrf_token %}
-                {% for field in form %}
-                    {% if final_comment|length < 1 and field.name == "is_final" and user_d == task.assignee and task.status == 2 %}
-                        {{ field.label_tag }}{{ field }}
-                    {% elif field.name != "is_final" %}
-                        {{ field.label_tag }}{{ field }}
+            <div class="row task-additional-details mg-b-10">
+                <h4>Additional Details</h4>
+                <table class="task-info-table">
+                    <tr><td><b>Created on</b></td><td>:</td><td>{{ task.created_on }}</td></tr>
+                    <tr><td><b>Milestone</b></td><td>:</td><td>{{ task.milestone }}</td></tr>
+                    <tr><td><b>Modifier</b></td><td>:</td><td>{{ task.modifier }}</td></tr>
+                    <tr><td><b>Task Point ((p*d) + m)</b></td><td>:</td><td>{{ task.get_points }}</td></tr>
+                    <tr><td><b>Last Modified by</b></td><td>:</td><td>{{ task.creator }}</td></tr>
+                    <tr><td><b>Last Modified</b></td><td>:</td><td>{{ task.last_modified }}</td></tr>
+                </table>
+            </div>
+            <div class="row task-history mg-b-10">
+                <h4 class="mg-b-10">Task History</h4>
+                {% for task_history_element in task_history %}
+                    {% if task_history_element.action_description %}
+                        <div class="row task-history-element mg-b-10">
+                            <div class="col-sm-8">
+                                <p>{{ task_history_element.action_description }}</p>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="float-right">
+                                    <p><b>{{ task_history_element.created_on }}</b></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="row task-history-element mg-b-10">
+                            <div class="col-sm-12">
+                                {% for key, value in task_history_element.items %}
+                                    {% if key != 'created_on' %}
+                                        <p><b>{{ key | title }}</b>: {{ value }}</p>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12 difference-edit-connection-line">
+                                <div class="vl mg-b-10"></div>
+                            </div>
+                        </div>
                     {% endif %}
                 {% endfor %}
-                <div style="text-align: right; padding: 4px;"><input type="submit" value="Submit" class="btn btn-success" id="send" /></div>
-            </form>
-            <hr />
-
-            {% if final_comment %}
-
-                <i class="fa fa-check fa-2x" aria-hidden="true"></i>
-                <ul class="list-group">
-                    {% for f_comment in final_comment %}
-                        <li class="list-group-item" style="border: 1px solid rgb(5,229,5)">
-                          <div class="row">
-                              <div class="col-sm-6">
-                                 <p style="font-size: 1.3rem"><b>{{f_comment.owner}}</b></p>
-                              </div>
-                              <div class="col-sm-6">
-                                <p style="text-align: right">{{f_comment.date}}</p>
-                              </div>
-                          </div>
-                          <hr class="content-separator" style="margin: -12px 0 10px 0">
-                          <p>{{f_comment.body|linebreaksbr}}</p>
-                          {% if f_comment.file_url %}
-                          <p>File URL: <a href="{{f_comment.file_url }}">{{f_comment.file_url }}</a></p>
-                          {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-
-            {% endif %}
-
-            {% if all_comments_but_final %}
-            <ul class="list-group">
-              {% for comment in all_comments_but_final %}
-                <li class="list-group-item" style="border: 1px solid rgba(206, 212, 218, 0.9)">
-                  <div class="row">
-                      <div class="col-sm-6">
-                         <p style="font-size: 1.3rem"><b>{{comment.owner}}</b></p>
-                      </div>
-                      <div class="col-sm-6">
-                        <p style="text-align: right">{{comment.date}}</p>
-                      </div>
-                  </div>
-                  <hr class="content-separator" style="margin: -12px 0 10px 0">
-                  <p>{{comment.body|linebreaksbr}}</p>
-                  {% if comment.file_url %}
-                  <p>File URL: <a href="{{comment.file_url }}">{{comment.file_url }}</a></p>
-                  {% endif %}
-
-                </li>
-              {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
-    </div>
-
-    <div style="margin-top: 20px">
-        {% for message in messages %}
-            <div class="alert alert-danger">
-                <a class="close" href="#" data-dismiss="alert">×</a>
-                {{ message }}
             </div>
-        {% endfor %}
+
+            <div class="row alert-messages">
+                {% for message in messages %}
+                    <div class="alert alert-danger">
+                        <a class="close" href="#" data-dismiss="alert">&nbsp;×</a>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="row task-buttons mg-b-10">
+                {# SUPERVISOR #}
+                {% if user_s and task.status == 1 or user_s and task.status == 3 or user_s and task.status == 4 %}
+                    {% if user_s and task.status == 3 or user_s and task.status == 4 %}
+                        Set Modifier to:
+                        <a href="{% url 'tasks:update-task-mod' task.id 1 %}" class="btn btn-default" role="button">1</a>
+                        <a href="{% url 'tasks:update-task-mod' task.id 2 %}" class="btn btn-default" role="button">2</a>
+                        <a href="{% url 'tasks:update-task-mod' task.id 3 %}" class="btn btn-default" role="button">3</a>
+                        <a href="{% url 'tasks:update-task-mod' task.id 4 %}" class="btn btn-default" role="button">4</a>
+                        <a href="{% url 'tasks:update-task-mod' task.id 5 %}" class="btn btn-default" role="button">5</a>
+                        <hr />
+                    {% endif %}
+                    {% if task.status == 3 or task.status == 4 %}
+                        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+                    {% else %}
+                        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+                    {% endif %}
+
+                    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
+                {% endif %}
+
+                {# DEVELOPER #}
+                {% if user_d and task.status == 1 and can_edit == None and can_vote %}
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+                {% elif user_d and task.status == 2 and can_edit != None and can_change_status %}
+                    <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
+                {% elif user_d and task.status == 3 and can_edit == None and can_vote %}
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+                {% elif user_d and task.status == 3 and can_edit == 'developer' %}
+                    {% if half_the_team_accepted %}
+                        <a
+                            href="{% url 'tasks:update' task.id 4 %}"
+                            class="btn btn-default btn-success"
+                            role="button"
+                            title="Change status to 'Waiting for supervisor grade' without waiting for all your team members"
+                            onclick="return ensure('change the status to \'Waiting for supervisor grade\'')"
+                        >Proceed</a>
+                    {% endif %}
+                    {% if submission_needs_change %}
+                        <a
+                            href="{% url 'tasks:update' task.id 2 %}"
+                            class="btn btn-default btn-info"
+                            role="button"
+                            title="Change status back to 'Working on it'"
+                            onclick="return ensure('change the status to \'Working on it\'')"
+                        >Recede</a>
+                    {% endif %}
+                {% elif user_d and can_edit == 'developer' and task.status == 1 %}
+                    {% if can_vote and task.creator != user_d.user%}
+                        <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+                        <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
+                    {% endif %}
+                    {% if half_the_team_accepted %}
+                        <a
+                            href="{% url 'tasks:update' task.id 2 %}"
+                            class="btn btn-default btn-success"
+                            role="button"
+                            title="Change status to 'Working on it' without waiting for all your team members"
+                            onclick="return ensure('change the status to \'Working on it\'')"
+                        >Proceed</a>
+                    {% endif %}
+                    {% if creation_needs_change %}
+                        <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-primary" role="button" title="Edit your task details">Edit</a>
+                    {% endif %}
+                {% endif %}
+
+                {# SUPERVISOR #}
+                {% if can_edit == "supervisor" and task.status != 2 and task.status != 5 and task.status != 6 %}
+                    <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-primary" role="button">Edit</a>
+                {% endif %}
+            </div>
+
+            <div class="row task-comment-form mg-b-10">
+                <h3>Comments</h3>
+                <form action="{% url 'tasks:send-comment' tid %}" method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        {% if final_comment|length < 1 and field.name == "is_final" and user_d == task.assignee and task.status == 2 %}
+                            <div class="final-answer-checkbox">Mark as final answer {{ field }}</div>
+                        {% elif field.name != "is_final" %}
+                            {{ field.label_tag }}{{ field }}
+                        {% endif %}
+                    {% endfor %}
+                    <div style="text-align: right; padding: 4px;"><input type="submit" value="Submit" class="btn btn-success" id="send" /></div>
+                </form>
+            </div>
+
+            <div class="row task-comments mg-b-10">
+                {% if final_comment %}
+                    <i class="fa fa-check fa-2x" aria-hidden="true"></i>
+                    <ul class="list-group">
+                        {% for f_comment in final_comment %}
+                            <li class="list-group-item final-answer-comment">
+                              <div class="row">
+                                  <div class="col-sm-6">
+                                     <p style="font-size: 1.3rem"><b>{{f_comment.owner}}</b></p>
+                                  </div>
+                                  <div class="col-sm-6">
+                                    <p style="text-align: right">{{f_comment.created_on}}</p>
+                                  </div>
+                              </div>
+                              <hr class="content-separator" style="margin: -12px 0 10px 0">
+                              <p>{{f_comment.body|linebreaksbr}}</p>
+                              {% if f_comment.file_url %}
+                              <p>File URL: <a href="{{f_comment.file_url }}">{{f_comment.file_url }}</a></p>
+                              {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if all_comments_but_final %}
+                    <ul class="list-group">
+                        {% for comment in all_comments_but_final %}
+                            <li class="list-group-item" style="border: 1px solid rgba(206, 212, 218, 0.9)">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                     <p style="font-size: 1.3rem"><b>{{comment.owner}}</b></p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                    <p style="text-align: right">{{comment.created_on}}</p>
+                                    </div>
+                                </div>
+                                <hr class="content-separator" style="margin: -12px 0 10px 0">
+                                <p>{{comment.body|linebreaksbr}}</p>
+                                {% if comment.file_url %}
+                                <p>File URL: <a href="{{comment.file_url }}">{{comment.file_url }}</a></p>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            </div>
+        <div class="col-sm-2"></div>
     </div>
 {% endblock %}
 {% block scriptcontent %}
     <script>
-      $("input, select, textarea").addClass("form-control");
-      $("#send").removeClass("form-control");
-      $("td").css("padding", "4px");
+        const taskButtons = $('.task-buttons');
+        if (taskButtons.children().length < 1) taskButtons.hide(0);
+
+        const taskComments = $('.task-comments');
+        if (taskComments.children().length < 1) taskComments.hide(0);
+
+        const alertMessages = $('.alert-messages');
+        if (alertMessages.children().length < 1) alertMessages.hide(0);
+
+        $(window).resize(function () {
+            if (window.innerWidth < 580) {
+                $('.team-name').removeClass('float-right');
+            } else {
+                $('.team-name').addClass('float-right');
+            }
+
+            if (window.innerWidth < 1215) {
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'_mobile.png' as imageStatic %}
+                    $('#task-status').attr('src', '{% static imageStatic %}')
+                {% endwith %}
+            } else {
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as imageStatic %}
+                    $('#task-status').attr('src', '{% static imageStatic %}')
+                {% endwith %}
+            }
+        });
+
+        $(function () {
+            if (window.innerWidth < 1215) {
+                {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'_mobile.png' as imageStatic %}
+                    $('#task-status').attr('src', '{% static imageStatic %}')
+                {% endwith %}
+            }
+
+            if (window.innerWidth < 580) {
+                $('.team-name').removeClass('float-right');
+            }
+        });
+
+        $("input, select, textarea").addClass("form-control");
+        $("#send").removeClass("form-control");
+        $("td").css("padding", "4px");
     </script>
 {% endblock %}

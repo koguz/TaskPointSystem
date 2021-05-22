@@ -1,0 +1,40 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+{% block content %}
+    {% for course, teams in course_dict.items %}
+        <div class="col-sm-2 user-feed">
+            <button class="accordion">{{ course }}</button>
+            <ul>
+                {% for team in teams %}
+                    {% for teamName, developerArray in team.items %}
+                        <div class="col-sm-2 user-feed">
+                        <button class="accordion"> {{ teamName }} </button>
+                        <ul>
+                        {% with developerArray.0 as developers %}
+                          {% for dev in developers %}
+                            <div class="panel">
+                                <a style="text-decoration: none; color: #1A1A1A">
+                                    <li>
+                                        <a href="{% url 'tasks:developer_point_pool_activities' course dev.id  %}">{{ dev }}</a>
+                                    </li>
+                                </a>
+                            </div>
+                          {% endfor %}
+                        {% endwith %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        <div>
+        {% for course_, id in course_id_name_dict.items %}
+            {% if course_ == course %}
+                 <a href="{% url 'tasks:calculate_point_pool' id %}" class="btn btn-default btn-primary" role="button">Calculate Point Pool For {{ course }}</a>
+            {% endif %}
+        {% endfor %}
+        </div>
+    {% endfor %}
+
+{% endblock %}

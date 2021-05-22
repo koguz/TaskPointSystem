@@ -1,7 +1,22 @@
 $(function($) {
     $('.content-text').each(function(index, value) {
       $(this).html($(this).html().substring(0,150));
-    })
+    });
+
+    $('#sidebar-collapse').click(function () {
+        $('#sidebar').toggleClass('sidebar-active');
+        $('.main-screen').toggleClass('main-screen-active');
+    });
+
+    $('#task-more-details-button').click(function () {
+       $('.task-additional-details').slideToggle();
+       $('.task-history').slideUp();
+    });
+
+    $('#task-history-button').click(function () {
+       $('.task-history').slideToggle();
+       $('.task-additional-details').slideUp();
+    });
 
     addListenersToTeamMemberAccordions();
 });

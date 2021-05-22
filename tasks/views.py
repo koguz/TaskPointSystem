@@ -9,11 +9,13 @@ from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse, reverse_lazy
 from .utilities import *
+from .models import PointPool
 from bootstrap_modal_forms.mixins import PassRequestMixin
 from bootstrap_modal_forms.generic import BSModalUpdateView
 from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
 from copy import deepcopy
 import logging
+import os.path
 from django.contrib import messages
 
 logger = logging.getLogger('task')
@@ -64,12 +66,15 @@ def supervisor(request):  # this view is for the supervisors only...
     page_title = "Supervisor page"
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
+    all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
+
 
     context = {
         'page_title': page_title,
         'supervisor_name': supervisor_name,
         'completed_task_list': completed_task_list,
         'supervised_teams': supervised_teams,
+        'all_teammates': all_teammates,
     }
     return render(request, 'tasks/supervisor.html', context)
 
@@ -172,8 +177,10 @@ def supervisor_create(request, team_id):
             task.save()
             action_record = ActionRecord.task_create(1, s, task)
             TaskDifference.record_task_difference(task, action_record)
+            notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " +action_record.get_action_type_display()
+            send_push_notification_to_team(dev_team, notification_body,task, mail=True)
 
-            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
     else:
         form = TaskSupervisorForm(dev_team)
 
@@ -214,12 +221,15 @@ def developer_create(request, team_id):
             task.assignee = developer
             task.team = dev_team
             task.milestone = course.get_current_milestone()
+            task.created_on = datetime.datetime.now()
             task.save()
             task.apply_self_accept(task.assignee, 1)
             action_record = ActionRecord.task_create(1, developer, task)
             TaskDifference.record_task_difference(task, action_record)
+            notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
+            send_push_notification_to_team(dev_team, notification_body, request.user, task, mail=True)
 
-            return HttpResponseRedirect(reverse('tasks:team-home', args=(team_id,)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
 
     else:
         form = TaskDeveloperForm()
@@ -250,7 +260,7 @@ def update(request, task_id, status_id):
         not task.can_be_changed_status_by(request.user) or
         req_status_id > 6 or
         req_status_id < 1 or
-        (0 < req_status_id < 3 and not task.half_the_team_accepted() and task.get_submission_change_votes() < 1)
+        (0 < req_status_id < 3 and not task.half_the_team_accepted() and task.get_submission_change_votes().count() < 1)
     ):
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -262,21 +272,22 @@ def update(request, task_id, status_id):
     if final_comment is not None and task.assignee == developer and status_id == '3' and task.status == 2:
         task.apply_self_accept(developer, 3)
         task.status = status_id
+        task.completed_on = datetime.datetime.now()
         task.save()
-        ActionRecord.task_submit(3, developer, task)
+        action_record = ActionRecord.task_submit(3, developer, task)
     elif task.assignee == developer and status_id == '2' and task.status == 1:
         task.status = status_id
         task.save()
-        ActionRecord.task_status_change_by_developer(7, developer, task)
+        action_record = ActionRecord.task_status_change_by_developer(7, developer, task)
     elif task.assignee == developer and status_id == '2' and task.status == 3:
         task.status = status_id
         task.unflag_final_comment()
         task.save()
-        ActionRecord.task_status_change_by_developer(7, developer, task)
+        action_record = ActionRecord.task_status_change_by_developer(7, developer, task)
     elif task.assignee == developer and status_id == '4' and task.status == 3:
         task.status = status_id
         task.save()
-        ActionRecord.task_status_change_by_developer(10, developer, task)
+        action_record = ActionRecord.task_status_change_by_developer(10, developer, task)
     elif Supervisor.objects.filter(user=request.user).first() is None:
         messages.error(request, 'Task can not be submitted without a final comment.')
         try:
@@ -289,13 +300,19 @@ def update(request, task_id, status_id):
         task.save()
 
         if status_id == '2':
-            ActionRecord.task_approval(6, request.user, task)
+            action_record = ActionRecord.task_approval(6, request.user, task)
         elif status_id == '5':
-            ActionRecord.task_approval(12, request.user, task)
+            action_record = ActionRecord.task_approval(12, request.user, task)
         elif status_id == '6':
-            ActionRecord.task_approval(9, request.user, task)
+            action_record = ActionRecord.task_approval(9, request.user, task)
 
-    return HttpResponseRedirect('/tasks/choose/')
+    notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
+    send_push_notification_to_team(task.team, notification_body, request.user,task, mail=True)
+
+    if developer:
+        return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
+
+    return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
 
 
 @login_required
@@ -328,6 +345,7 @@ def view_task(request, task_id):
     user_can_vote = task.can_be_voted_by(current_user)
     half_the_team_accepted = task.half_the_team_accepted()
     can_change_status = task.can_be_changed_status_by(current_user)
+    task_history = task.get_history()
 
     if not task.team.is_in_team(current_user):
         return HttpResponseRedirect('/tasks/choose/')
@@ -340,7 +358,7 @@ def view_task(request, task_id):
     elif user_s:
         can_edit = 'supervisor'
 
-    comment_list = task.comment_set.all().order_by("-date")
+    comment_list = task.comment_set.all().order_by("-created_on")
     final_comment, all_comments_but_final = check_is_final(comment_list)
     vote_list = task.vote_set.all()
     form = CommentForm()
@@ -365,6 +383,7 @@ def view_task(request, task_id):
             'can_vote': user_can_vote,
             'half_the_team_accepted': half_the_team_accepted,
             'can_change_status': can_change_status,
+            'task_history': task_history,
         }
     )
 
@@ -381,10 +400,13 @@ def send_comment(request, task_id):
             ct.save()
 
             if form.cleaned_data['is_final']:
-                ActionRecord.task_comment_final(5, ct.owner, ct.task)
+                action_record = ActionRecord.task_comment_final(5, ct.owner, ct.task)
             else:
-                ActionRecord.task_comment(4, ct.owner, ct.task)
+                action_record = ActionRecord.task_comment(4, ct.owner, ct.task)
 
+            if ct.task.assignee != Developer.objects.filter(user=request.user).first():
+                notification_body = request.user.get_full_name() + " acted on task '" + ct.task.title + "': " + action_record.get_action_type_display()
+                send_push_notification_to_user(ct.task.assignee.user, notification_body, ct.task, mail=True)
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 
@@ -429,7 +451,7 @@ def team_all_tasks(request, team_id, order_by="due"):
     elif order_by == 'status':
         task_list = Task.objects.all().filter(team=current_team).order_by("status")
     elif order_by == 'last_modified':
-        task_list = Task.objects.all().filter(team=current_team).order_by("-completed")
+        task_list = Task.objects.all().filter(team=current_team).order_by("-last_modified")
     return render(
         request,
         'tasks/task_all_supervisor.html',
@@ -460,8 +482,8 @@ def task_all(request, team_id, order_by):
         user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('status')
         task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("status")
     elif order_by == 'last_modified':
-        user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('-completed')
-        task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("-completed")
+        user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('-last_modified')
+        task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("-last_modified")
 
     return render(
         request,
@@ -525,7 +547,10 @@ def send_vote(request, task_id, status_id, button_id):
     if 0 <= button_id <= 4 and (status_id == 1 or status_id == 3):
         vote.save()
         task.check_for_status_change()
-        ActionRecord.task_vote(action_type, request.user, task)
+        action_record = ActionRecord.task_vote(action_type, request.user, task)
+        if task.assignee.user != request.user:
+            notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
+            send_push_notification_to_user(task.assignee.user, notification_body, task, mail=True)
     else:
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -536,6 +561,9 @@ def send_vote(request, task_id, status_id, button_id):
 def developer_edit_task(request, task_id):
     task_id = int(task_id)
     task_to_edit = Task.objects.get(pk=task_id)
+
+    if task_to_edit.status == 1 and task_to_edit.get_creation_change_votes().count() < 1:
+        return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
 
     try:
         developer = Developer.objects.get(user=request.user)
@@ -558,19 +586,19 @@ def developer_edit_task(request, task_id):
 
         if form.is_valid():
             task = form.save(commit=False)
-            task.creator = request.user
-            task.team = dev_team
-            # TODO: votes are reset even if there is no change, we should fix this
-            Vote.objects.filter(task=task).delete()  # votes are reset here
-            task.milestone = course.get_current_milestone()
-            task.save()
-            task.apply_self_accept(developer, 1)
-
             if task.is_different_from(old_task):
+                task.creator = request.user
+                task.team = dev_team
+                Vote.objects.filter(task=task).delete()  # votes are reset here
+                task.milestone = course.get_current_milestone()
+                task.save()
+                task.apply_self_accept(developer, 1)
                 action_record = ActionRecord.task_edit(2, developer, task)
                 TaskDifference.record_task_difference(task, action_record)
+                notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
+                send_push_notification_to_team(dev_team, notification_body, request.user, task, mail=True)
 
-            return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:
         form = TaskDeveloperForm(initial={'title': task_to_edit.title,
                                           'description': task_to_edit.description,
@@ -613,22 +641,23 @@ def supervisor_edit_task(request, task_id):
 
         if form.is_valid():
             task = form.save(commit=False)
-            task.creator = request.user
-            task.team = dev_team
-            task.milestone = course.get_current_milestone()
-
-            if task.status == 1:  # if task is in review state reset all votes and remain in current state
-                Vote.objects.filter(task=task).delete()  # reset all votes
-            elif task.status != 2 or task.status != 5 or task.status != 6:
-                task_to_edit.unflag_final_comment()
-
-            task.save()
-
             if task.is_different_from(old_task):
+                task.creator = request.user
+                task.team = dev_team
+                task.milestone = course.get_current_milestone()
+
+                if task.status == 1:  # if task is in review state reset all votes and remain in current state
+                    Vote.objects.filter(task=task).delete()  # reset all votes
+                elif task.status != 2 or task.status != 5 or task.status != 6:
+                    task_to_edit.unflag_final_comment()
+
+                task.save()
                 action_record = ActionRecord.task_edit(2, Supervisor.objects.get(user=request.user), task)
                 TaskDifference.record_task_difference(task, action_record)
+                notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
+                send_push_notification_to_team(dev_team, notification_body,task, mail=True)
 
-            return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
+            return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:
         form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
                                                      'title': task_to_edit.title,
@@ -699,11 +728,16 @@ def teams(request):
 
 
 def notifications(request):
+    notifications = Notification.objects.filter(user=request.user)
+    for notification in notifications:
+        notification.is_seen = True
+        notification.save()
     return render(
         request,
         'tasks/notifications.html',
         {
             "user": request.user,
+            "notifications": notifications,
         }
     )
 
@@ -741,6 +775,88 @@ def sort_active_tasks(request):
         return JsonResponse({"error": ""}, status=400)
 
 
+@login_required
+def course_data_analytics(request, course_id):
+    if not os.path.isfile('tasks/static/tasks/gaussian_plots/' + course_id + '/difficult_low_figure.png'):
+        calculate_time_diff_and_plot(course_id)
+    return render(
+        request,
+        'tasks/course_data_analytics.html',
+        {
+            'course_id': course_id,
+        }
+    )
+
+
+@login_required
+def data_analytics(request):
+    s = Supervisor.objects.get(user=request.user)
+    supervised_courses = Team.objects.values('course', 'course__name', 'course__number_of_students').filter(
+        supervisor=s).distinct()
+
+    return render(
+        request,
+        'tasks/data_analytics.html',
+        {
+            'courses': supervised_courses,
+        }
+    )
+
+
+@login_required
+def data_graph_inspect(request, difficulty_and_priority, course_id):
+    difficulty_and_priority_temp = difficulty_and_priority.split("_")
+    difficulty = difficulty_and_priority_temp[0]
+    priority = difficulty_and_priority_temp[1]
+    task_list = Task.objects.filter(team__course__id=course_id, difficulty=difficulty, priority=priority, status=6)
+    average = get_average_completion_time(task_list)
+    max, min = get_max_min_completion_time(task_list)
+    entry = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first()
+
+    if entry is None:
+        entry = GraphIntervals(course_id=course_id, difficulty=difficulty, priority=priority)
+        entry.save()
+
+    lower_bound = entry.lower_bound
+    upper_bound = entry.upper_bound
+
+    return render(
+        request,
+        'tasks/data_graph_inspect.html',
+        {
+            'difficulty_and_priority': difficulty_and_priority,
+            'task_list': task_list,
+            'average_completion_time': average,
+            'max': max,
+            'min': min,
+            'lower_bound': lower_bound,
+            'upper_bound': upper_bound,
+            'course_id': course_id,
+        }
+    )
+
+
+def set_point_pool_interval(request, course_id):
+    if 'lower_bound' in request.POST and 'upper_bound' in request.POST:
+        lower_bound = request.POST['lower_bound']
+        upper_bound = request.POST['upper_bound']
+        difficulty_and_priority = request.POST['difficulty_and_priority']
+        difficulty_and_priority_split = difficulty_and_priority.split("_")
+        difficulty = difficulty_and_priority_split[0]
+        priority = difficulty_and_priority_split[1]
+        try:
+            entry = GraphIntervals.objects.get(course=course_id, difficulty=str(difficulty), priority=str(priority))
+            if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
+                entry.upper_bound = upper_bound
+                entry.lower_bound = lower_bound
+            entry.save()
+        except ObjectDoesNotExist:
+            entry = GraphIntervals(course=course_id, difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
+            entry.save()
+
+    return redirect(request.META['HTTP_REFERER'])
+
+
 @method_decorator(login_required, name='dispatch')
 class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
     model = Team
@@ -758,6 +874,73 @@ class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
         if DeveloperTeam.objects.get(developer=developer, team=team):
             return True
         return False
+
+
+def point_pool(request):
+    supervisor = Supervisor.objects.get(user=request.user)
+    course_list = Team.objects.values('course__name', 'name', 'course_id').filter(supervisor=supervisor)
+    course_dict = {}
+    course_id_name_dict = {}
+    for course in course_list:
+        team = Team.objects.filter(supervisor=supervisor, name=course['name'])
+        all_teammates = get_all_teammates_of_each_team(team, supervisor.user_id)
+
+        if course['course__name'] in course_dict:
+            course_dict[course['course__name']].append({course['name']: all_teammates})
+
+        else:
+            course_dict.update({course['course__name']: [{course['name']: all_teammates}]})
+            course_id_name_dict.update({course['course__name']: course['course_id']})
+
+    return render(
+        request,
+        'tasks/point_pool.html',
+        {
+            'course_dict': course_dict,
+            'course_id_name_dict': course_id_name_dict,
+        }
+    )
+
+
+def calculate_point_pool(request, course_id):
+    s = Supervisor.objects.get(user=request.user)
+    course = Course.objects.get(id=course_id)
+    if s:
+        developers_and_grades = s.calculate_point_pool(course_id)
+
+    return render(
+        request,
+        'tasks/point_pool_course_grade.html',
+        {
+            'course': course,
+            'developers_and_grades': developers_and_grades,
+        }
+    )
+
+
+def developer_point_pool_activities(request, course_name, developer_id):
+
+    developer = Developer.objects.get(id=developer_id)
+    course = Course.objects.get(name=course_name)
+    accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer)
+    rejected_tasks = Task.objects.filter(team__course__id=course.id, status=5, assignee=developer)
+    comments = Comment.objects.filter(owner=developer.user)
+
+    votes = Vote.objects.filter(voter=developer)
+    developer_name = developer.get_name()
+
+    return render(
+        request,
+        'tasks/developer_point_pool_activities.html',
+        {
+            'accepted_tasks': accepted_tasks,
+            'rejected_tasks': rejected_tasks,
+            'developer_name': developer_name,
+            'votes': votes,
+            'comments': comments,
+            'developer': developer,
+        }
+    )
 
 
 @login_required

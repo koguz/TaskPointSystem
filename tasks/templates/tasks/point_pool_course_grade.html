@@ -1,0 +1,28 @@
+{% extends "tasks/base.html" %}
+
+{% block content %}
+<div class="row" style="justify-content: center; align-items: center; margin-top: 10px">
+    <div class="col-sm-12">
+        <div style="margin-top: 102px; padding-right: 20px">
+            <table class="supervisor-all-tasks">
+                <tr class="table-header-row">
+                    <th style="min-width: 200px">Course</th>
+                    <th style="min-width: 250px">Student Name</th>
+                    <th style="min-width: 250px">Grade</th>
+                </tr>
+                {% for developer, grade in developers_and_grades.items %}
+                    <tr>
+                        <td height="65"><a role="button" class="views-link">{{ course }}</a></td>
+                        <td height="65"><a role="button" class="views-link">{{ developer }}</a></td>
+                        <td height="65"><a role="button" class="views-link">{{ grade }}</a></td>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+

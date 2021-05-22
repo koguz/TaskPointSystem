@@ -1,9 +1,35 @@
 {% extends "tasks/base.html" %}
 
 {% block content %}
-    <div class="row" style="justify-content: center; align-items: center; height: 100vh">
-            <p style="font-size: 100px; color: #999999; -webkit-text-stroke-width: 1px; -webkit-text-stroke-color: #888888;">
-                Work in progress...
-            </p>
+    <div class="row" style="justify-content: center;  height: 100vh">
+        <div class="col-sm-6 user-feed">
+                <div class="your-notifications-header">
+                    <h3 >Your Notifications</h3>
+                </div>
+            {% if notifications %}
+                <div class="your-notifications">
+                        <ul>
+                            {% for notification in notifications %}
+                                <a href="{% url 'tasks:view-task' notification.related_task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                                    <li>
+                                        <p class="task-date"><span class="bold-span">Date: </span>{{ notification.timestamp }}</p>
+                                        <div class="task-header">
+                                            <h4></h4>
+                                            <p><span class="bold-span">Related Task: </span>{{ notification.related_task.title }}</p>
+                                        </div>
+                                        <hr class="content-separator">
+                                        <div class="task-content">
+                                            <p class="content-text">{{ notification.body }}</p>
+                                        </div>
+                                    </li>
+                                </a>
+                            {% endfor %}
+                        </ul>
+                </div>
+            {% else %}
+                <p>You don't have any notifications.</p>
+            {% endif %}
+            </div>
+        </div>
     </div>
 {% endblock %}
