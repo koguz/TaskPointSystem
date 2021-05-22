@@ -242,7 +242,7 @@ a[aria-expanded="true"] {
 
 .profile-row {
   position: sticky;
-  left: 200px;
+  /*left: 200px;*/
   min-width: 350px;
   height: 235px;
 }
@@ -310,8 +310,9 @@ a[aria-expanded="true"] {
   padding-left: 10px;
   min-height: 50px;
   box-shadow: 3px 2px #CFCFCF;
-  border-radius: 5px;
+  border-radius: 20px;
   transition: 0.3s;
+  background-color: #fff;
 }
 
 .user-feed ul li:hover {
@@ -332,7 +333,7 @@ a[aria-expanded="true"] {
 }
 
 .content-separator {
-  margin: 4px 10px 4px 0px;
+  margin: 4px 10px 4px 0;
   background-color: rgba(165, 165, 165, 0.2);
   border: 0.8px solid rgba(165, 165, 165, 0.2);
 }
@@ -345,6 +346,28 @@ a[aria-expanded="true"] {
 }
 
 /* Teams */
+
+.select-team-row {
+  justify-content: center;
+  align-items: center;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.team-column {
+  border: 1px solid #cccccc;
+  border-radius: 20px;
+  background: #F8F8F8;
+  padding: 5px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.teams-main-column {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
 
 .teams-course{
   /*float: right;*/
@@ -424,12 +447,13 @@ a[aria-expanded="true"] {
 /* ACCORDION */
 
 .accordion {
-  background-color: #eee;
+  background-color: #ddd;
   color: #444;
   cursor: pointer;
   padding: 18px;
   width: 100%;
   border: none;
+  border-radius: 20px;
   text-align: left;
   outline: none;
   font-size: 15px;

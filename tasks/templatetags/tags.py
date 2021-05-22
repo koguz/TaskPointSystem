@@ -26,6 +26,14 @@ def safe_string(string_object):
     return mark_safe(json.dumps(string_object))
 
 
+@register.filter
+def get_item_at_index(target_list, index):
+    try:
+        return target_list[index]
+    except IndexError:
+        return None
+
+
 # @register.simple_tag
 # def is_developer(request):
 #     developer = Developer.objects.filter(user=request.user)
