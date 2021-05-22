@@ -173,7 +173,7 @@ def supervisor_create(request, team_id):
             action_record = ActionRecord.task_create(1, s, task)
             TaskDifference.record_task_difference(task, action_record)
             notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " +action_record.get_action_type_display()
-            send_push_notification_to_team(dev_team, notification_body,task)
+            send_push_notification_to_team(dev_team, notification_body,task, mail=True)
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(team_id, 'due',)))
     else:
         form = TaskSupervisorForm(dev_team)
@@ -220,7 +220,7 @@ def developer_create(request, team_id):
             action_record = ActionRecord.task_create(1, developer, task)
             TaskDifference.record_task_difference(task, action_record)
             notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-            send_push_notification_to_team(dev_team, notification_body, request.user,task)
+            send_push_notification_to_team(dev_team, notification_body, request.user,task, mail=True)
 
             return HttpResponseRedirect(reverse('tasks:team-home', args=(team_id,)))
 
@@ -301,7 +301,7 @@ def update(request, task_id, status_id):
 
 
     notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-    send_push_notification_to_team(task.team, notification_body, request.user,task)
+    send_push_notification_to_team(task.team, notification_body, request.user,task, mail=True)
     return HttpResponseRedirect('/tasks/choose/')
 
 
@@ -394,7 +394,7 @@ def send_comment(request, task_id):
 
             if ct.task.assignee != Developer.objects.filter(user=request.user).first():
                 notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-                send_push_notification_to_user(ct.task.assignee.user, notification_body, ct.task)
+                send_push_notification_to_user(ct.task.assignee.user, notification_body, ct.task, mail=True)
     return HttpResponseRedirect('/tasks/' + task_id + '/view/')
 
 
@@ -538,7 +538,7 @@ def send_vote(request, task_id, status_id, button_id):
         action_record = ActionRecord.task_vote(action_type, request.user, task)
         if task.assignee.user != request.user:
             notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-            send_push_notification_to_user(task.assignee.user, notification_body, task)
+            send_push_notification_to_user(task.assignee.user, notification_body, task, mail=True)
     else:
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -583,7 +583,7 @@ def developer_edit_task(request, task_id):
                 action_record = ActionRecord.task_edit(2, developer, task)
                 TaskDifference.record_task_difference(task, action_record)
                 notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-                send_push_notification_to_team(dev_team, notification_body, request.user,task)
+                send_push_notification_to_team(dev_team, notification_body, request.user, task, mail=True)
 
             return HttpResponseRedirect(reverse('tasks:team-home', args=(task.team.id,)))
     else:
@@ -643,7 +643,7 @@ def supervisor_edit_task(request, task_id):
                 action_record = ActionRecord.task_edit(2, Supervisor.objects.get(user=request.user), task)
                 TaskDifference.record_task_difference(task, action_record)
                 notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-                send_push_notification_to_team(dev_team, notification_body,task)
+                send_push_notification_to_team(dev_team, notification_body,task, mail=True)
 
             return HttpResponseRedirect(reverse('tasks:team-all-tasks', args=(task.team.id, 'due',)))
     else:

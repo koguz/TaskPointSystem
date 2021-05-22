@@ -3,8 +3,6 @@
 <head>
     {% load static %}
     {% load tags %}
-    {% load webpush_notifications %}
-    {% webpush_header %}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -46,7 +44,6 @@
         <a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i><span id="sidebar-sign-out">Sign Out</span></a>
     </div>
     <div class="container main-screen">
-        {% webpush_button %}
         {% block content %}{% endblock %}
     </div>
 

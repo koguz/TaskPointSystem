@@ -8,6 +8,7 @@ from django.urls import reverse
 from .models import *
 from webpush import send_user_notification
 from webpush.utils import send_to_subscription
+from django.core.mail import send_mail
 
 def reset_task_submission_change_votes(task):
     # reset submission change votes if the task is once changed (waiting for rev -> working on it -> waiting for rev)
@@ -83,15 +84,23 @@ def check_is_final(comment_list):
             comments.append(comment)
     return final_comment, comments
 
-def send_push_notification_to_user(user, description, task=None):
+def send_push_notification_to_user(user, description, task=None, mail=False):
     payload = {"head": "TPS Notification!", "body": description}
     send_user_notification(user=user, payload=payload, ttl=1000)
     if task:
         Notification(user= user, body=description, related_task=task).save()
+    if mail:
+        email_body = "Hello " +user.get_full_name()+",\n" + description
+        send_mail(
+            'TPS Nofitication',
+            email_body,
+            'tpsdeneme@gmail.com',
+            [user.email],
+            fail_silently=False,
+        )
 
 
-
-def send_push_notification_to_team(team, description, excluded_user=None, task=None):
+def send_push_notification_to_team(team, description, excluded_user=None, task=None, mail=False):
     payload = {"head": "TPS Notification!", "body": description}
     developers = [developer_team.developer for developer_team in DeveloperTeam.objects.filter(team=team)]
     users = [developer.user for developer in developers]
@@ -102,3 +111,12 @@ def send_push_notification_to_team(team, description, excluded_user=None, task=N
     for user in users:
         send_user_notification(user=user, payload=payload, ttl=1000)
         Notification(user=user, body=description, related_task=task).save()
+        if mail:
+            email_body = "Hello " + user.get_full_name() + ",\n" + description
+            send_mail(
+                'TPS Nofitication',
+                email_body,
+                'tpsdeneme@gmail.com',
+                [user.email],
+                fail_silently=False,
+            )
