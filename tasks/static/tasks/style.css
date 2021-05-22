@@ -293,8 +293,6 @@ a[aria-expanded="true"] {
 /* FEED */
 
 .user-feed {
-  /*position: sticky;*/
-  /*left: 200px;*/
   min-width: 350px;
 }
 
@@ -370,7 +368,6 @@ a[aria-expanded="true"] {
   font-weight: 500;
 }
 
-
 .task-date-supervisor {
   float: right;
   padding-right: 10px;
@@ -391,9 +388,8 @@ a[aria-expanded="true"] {
   border: 1px solid #cccccc;
   border-radius: 20px;
   background: #F8F8F8;
-  padding: 5px;
-  margin-left: 2px;
-  margin-right: 2px;
+  padding: 5px 10px 0 10px;
+  margin: 5px;
 }
 
 .teams-main-column {
@@ -402,7 +398,7 @@ a[aria-expanded="true"] {
   justify-content: center;
 }
 
-.teams-course{
+.teams-course {
   /*float: right;*/
   padding-right: 5px;
   padding-top: 2px;
@@ -410,21 +406,21 @@ a[aria-expanded="true"] {
   text-align: center;
 }
 
-.teams-name{
+.teams-name {
   display: block;
   text-align: center;
 }
-.teams-content{
+.teams-content {
   display: block;
   text-align: center;
 }
 
 
-.your-active-tasks.your-notifications{
+.your-active-tasks.your-notifications {
   padding-top: 1px;
 }
 
-.your-active-tasks-header.your-notifications-header{
+.your-active-tasks-header.your-notifications-header {
   margin-bottom: 45px;
 }
 
@@ -473,6 +469,12 @@ a[aria-expanded="true"] {
 
   .main-screen {
     padding-left: 20px;
+  }
+}
+
+@media only screen and (max-width: 350px) {
+  .user-feed {
+    min-width: 300px;
   }
 }
 

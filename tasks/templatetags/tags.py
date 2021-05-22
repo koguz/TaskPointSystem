@@ -38,12 +38,3 @@ def get_item_at_index(target_list, index):
         return target_list[index]
     except IndexError:
         return None
-
-
-# @register.simple_tag
-# def is_developer(request):
-#     developer = Developer.objects.filter(user=request.user)
-#     if developer:
-#         return True
-#     else:
-#         return False
