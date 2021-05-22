@@ -2,15 +2,23 @@
 {% load static %}
 
 {% block content %}
-    <div class="row" style="justify-content: center; align-items: center; height: 100vh">
-        <a href="{% url 'tasks:data_graph_inspect' '1_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_low_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '1_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_planned_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '1_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/easy_urgent_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '2_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_low_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '2_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_planned_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '2_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/normal_urgent_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '3_1' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_low_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '3_2' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_planned_figure.png' %}"></a>
-        <a href="{% url 'tasks:data_graph_inspect' '3_3' %}" class="brand-link"><img src="{% static 'tasks/gaussian_plots/difficult_urgent_figure.png' %}"></a>
+
+    <div class="row" style="justify-content: center; align-items: center; margin-top: 125px">
+        {% for course in courses %}
+            <div class="col-sm-2 user-feed">
+                <a href="{% url 'tasks:course_data_analytics' course.course %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                    <ul>
+                        <li>
+                            <p class="teams-course"><span class="bold-span">Course: </span>{{ course.course__name }}</p>
+                            <div class="teams-name">
+                                <h4>{{ team.name }}</h4>
+                                <p><span class="bold-span">Number of Students: </span>{{ course.course__number_of_students }}</p>
+                            </div>
+                        </li>
+                    </ul>
+                </a>
+            </div>
+        {% endfor %}
     </div>
+
 {% endblock %}

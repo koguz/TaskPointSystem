@@ -732,27 +732,45 @@ def sort_active_tasks(request):
 
 
 @login_required
-def data_analytics(request):
-    if not os.path.isfile('tasks/static/tasks/gaussian_plots/difficult_low_figure.png'):
-        calculate_time_diff_and_plot()
+def course_data_analytics(request, course_id):
+    if not os.path.isfile('tasks/static/tasks/gaussian_plots/' + course_id + '/difficult_low_figure.png'):
+        calculate_time_diff_and_plot(course_id)
     return render(
         request,
-        'tasks/data_analytics.html'
+        'tasks/course_data_analytics.html',
+        {
+            'course_id': course_id,
+        }
     )
 
 
 @login_required
-def data_graph_inspect(request, difficulty_and_priority):
+def data_analytics(request):
+    s = Supervisor.objects.get(user=request.user)
+    supervised_courses = Team.objects.values('course', 'course__name', 'course__number_of_students').filter(
+        supervisor=s).distinct()
+
+    return render(
+        request,
+        'tasks/data_analytics.html',
+        {
+            'courses': supervised_courses,
+        }
+    )
+
+
+@login_required
+def data_graph_inspect(request, difficulty_and_priority, course_id):
     difficulty_and_priority_temp = difficulty_and_priority.split("_")
     difficulty = difficulty_and_priority_temp[0]
     priority = difficulty_and_priority_temp[1]
-    task_list = Task.objects.filter(difficulty=difficulty, priority=priority, status=6)
+    task_list = Task.objects.filter(team__course__id=course_id, difficulty=difficulty, priority=priority, status=6)
     average = get_average_completion_time(task_list)
     max, min = get_max_min_completion_time(task_list)
     entry = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first()
 
     if entry is None:
-        entry = GraphIntervals(difficulty=difficulty, priority=priority)
+        entry = GraphIntervals(course_id=course_id, difficulty=difficulty, priority=priority)
         entry.save()
 
     lower_bound = entry.lower_bound
@@ -769,11 +787,12 @@ def data_graph_inspect(request, difficulty_and_priority):
             'min': min,
             'lower_bound': lower_bound,
             'upper_bound': upper_bound,
+            'course_id': course_id,
         }
     )
 
 
-def set_point_pool_interval(request):
+def set_point_pool_interval(request, course_id):
     if 'lower_bound' in request.POST and 'upper_bound' in request.POST:
         lower_bound = request.POST['lower_bound']
         upper_bound = request.POST['upper_bound']
@@ -782,13 +801,13 @@ def set_point_pool_interval(request):
         difficulty = difficulty_and_priority_split[0]
         priority = difficulty_and_priority_split[1]
         try:
-            entry = GraphIntervals.objects.get(difficulty=str(difficulty), priority=str(priority))
+            entry = GraphIntervals.objects.get(course=course_id, difficulty=str(difficulty), priority=str(priority))
             if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
                 entry.upper_bound = upper_bound
                 entry.lower_bound = lower_bound
             entry.save()
         except ObjectDoesNotExist:
-            entry = GraphIntervals(difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
+            entry = GraphIntervals(course=course_id, difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
             entry.save()
 
     return redirect(request.META['HTTP_REFERER'])
@@ -858,9 +877,11 @@ def calculate_point_pool(request, course_id):
 def developer_point_pool_activities(request, course_name, developer_id):
 
     developer = Developer.objects.get(id=developer_id)
-    accepted_tasks = Task.objects.filter(status=6, assignee=developer)
-    rejected_tasks = Task.objects.filter(status=5, assignee=developer)
+    course = Course.objects.get(name=course_name)
+    accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer)
+    rejected_tasks = Task.objects.filter(team__course__id=course.id, status=5, assignee=developer)
     comments = Comment.objects.filter(owner=developer.user)
+
     votes = Vote.objects.filter(voter=developer)
     developer_name = developer.get_name()
 

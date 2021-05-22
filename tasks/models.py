@@ -620,6 +620,7 @@ class PointPool(models.Model):
 
 
 class GraphIntervals(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     difficulty = models.SmallIntegerField("Difficulty", default=0)
     priority = models.SmallIntegerField("Priority", default=0)
     lower_bound = models.IntegerField("Lower Bound", default=-1)

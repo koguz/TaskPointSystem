@@ -7,23 +7,41 @@
     <div class="row">
         <div class="col-sm-6">
             {% if difficulty_and_priority == '1_1' %}
-                <img src="{% static 'tasks/gaussian_plots/easy_low_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/easy_low_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '1_2'%}
-                <img src="{% static 'tasks/gaussian_plots/easy_planned_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/easy_planned_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '1_3'%}
-                <img src="{% static 'tasks/gaussian_plots/easy_urgent_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/easy_urgent_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '2_1'%}
-                <img src="{% static 'tasks/gaussian_plots/normal_low_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/normal_low_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '2_2'%}
-                <img src="{% static 'tasks/gaussian_plots/normal_planned_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/normal_planned_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '2_3'%}
-                <img src="{% static 'tasks/gaussian_plots/normal_urgent_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/normal_urgent_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '3_1'%}
-                <img src="{% static 'tasks/gaussian_plots/difficult_low_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/difficult_low_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '3_2'%}
-                <img src="{% static 'tasks/gaussian_plots/difficult_planned_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/difficult_planned_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% elif difficulty_and_priority == '3_3'%}
-                <img src="{% static 'tasks/gaussian_plots/difficult_urgent_figure.png' %}">
+                {% with 'tasks/gaussian_plots/'|add:course_id|add:'/difficult_urgent_figure.png' as imagePath %}
+                    <img src="{% static imagePath %}">
+                {% endwith %}
             {% endif %}
             <table class="task-info-table">
                 <tr><td>Average Task Completion : {{ average_completion_time }} hours </td></tr>
@@ -32,7 +50,7 @@
                 <tr><td>Total task : {{ task_list|length }}</td></tr>
             </table>
             <div>
-                <form action="{% url 'tasks:set_point_pool_interval' %}" method="post">
+                <form action="{% url 'tasks:set_point_pool_interval' course_id %}" method="post">
                     {% csrf_token %}
                     <label for="lower">Lower Bound: </label>
                     <input type="number" name="lower_bound" value="{{ lower_bound }}">

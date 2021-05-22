@@ -1,3 +1,4 @@
+import os.path
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import statistics
@@ -96,20 +97,20 @@ def check_is_final(comment_list):
     return final_comment, comments
 
 
-def calculate_time_diff_and_plot():
+def calculate_time_diff_and_plot(course_id):
     time_diff_list = np.array([])
 
     for difficulty in range(1, 4):
         for priority in range(1, 4):
-            task_list = Task.objects.filter(priority=priority, difficulty=difficulty, status=6)
+            task_list = Task.objects.filter(team__course__id=course_id, priority=priority, difficulty=difficulty, status=6)
             for task in task_list:
                 time_diff_list = np.append(time_diff_list,
                                            ((task.completed_on - task.created_on).total_seconds()) / 3600)
             difficulty_and_priority = str(difficulty) + "_" + str(priority)
-            plot_gaussian(time_diff_list, difficulty_and_priority)
+            plot_gaussian(time_diff_list, difficulty_and_priority, course_id)
 
 
-def plot_gaussian(time_diff_list, difficulty_and_priority):
+def plot_gaussian(time_diff_list, difficulty_and_priority, course_id):
     time_diff_list = np.sort(time_diff_list)
 
     mean = statistics.mean(time_diff_list)
@@ -141,7 +142,9 @@ def plot_gaussian(time_diff_list, difficulty_and_priority):
         title = "invalid difficulty and priority"
 
     plt.title(title)
-    plt.savefig('tasks/static/tasks/gaussian_plots/' + title + '_figure.png')
+    if not os.path.isdir('tasks/static/tasks/gaussian_plots/' + course_id):
+        os.mkdir('tasks/static/tasks/gaussian_plots/' + course_id)
+    plt.savefig('tasks/static/tasks/gaussian_plots/' + course_id + '/' + title + '_figure.png')
     plt.close()
 
 
