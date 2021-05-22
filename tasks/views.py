@@ -63,6 +63,7 @@ def supervisor(request):  # this view is for the supervisors only...
         return HttpResponseRedirect('/tasks/')
 
     supervisor_name = s.get_name()
+    supervisor_photo_url = s.photo_url
     page_title = "Supervisor page"
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
@@ -75,6 +76,7 @@ def supervisor(request):  # this view is for the supervisors only...
         'completed_task_list': completed_task_list,
         'supervised_teams': supervised_teams,
         'all_teammates': all_teammates,
+        'supervisor_photo_url': supervisor_photo_url,
     }
     return render(request, 'tasks/supervisor.html', context)
 
@@ -697,6 +699,7 @@ def profile(request):
 
 def visit_profile(request, developer_id):
     developer = Developer.objects.get(id=developer_id)
+    developer_photo = developer.photo_url
     user_task_list = developer.assignee.all().filter(status__lt=5).order_by('due')[:5]
 
     return render(
@@ -705,6 +708,7 @@ def visit_profile(request, developer_id):
         {
             'user_task_list': user_task_list,
             'developer': developer,
+            'developer_photo_url': developer_photo,
         }
     )
 

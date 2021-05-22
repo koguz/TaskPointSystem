@@ -48,6 +48,8 @@ app_urls = ([
     re_path(r'^reset/<uidb64>/<token>/$', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     re_path(r'^password_reset/$', auth_views.PasswordResetView.as_view(), name='password_reset'),
     re_path(r'^reset/done/$', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
+    re_path(r'^account-settings/$', views.account_settings, name='account-settings'),
+    re_path(r'^account-settings/#$', views.set_email, name='set_email'),
 ], 'tasks')
 
 urlpatterns = [

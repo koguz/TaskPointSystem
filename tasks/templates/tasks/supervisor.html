@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-sm-12 profile-row">
       <div class="profile-card" style="float: left">
-          <img src="../../static/tasks/cutedoggo.jpg" alt="Profile Picture">
+          <img src="{{ supervisor_photo_url }}" alt="Profile Picture">
           <div>
               <div class="profile-info">
                   <h1 style="margin-top: 40px">{{ supervisor_name }}</h1>
@@ -12,7 +12,7 @@
           </div>
       </div>
         <div style="float: right; margin-top: 20px">
-            <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
+           <a href="{% url 'tasks:account-settings' %}" class="btn btn-default" role="button">Account Settings</a>
         </div>
     </div>
 </div>
