@@ -1,7 +1,7 @@
 import datetime
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from anytree import Node
@@ -74,6 +74,19 @@ class Supervisor(models.Model):
 
     def get_name(self):
         return self.user.first_name + " " + self.user.last_name
+
+    def calculate_point_pool(self, course_id):
+        developer_team = []
+        supervised_teams = Team.objects.all().filter(supervisor=self.id, course_id=course_id)
+        for team in supervised_teams:
+            developer_team.append(team.get_team_members())
+        for team in developer_team:
+            for developer in team:
+
+                PointPool.get_all_tasks(course_id, developer)
+                PointPool.get_all_votes(course_id, developer)
+
+        return PointPool.scale_point_pool_grades(course_id)
 
 
 class Team(models.Model):
@@ -228,11 +241,14 @@ class Task(models.Model):
         verbose_name="Assigned to"
     )
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    title = models.CharField("Brief task name", max_length=256)
+    title = models.CharField("Task title", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date", validators=[past_date_validator])
-    created_on = models.DateTimeField("Created on", auto_now_add=True)
-    completed = models.DateTimeField("Completed on", auto_now=True, blank=True, null=True)
+    created_on = models.DateTimeField("Created on", null=False)
+    creation_approved_on = models.DateTimeField("Creation approved on", blank=True, null=True)
+    submission_approved_on = models.DateTimeField("Submission approved on", blank=True, null=True)
+    completed_on = models.DateTimeField("Completed on", blank=True, null=True)
+    last_modified = models.DateTimeField("Last Modified", auto_now=True)
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY, default=2)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY, default=2)
     modifier = models.PositiveSmallIntegerField(
@@ -241,7 +257,6 @@ class Task(models.Model):
         validators=[MaxValueValidator(5), MinValueValidator(1)]
     )
     status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=1)
-    valid = models.BooleanField("Is Valid", default=False)
 
     def get_points(self):
         return (self.difficulty * self.priority) + self.modifier
@@ -269,13 +284,17 @@ class Task(models.Model):
         return Vote.objects.filter(task=self, vote_type=4)
 
     def apply_self_accept(self, task_assignee, vote_type):
-        vote = Vote(voter=task_assignee.user, task=self)
+        vote = Vote(voter=task_assignee, task=self)
         vote.vote_type = vote_type
         vote.save()
 
     def check_for_status_change(self):
         if Vote.objects.filter(task=self, vote_type=self.status).count() >= self.team.get_team_size():
             self.status = self.status + 1
+            if self.status == 4:
+                self.submission_approved_on = datetime.datetime.now()
+            elif self.status == 2:
+                self.creation_approved_on = datetime.datetime.now()
             self.save()
         elif (
             Vote.objects.filter(task=self, vote_type=4).count() >= self.team.get_team_size() - 1 and
@@ -304,7 +323,8 @@ class Task(models.Model):
             "difficulty": "",
         }
 
-        different_attributes = filter(lambda field: getattr(self, field, None) != getattr(task, field, None), differences.keys())
+        different_attributes = filter(lambda field: getattr(self, field, None) != getattr(task, field, None),
+                                      differences.keys())
 
         for attribute in different_attributes:
             differences[attribute] = self.__getattribute__(attribute)
@@ -339,7 +359,7 @@ class Task(models.Model):
         developer_not_voted_before = Vote.objects.all().filter(
             task=self,
             vote_type__range=(self.status, self.status + 1),
-            voter__developer=developer,
+            voter=developer,
         ).count() < 1
         developer_is_in_tasks_team = self.team.is_in_team(user)
 
@@ -360,13 +380,14 @@ class Task(models.Model):
         task_difference_elements_length = len(task_difference_elements)
         task_history = []
 
-        task_creation_history_element = task_difference_elements[task_difference_elements_length - 1]
-        assignee_id = task_creation_history_element.pop('assignee_id', None)
-        task_creation_history_element['assignee'] = Developer.objects.get(pk=assignee_id)
-        task_creation_history_element.pop('action_record_id', None)
-        task_creation_history_element.pop('task_id', None)
-        task_creation_history_element.pop('id', None)
-        task_history.append(task_creation_history_element)
+        if task_difference_elements_length > 0:
+            task_creation_history_element = task_difference_elements[task_difference_elements_length - 1]
+            assignee_id = task_creation_history_element.pop('assignee_id', None)
+            task_creation_history_element['assignee'] = Developer.objects.get(pk=assignee_id)
+            task_creation_history_element.pop('action_record_id', None)
+            task_creation_history_element.pop('task_id', None)
+            task_creation_history_element.pop('id', None)
+            task_history.append(task_creation_history_element)
 
         # TaskDifference entries
         for index in reversed(range(0, task_difference_elements_length - 1)):
@@ -445,7 +466,7 @@ class Vote(models.Model):
     )
 
     # VOTES WILL BE DELETED IF EITHER THE VOTER OR THE TASK IS DELETED !
-    voter = models.ForeignKey(User, on_delete=models.CASCADE)
+    voter = models.ForeignKey(Developer, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     vote_type = models.PositiveSmallIntegerField("Vote Type", choices=VOTE_TYPE, default=1)
     created_on = models.DateTimeField("Date", auto_now_add=True)
@@ -484,11 +505,11 @@ class ActionRecord(models.Model):
         (12, 'Task Reject'),
     )
     action_type = models.PositiveSmallIntegerField("Vote Type", choices=ACTION_TYPE, default=0)
-    actor = models.ForeignKey(User, on_delete=models.RESTRICT)
-    object = models.ForeignKey(Task, on_delete=models.RESTRICT)
+    actor = models.ForeignKey(User, on_delete=models.CASCADE)
+    object = models.ForeignKey(Task, on_delete=models.CASCADE)
     action_description = models.CharField("Action Description", max_length=256)
     # TODO: make datetime turkey time
-    created_on = models.DateTimeField("Created on", auto_now=True)
+    created_on = models.DateTimeField("Created on", auto_now_add=True)
 
     @staticmethod
     def task_create(action_type, actor, object):
@@ -524,6 +545,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_comment(action_type, actor, object):
@@ -535,6 +557,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_comment_final(action_type, actor, object):
@@ -546,6 +569,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_vote(action_type, actor, object):
@@ -557,6 +581,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_approval(action_type, actor, object):
@@ -568,6 +593,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
     @staticmethod
     def task_status_change_by_developer(action_type, actor, object):
@@ -579,6 +605,7 @@ class ActionRecord(models.Model):
             action_description=action_description,
         )
         action_record.save()
+        return action_record
 
 
 class TaskDifference(models.Model):
@@ -592,15 +619,15 @@ class TaskDifference(models.Model):
         (2, 'Normal'),
         (1, 'Easy'),
     )
-    action_record = models.ForeignKey(ActionRecord, on_delete=models.RESTRICT)
-    task = models.ForeignKey(Task, on_delete=models.RESTRICT)
-    assignee = models.ForeignKey(Developer, on_delete=models.RESTRICT)
+    action_record = models.ForeignKey(ActionRecord, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    assignee = models.ForeignKey(Developer, on_delete=models.CASCADE)
     title = models.CharField("Brief task name", max_length=256)
     description = models.TextField("Description")
     due = models.DateField("Due Date")
     priority = models.PositiveSmallIntegerField("Priority", choices=PRIORITY)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY)
-    created_on = models.DateTimeField("Created on", auto_now=True)
+    created_on = models.DateTimeField("Created on", auto_now_add=True)
 
     @staticmethod
     def record_task_difference(task, action_record):
@@ -615,3 +642,91 @@ class TaskDifference(models.Model):
             difficulty=task.difficulty,
         )
         task_difference.save()
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, related_name='user', on_delete=models.SET_NULL, null=True)
+    body = models.CharField("Notification Body", max_length=256)
+    related_task = models.ForeignKey(Task, related_name='user', on_delete=models.SET_NULL, null=True)
+    timestamp = models.DateTimeField("Sent on", auto_now_add=True)
+    is_seen = models.BooleanField("Seen", default=False)
+
+
+class PointPool(models.Model):
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, default=1, on_delete=models.CASCADE)
+    point = models.PositiveIntegerField(default=0)
+
+    @staticmethod
+    def get_all_tasks(course_id, developer):
+        try:
+            point_pool_entry = PointPool.objects.get(developer=developer, course__id=course_id)
+        except PointPool.DoesNotExist:
+            point_pool_entry = PointPool(developer=developer, course_id=course_id)
+            point_pool_entry.save()
+
+        all_accepted_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer,
+                                                                                     status=6)  # All tasks that are accpeted
+        all_rejected_tasks_list = Task.objects.select_related('team__course').filter(assignee=developer,
+                                                                                     status=5)  # All tasks that are rejected
+        for task in all_accepted_tasks_list:
+            entry = GraphIntervals.objects.filter(difficulty=task.difficulty, priority=task.priority).first()
+
+            if entry is None:
+                entry = GraphIntervals(difficulty=task.difficulty, priority=task.priority)
+                entry.save()
+
+            submission_duration = ((task.completed_on.date() - task.created_on.date()).total_seconds() / 3600)
+            lower_bound = entry.lower_bound
+            upper_bound = entry.upper_bound
+
+            if lower_bound == -1 and upper_bound == -1:  # No special point pool interval given.
+                point_pool_entry.point += 1
+            elif lower_bound < submission_duration < upper_bound:  # An interval is given for that priority-difficulty task.
+                point_pool_entry.point += 1
+
+        point_pool_entry.point -= len(all_rejected_tasks_list)
+
+        point_pool_entry.save()
+
+    @staticmethod
+    def get_all_votes(course_id, developer):
+        point_pool_entry = PointPool.objects.get(course_id=course_id, developer_id=developer.id)
+
+        all_votes_list = Vote.objects.filter(task__team__course=course_id, voter=developer)  # All votes that are voted.
+        for vote in all_votes_list:
+            task = Task.objects.get(id=vote.task_id)
+            if task.status == 5 and (
+                    vote.vote_type == 1 or vote.vote_type == 3):  # If a rejected task is voted as accept decrease points by 4.
+                point_pool_entry.point -= 1
+            elif task.status == 6 and (vote.vote_type == 1 or vote.vote_type == 3):
+                point_pool_entry.point += 1
+
+        point_pool_entry.save()
+
+    @staticmethod
+    def scale_point_pool_grades(course_id):
+        points_and_developers = {}
+        point_pool_of_course = PointPool.objects.values('point', 'developer__user__first_name', 'developer__user__last_name').filter(course_id=course_id).order_by('-point')
+        highest_grade = point_pool_of_course[0]['point']
+        for point_pool in point_pool_of_course:
+            if point_pool['point'] == point_pool_of_course[0]['point']:
+                points_and_developers.update({point_pool['developer__user__first_name'] + point_pool['developer__user__last_name']: 100})
+            else:
+                scaled_grade = (point_pool['point'] * 100)/highest_grade
+                points_and_developers.update({point_pool['developer__user__first_name'] + point_pool['developer__user__last_name']: scaled_grade})
+
+        return points_and_developers
+
+
+class GraphIntervals(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    difficulty = models.SmallIntegerField("Difficulty", default=0)
+    priority = models.SmallIntegerField("Priority", default=0)
+    lower_bound = models.IntegerField("Lower Bound", default=-1)
+    upper_bound = models.IntegerField("Upper Bound", default=-1)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['difficulty', 'priority'], name='name of constraint')
+        ]
