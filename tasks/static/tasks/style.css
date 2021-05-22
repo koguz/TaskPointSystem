@@ -585,12 +585,24 @@ a[aria-expanded="true"] {
   display: block;
 }
 
+.final-answer-checkbox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10px;
+}
+
 .task-comments {
   border: 1px solid #cccccc;
   border-radius: 20px;
   background: #F6F6F6;
   padding: 5px;
   display: block;
+}
+
+.final-answer-comment {
+  border: 1px solid #28a745;
 }
 
 .list-group-item {

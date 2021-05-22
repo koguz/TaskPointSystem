@@ -250,7 +250,7 @@ def update(request, task_id, status_id):
         not task.can_be_changed_status_by(request.user) or
         req_status_id > 6 or
         req_status_id < 1 or
-        (0 < req_status_id < 3 and not task.half_the_team_accepted() and task.get_submission_change_votes() < 1)
+        (0 < req_status_id < 3 and not task.half_the_team_accepted() and task.get_submission_change_votes().count() < 1)
     ):
         return HttpResponseRedirect('/tasks/choose/')
 

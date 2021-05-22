@@ -121,28 +121,28 @@
                         <hr />
                     {% endif %}
                     {% if task.status == 3 or task.status == 4 %}
-                        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success btn-lg" role="button" onclick="return ensure('accept')">Accept</a>
+                        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
                     {% else %}
-                        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success btn-lg" role="button" onclick="return ensure('accept')">Accept</a>
+                        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
                     {% endif %}
 
-                    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger btn-lg" role="button" onclick="return ensure('reject')">Reject</a>
+                    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
                 {% endif %}
 
                 {# DEVELOPER #}
                 {% if user_d and task.status == 1 and can_edit == None and can_vote %}
-                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success btn-lg" role="button">Accept</a>
-                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger btn-lg" role="button">Request Change</a>
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
                 {% elif user_d and task.status == 2 and can_edit != None and can_change_status %}
-                    <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning btn-lg" role="button">Submit for Review</a>
+                    <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
                 {% elif user_d and task.status == 3 and can_edit == None and can_vote %}
-                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success btn-lg" role="button">Accept</a>
-                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger btn-lg" role="button">Request Change</a>
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=3 %}" class="btn btn-default btn-success" role="button">Accept</a>
+                    <a href="{% url 'tasks:send-vote' task_id=task.id status_id=3 button_id=4 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
                 {% elif user_d and task.status == 3 and can_edit == 'developer' %}
                     {% if half_the_team_accepted %}
                         <a
                             href="{% url 'tasks:update' task.id 4 %}"
-                            class="btn btn-default btn-success btn-lg"
+                            class="btn btn-default btn-success"
                             role="button"
                             title="Change status to 'Waiting for supervisor grade' without waiting for all your team members"
                             onclick="return ensure('change the status to \'Waiting for supervisor grade\'')"
@@ -151,7 +151,7 @@
                     {% if submission_needs_change %}
                         <a
                             href="{% url 'tasks:update' task.id 2 %}"
-                            class="btn btn-default btn-info btn-lg"
+                            class="btn btn-default btn-info"
                             role="button"
                             title="Change status back to 'Working on it'"
                             onclick="return ensure('change the status to \'Working on it\'')"
@@ -159,26 +159,26 @@
                     {% endif %}
                 {% elif user_d and can_edit == 'developer' and task.status == 1 %}
                     {% if can_vote and task.creator != user_d.user%}
-                        <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success btn-lg" role="button">Accept</a>
-                        <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger btn-lg" role="button">Request Change</a>
+                        <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=1 %}" class="btn btn-default btn-success" role="button">Accept</a>
+                        <a href="{% url 'tasks:send-vote' task_id=task.id status_id=1 button_id=2 %}" class="btn btn-default btn-danger" role="button">Request Change</a>
                     {% endif %}
                     {% if half_the_team_accepted %}
                         <a
                             href="{% url 'tasks:update' task.id 2 %}"
-                            class="btn btn-default btn-success btn-lg"
+                            class="btn btn-default btn-success"
                             role="button"
                             title="Change status to 'Working on it' without waiting for all your team members"
                             onclick="return ensure('change the status to \'Working on it\'')"
                         >Proceed</a>
                     {% endif %}
                     {% if creation_needs_change %}
-                        <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-primary btn-lg" role="button" title="Edit your task details">Edit</a>
+                        <a href="{% url 'tasks:task-edit-developer' task_id=task.id %}" class="btn btn-default btn-primary" role="button" title="Edit your task details">Edit</a>
                     {% endif %}
                 {% endif %}
 
                 {# SUPERVISOR #}
                 {% if can_edit == "supervisor" and task.status != 2 and task.status != 5 and task.status != 6 %}
-                    <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-primary btn-lg" role="button">Edit</a>
+                    <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-primary" role="button">Edit</a>
                 {% endif %}
             </div>
 
@@ -188,7 +188,7 @@
                     {% csrf_token %}
                     {% for field in form %}
                         {% if final_comment|length < 1 and field.name == "is_final" and user_d == task.assignee and task.status == 2 %}
-                            {{ field.label_tag }}{{ field }}
+                            <div class="final-answer-checkbox">Mark as final answer {{ field }}</div>
                         {% elif field.name != "is_final" %}
                             {{ field.label_tag }}{{ field }}
                         {% endif %}
@@ -202,7 +202,7 @@
                     <i class="fa fa-check fa-2x" aria-hidden="true"></i>
                     <ul class="list-group">
                         {% for f_comment in final_comment %}
-                            <li class="list-group-item">
+                            <li class="list-group-item final-answer-comment">
                               <div class="row">
                                   <div class="col-sm-6">
                                      <p style="font-size: 1.3rem"><b>{{f_comment.owner}}</b></p>
