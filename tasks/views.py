@@ -688,6 +688,7 @@ def profile(request):
         request,
         'tasks/profile.html',
         {
+            'page_title': 'Profile',
             'user_task_list': user_task_list,
             'developer': developer,
         }
@@ -702,6 +703,7 @@ def visit_profile(request, developer_id):
         request,
         'tasks/profile.html',
         {
+            'page_title': developer.get_name(),
             'user_task_list': user_task_list,
             'developer': developer,
         }
@@ -719,6 +721,7 @@ def teams(request):
         request,
         'tasks/teams.html',
         {
+            'page_title': 'Teams',
             'teams': teams_list,
             'all_teammates': all_teammates,
             'tasks_status': tasks_status_list,
@@ -735,8 +738,9 @@ def notifications(request):
         request,
         'tasks/notifications.html',
         {
-            "user": request.user,
-            "notifications": notifications,
+            'page_title': 'Notifications',
+            'user': request.user,
+            'notifications': notifications,
         }
     )
 
@@ -745,6 +749,9 @@ def grades(request):
     return render(
         request,
         'tasks/grades.html',
+        {
+            'page_title': 'Contributions',
+        }
     )
 
 
@@ -752,6 +759,9 @@ def comments(request):
     return render(
         request,
         'tasks/comments.html',
+        {
+            'page_title': 'Comments',
+        }
     )
 
 
@@ -759,6 +769,9 @@ def calendar(request):
     return render(
         request,
         'tasks/calendar.html',
+        {
+            'page_title': 'Calendar',
+        }
     )
 
 

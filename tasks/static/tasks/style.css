@@ -240,20 +240,6 @@ a[aria-expanded="true"] {
 
 /* PROFILE PAGE */
 
-.profile-row {
-  position: sticky;
-  /*left: 200px;*/
-  min-width: 350px;
-  height: 235px;
-}
-
-.profile-card {
-  position: sticky;
-  /*left: 200px;*/
-  min-width: 350px;
-  margin-top: -5px;
-}
-
 .main-screen {
   margin-left: 0;
   padding: 10px 20px 10px 220px;
@@ -307,7 +293,7 @@ a[aria-expanded="true"] {
       font-size: 20px;
       padding-left: 10px;
       min-height: 50px;
-      box-shadow: 3px 2px #CFCFCF;
+      box-shadow: 2px 1px #CFCFCF;
       border-radius: 20px;
       transition: 0.3s;
       background-color: #fff;
@@ -426,30 +412,57 @@ a[aria-expanded="true"] {
 
 /* CALENDAR */
 
-.user-calendar {
-  min-width: 350px;
-  position: sticky;
-  left: 667.98px;
+#wrap {
+  /*width: 200px;*/
+  margin: 0 auto;
 }
 
-.calendar-header {
-  text-align: center;
+#external-events {
+  float: left;
+  width: 150px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+#external-events h4 {
+  font-size: 16px;
+  margin-top: 0;
+  padding-top: 1em;
+}
+
+.external-event { /* try to mimick the look of a real event */
+  margin: 10px 0;
+  padding: 2px 4px;
+  background: #3366CC;
+  color: #fff;
+  font-size: .85em;
+  cursor: pointer;
+}
+
+#external-events p {
+  margin: 1.5em 0;
+  font-size: 11px;
+  color: #666;
+}
+
+#external-events p input {
+  margin: 0;
+  vertical-align: middle;
 }
 
 #calendar {
-  margin-top: 10px;
-  width: 911px;
-  height: 82%;
+  /*float: right;*/
+  /*margin: 0 auto;*/
+  /*width: 200px;*/
+  /*width: 100%;*/
+  background-color: #FFFFFF;
+  border: 1px solid rgba(255, 87, 34, 0.5);
+  border-radius: 6px;
 }
 
-#previous,
-#next {
-  position: sticky;
-  top: 300px;
-}
-
-.table-bordered thead tr th {
-  width: 130px;
+.user-calendar {
+  min-width: 620px;
+  white-space: nowrap;
 }
 
 /* MEDIA AND COMPATIBILITY */
