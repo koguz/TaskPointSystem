@@ -659,13 +659,17 @@ def supervisor_edit_task(request, task_id):
 
             return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:
-        form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
-                                                     'title': task_to_edit.title,
-                                                     'description': task_to_edit.description,
-                                                     'due': task_to_edit.due,
-                                                     'priority': task_to_edit.priority,
-                                                     'difficulty': task_to_edit.difficulty
-                                                     })
+        form = TaskSupervisorForm(
+            dev_team,
+            initial={
+                'assignee': developer,
+                'title': task_to_edit.title,
+                'description': task_to_edit.description,
+                'due': task_to_edit.due,
+                'priority': task_to_edit.priority,
+                'difficulty': task_to_edit.difficulty
+            }
+        )
     return render(
         request,
         'tasks/supervisor_task_form.html',

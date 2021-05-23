@@ -1,9 +1,168 @@
 {% extends "tasks/base.html" %}
+{% load static %}
 
 {% block content %}
-    <div class="row" style="justify-content: center; align-items: center; height: 100vh">
-            <p style="font-size: 100px; color: #999999; -webkit-text-stroke-width: 1px; -webkit-text-stroke-color: #888888;">
-                Work in progress...
-            </p>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-8 main-calendar">
+            <div id='wrap'>
+                <div id='calendar'></div>
+                <div style='clear:both'></div>
+            </div>
+        </div>
+        <div class="col-sm-2"></div>
     </div>
+{% endblock %}
+{% block scriptcontent %}
+    <link href='{% static 'tasks/fullcalendar/css/fullcalendar.css' %}' rel='stylesheet' />
+    <link href='{% static 'tasks/fullcalendar/css/fullcalendar.print.css' %}' rel='stylesheet' media='print' />
+    <script src='{% static 'tasks/fullcalendar/js/jquery-1.10.2.js' %}' type="text/javascript"></script>
+    <script src='{% static 'tasks/fullcalendar/js/jquery-ui.custom.min.js' %}' type="text/javascript"></script>
+    <script src='{% static 'tasks/fullcalendar/js/fullcalendar.js' %}' type="text/javascript"></script>
+    <script>
+        $(function() {
+            var date = new Date();
+            var d = date.getDate();
+            var m = date.getMonth();
+            var y = date.getFullYear();
+
+            /*  className colors
+
+            className: default(transparent), important(red), chill(pink), success(green), info(blue)
+
+            */
+
+            /* initialize the external events
+            -----------------------------------------------------------------*/
+
+            $('#external-events div.external-event').each(function() {
+
+                // create an Event Object (http://arshaw.com/fullcalendar/docs/event_data/Event_Object/)
+                // it doesn't need to have a start or end
+                var eventObject = {
+                    title: $.trim($(this).text()) // use the element's text as the event title
+                };
+
+                // store the Event Object in the DOM element so we can get to it later
+                $(this).data('eventObject', eventObject);
+
+                // make the event draggable using jQuery UI
+                $(this).draggable({
+                    zIndex: 999,
+                    revert: true,      // will cause the event to go back to its
+                    revertDuration: 0  //  original position after the drag
+                });
+
+            });
+
+            /* initialize the calendar
+            -----------------------------------------------------------------*/
+            var calendar =  $('#calendar').fullCalendar({
+                header: {
+                    left: 'title',
+                    center: 'agendaDay,agendaWeek,month',
+                    right: 'prev,next today',
+                },
+                editable: false,
+                firstDay: 1, // 1(Monday) this can be changed to 0(Sunday) for the USA system
+                selectable: false,
+                defaultView: 'month',
+                axisFormat: 'HH:mm',
+                columnFormat: {
+                    month: 'ddd', // Mon
+                    week: 'ddd d', // Mon 7
+                    day: 'dddd M/d', // Monday 9/7
+                    agendaDay: 'dddd d',
+                },
+                titleFormat: {
+                    month: 'MMM yyyy', // September 2009
+                    week: "MMM yyyy", // September 2009
+                    day: 'MMM yyyy', // Tuesday, Sep 8, 2009
+                },
+                allDaySlot: false,
+                selectHelper: false,
+                select: function(start, end, allDay) {
+                    var title = prompt('Event Title:');
+                    if (title) {
+                        calendar.fullCalendar('renderEvent',
+                            {
+                                title: title,
+                                start: start,
+                                end: end,
+                                allDay: allDay
+                            },
+                            true // make the event "stick"
+                        );
+                    }
+                    calendar.fullCalendar('unselect');
+                },
+                droppable: false, // this allows things to be dropped onto the calendar !!!
+                drop: function(date, allDay) { // this function is called when something is dropped
+
+                    // retrieve the dropped element's stored Event Object
+                    var originalEventObject = $(this).data('eventObject');
+
+                    // we need to copy it, so that multiple events don't have a reference to the same object
+                    var copiedEventObject = $.extend({}, originalEventObject);
+
+                    // assign it the date that was reported
+                    copiedEventObject.start = date;
+                    copiedEventObject.allDay = allDay;
+
+                    // render the event on the calendar
+                    // the last `true` argument determines if the event "sticks" (http://arshaw.com/fullcalendar/docs/event_rendering/renderEvent/)
+                    $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
+
+                    // is the "remove after drop" checkbox checked?
+                    if ($('#drop-remove').is(':checked')) {
+                        // if so, remove the element from the "Draggable Events" list
+                        $(this).remove();
+                    }
+                },
+
+                events: [],
+                timeFormat: '',
+            });
+
+            let taskMonth;
+            let taskYear;
+            let taskDay;
+
+            {% for task in user_task_list %}
+                taskDay = Number({{ task.due.day }});
+                taskMonth = Number({{ task.due.month }}) - 1;
+                taskYear = Number({{ task.due.year }});
+
+                {#start: new Date(taskYear, taskMonth, taskDay),#}
+                calendar.fullCalendar('renderEvent',
+                    {
+                        title: '{{ task.title }} - Last Day',
+                        start: new Date(taskYear, taskMonth, taskDay),
+                        end: new Date(taskYear, taskMonth, taskDay, 23, 59),
+                        allDay: false,
+                        url: "{% url 'tasks:view-task' task.id %}",
+                        className: 'important',
+                    },
+                    true,
+                );
+            {% endfor %}
+        });
+    </script>
+    <script>
+        const profileCardButtons$ = $('.profile-card-buttons');
+
+        $(window).on('resize', function () {
+            if (window.innerWidth < 576) {
+                profileCardButtons$.removeClass('float-right');
+            } else {
+                profileCardButtons$.addClass('float-right');
+            }
+        });
+
+        $(function () {
+            if (window.innerWidth < 576) {
+                profileCardButtons$.removeClass('float-right');
+            }
+        });
+    </script>
 {% endblock %}

@@ -261,6 +261,16 @@ a[aria-expanded="true"] {
   display: inline-flex;
 }
 
+.profile-card-buttons {
+  padding-left: 30px;
+  padding-top: 50px;
+  display: inline-flex;
+}
+
+  .profile-card-buttons a {
+    margin-right: 10px;
+  }
+
 .profile-info {
   padding-left: 25px;
 }
@@ -451,10 +461,6 @@ a[aria-expanded="true"] {
 }
 
 #calendar {
-  /*float: right;*/
-  /*margin: 0 auto;*/
-  /*width: 200px;*/
-  /*width: 100%;*/
   background-color: #FFFFFF;
   border: 1px solid rgba(255, 87, 34, 0.5);
   border-radius: 6px;
@@ -462,10 +468,41 @@ a[aria-expanded="true"] {
 
 .user-calendar {
   min-width: 620px;
-  white-space: nowrap;
+}
+
+.main-calendar {
+  min-width: 620px;
+  margin-top: 15px;
 }
 
 /* MEDIA AND COMPATIBILITY */
+
+@media only screen and (max-width: 350px) {
+  .user-feed {
+    min-width: 300px;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .profile-card-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+    .profile-card-buttons a {
+      margin-bottom: 10px;
+    }
+}
+
+@media only screen and (max-width: 713px) {
+  .user-calendar {
+    display: none;
+  }
+}
 
 @media only screen and (max-width: 800px) {
   #sidebar {
@@ -485,9 +522,9 @@ a[aria-expanded="true"] {
   }
 }
 
-@media only screen and (max-width: 350px) {
-  .user-feed {
-    min-width: 300px;
+@media only screen and (max-width: 957px) {
+  .main-calendar {
+    margin-top: 40px;
   }
 }
 
