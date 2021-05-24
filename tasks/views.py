@@ -518,9 +518,10 @@ def team_points(request, team_id):
 
 @login_required
 def send_vote(request, task_id, status_id, button_id):
+    developer = Developer.objects.get(user=request.user)
     status_id = int(status_id)
     button_id = int(button_id)
-    vote = Vote(voter=request.user, task=Task.objects.get(pk=task_id))
+    vote = Vote(voter=developer, task=Task.objects.get(pk=task_id))
     task = get_object_or_404(Task, pk=task_id)
     action_type = 0
 
@@ -528,19 +529,19 @@ def send_vote(request, task_id, status_id, button_id):
         return HttpResponseRedirect('/tasks/choose/')
 
     if status_id == 1 and button_id == 1:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 1
         action_type = 6
     elif status_id == 1 and button_id == 2:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 2
         action_type = 8
     elif status_id == 3 and button_id == 3:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 3
         action_type = 9
     elif status_id == 3 and button_id == 4:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 4
         action_type = 11
 
@@ -686,14 +687,18 @@ def supervisor_edit_task(request, task_id):
 
 def profile(request):
     developer = Developer.objects.get(user=request.user)
-    user_task_list = developer.assignee.all().filter(status__lt=5).order_by('due')[:5]
+    user_active_tasks = developer.get_active_tasks().order_by('due')
+    user_attention_tasks = developer.get_attention_needed_tasks().order_by('due')
+    user_all_tasks = developer.get_all_tasks()
 
     return render(
         request,
         'tasks/profile.html',
         {
             'page_title': 'Profile',
-            'user_task_list': user_task_list,
+            'user_active_tasks': user_active_tasks,
+            'user_attention_tasks': user_attention_tasks,
+            'user_all_tasks': user_all_tasks,
             'developer': developer,
         }
     )
@@ -734,17 +739,19 @@ def teams(request):
 
 
 def notifications(request):
-    notifications = Notification.objects.filter(user=request.user)
-    for notification in notifications:
+    user_notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+
+    for notification in user_notifications:
         notification.is_seen = True
         notification.save()
+
     return render(
         request,
         'tasks/notifications.html',
         {
             'page_title': 'Notifications',
             'user': request.user,
-            'notifications': notifications,
+            'notifications': user_notifications,
         }
     )
 
@@ -770,11 +777,18 @@ def comments(request):
 
 
 def calendar(request):
+    user_all_tasks = []
+    developer = Developer.objects.filter(user=request.user).first()
+
+    if developer:
+        user_all_tasks = developer.get_all_tasks()
+
     return render(
         request,
         'tasks/calendar.html',
         {
             'page_title': 'Calendar',
+            'user_all_tasks': user_all_tasks,
         }
     )
 

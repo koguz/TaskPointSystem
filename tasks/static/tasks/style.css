@@ -279,11 +279,15 @@ a[aria-expanded="true"] {
   width: 100px;
   height: 150px;
   border-radius: 10%;
-  margin-bottom: 50px;
+  margin-bottom: 10px;
 }
 
 .profile-card h1 {
   padding-top: 10px;
+}
+
+.see-all-button {
+  font-size: 1.2rem;
 }
 
 /* FEED */
@@ -411,6 +415,11 @@ a[aria-expanded="true"] {
   text-align: center;
 }
 
+.notifications-main-row {
+  justify-content: center;
+  height: 100vh;
+  padding-top: 50px;
+}
 
 .your-active-tasks.your-notifications {
   padding-top: 1px;

@@ -127,13 +127,36 @@
             let taskMonth;
             let taskYear;
             let taskDay;
+            let taskColor;
 
-            {% for task in user_task_list %}
+            {% for task in user_all_tasks %}
                 taskDay = Number({{ task.due.day }});
                 taskMonth = Number({{ task.due.month }}) - 1;
                 taskYear = Number({{ task.due.year }});
 
-                {#start: new Date(taskYear, taskMonth, taskDay),#}
+                switch ({{ task.status }}) {
+                    case 1:
+                        taskColor = 'important';
+                        break;
+                    case 2:
+                        taskColor = 'important';
+                        break;
+                    case 3:
+                        taskColor = 'important';
+                        break;
+                    case 4:
+                        taskColor = 'info';
+                        break;
+                    case 5:
+                        taskColor = 'default';
+                        break;
+                    case 6:
+                        taskColor = 'success';
+                        break;
+                    default:
+                        taskColor = 'important';
+                }
+
                 calendar.fullCalendar('renderEvent',
                     {
                         title: '{{ task.title }} - Last Day',
@@ -141,7 +164,7 @@
                         end: new Date(taskYear, taskMonth, taskDay, 23, 59),
                         allDay: false,
                         url: "{% url 'tasks:view-task' task.id %}",
-                        className: 'important',
+                        className: taskColor,
                     },
                     true,
                 );
