@@ -1,0 +1,53 @@
+{% extends "tasks/base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="row" style="margin-top: 50px">
+                <form action="{% url 'tasks:edit_course' course.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="course-name">Course Name:</label>
+                        <input type="text" class="form-control" name="course-name" value="{{ course.name }}">
+                    </div>
+                    <div class="form-group" >
+                        <label for="no-of-students">Number of Students:</label>
+                        <input type="number" class="form-control" name="no-of-students" value="{{ course.number_of_students }}">
+                    </div>
+                    <div class="form-group" >
+                        <label for="team-weight">Team Weight:</label>
+                        <input type="number" class="form-control" name="team-weight" value="{{ course.team_weight }}">
+                    </div>
+                    <div class="form-group" >
+                        <label for="individual-weight">Individual Weight:</label>
+                        <input type="number" class="form-control" name="individual-weight" value="{{ course.ind_weight }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Changes</button>
+                </form>
+            </div>
+            <div class="row">
+                <a class="btn btn-info" role="button" style="margin-top: 50px">Import Students</a>
+                <a href="{% url 'tasks:add_a_milestone' course.id %}" class="btn btn-info" role="button" style="margin-top: 50px">Add Milestone</a>
+            </div>
+        </div>
+        <div class="col-sm-4 user-feed">
+            <h3 class="milestone-course-list">Milestones</h3>
+            {% for milestone in milestones %}
+                <ul>
+                    <li>
+                        <p class="task-date"><span class="bold-span">Due: </span>{{ milestone.due }}</p>
+                        <div class="task-header">
+                            <h4>{{ task.title }}</h4>
+                            <p><span class="bold-span">Milestone: </span>{{ milestone.name }}</p>
+                            <p><span class="bold-span">Weight: </span>{{ milestone.weight }}</p>
+                        </div>
+                        <hr class="content-separator">
+                        <div class="task-content">
+                            <p class="content-text">{{ milestone.description }}</p>
+                        </div>
+                    </li>
+                </ul>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -886,3 +886,7 @@ a[aria-expanded="true"] {
   align-items: center;
   margin-top: 10px
 }
+
+.milestone-course-list{
+  margin-top: 50px;
+}

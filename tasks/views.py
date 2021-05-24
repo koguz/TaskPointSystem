@@ -1020,3 +1020,123 @@ def set_email(request):
         supervisor.photo_url = request.POST['photo_url']
         supervisor.save()
     return redirect(request.META['HTTP_REFERER'])
+
+
+@login_required
+def courses(request):
+    course_list = Course.objects.all()
+
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list,
+        }
+    )
+
+
+@login_required
+def course(request, course_id):
+    course_entry = Course.objects.get(id=course_id)
+    milestone_list = Milestone.objects.filter(course=course_entry)
+
+    return render(
+        request,
+        'tasks/course.html',
+        {
+            'course': course_entry,
+            'milestones': milestone_list,
+        }
+    )
+
+
+@login_required
+def edit_course(request, course_id):
+
+    course_entry = Course.objects.get(id=course_id)
+
+    if request.POST['course-name'] and course_entry.name != request.POST['course-name']:
+        course_entry.name = request.POST['course-name']
+    if request.POST['no-of-students'] and course_entry.number_of_students != request.POST['no-of-students']:
+        course_entry.number_of_students = request.POST['no-of-students']
+    if request.POST['team-weight'] and course_entry.team_weight != request.POST['team-weight']:
+        course_entry.team_weight = request.POST['team-weight']
+    if request.POST['individual-weight'] and course_entry.ind_weight != request.POST['individual-weight']:
+        course_entry.ind_weight = request.POST['individual-weight']
+    course_entry.save()
+
+    return redirect(request.META['HTTP_REFERER'])
+
+
+@login_required
+def add_a_course(request):
+    return render(
+        request,
+        'tasks/add_a_course.html'
+    )
+
+
+@login_required
+def add_the_course(request):
+    course_entry = Course()
+
+    if request.POST['course-name'] and course_entry.name != request.POST['course-name']:
+        course_entry.name = request.POST['course-name']
+    if request.POST['no-of-students'] and course_entry.number_of_students != request.POST['no-of-students']:
+        course_entry.number_of_students = request.POST['no-of-students']
+    if request.POST['team-weight'] and course_entry.team_weight != request.POST['team-weight']:
+        course_entry.team_weight = request.POST['team-weight']
+    if request.POST['individual-weight'] and course_entry.ind_weight != request.POST['individual-weight']:
+        course_entry.ind_weight = request.POST['individual-weight']
+    course_entry.save()
+
+    course_list = Course.objects.all()
+
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list
+        }
+    )
+
+
+@login_required
+def add_a_milestone(request, course_id):
+    course_entry = Course.objects.get(id=course_id)
+
+    return render(
+        request,
+        'tasks/add_a_milestone.html',
+        {
+            'course': course_entry,
+        }
+    )
+
+
+@login_required
+def add_the_milestone(request, course_id):
+    milestone_entry = Milestone()
+
+    course_entry = Course.objects.get(id=course_id)
+    milestone_entry.course = course_entry
+
+    if request.POST['milestone-name']:
+        milestone_entry.name = request.POST['milestone-name']
+    if request.POST['description']:
+        milestone_entry.description = request.POST['description']
+    if request.POST['weight']:
+        milestone_entry.weight = request.POST['weight']
+    if request.POST['due-date']:
+        milestone_entry.due = request.POST['due-date']
+    milestone_entry.save()
+
+    course_list = Course.objects.all()
+
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list
+        }
+    )

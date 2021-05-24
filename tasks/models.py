@@ -34,6 +34,12 @@ class Course(models.Model):
         default=60,
         validators=[MaxValueValidator(99), MinValueValidator(1)]
     )
+    section = models.PositiveSmallIntegerField("Section", default=1, validators=[MaxValueValidator(99), MinValueValidator(1)])
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'section'], name='Course section constraint')
+        ]
 
     def __str__(self):
         return self.name
@@ -60,6 +66,11 @@ class Milestone(models.Model):
         validators=[MaxValueValidator(100), MinValueValidator(1)]
     )
     due = models.DateField("Due Date")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'name'], name='Milestone course constraint')
+        ]
 
     def __str__(self):
         return self.name
@@ -106,6 +117,11 @@ class Team(models.Model):
         default=4,
         validators=[MaxValueValidator(99), MinValueValidator(1)]
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'name'], name='Course team name constraint')
+        ]
 
     def __str__(self):
         return self.name
