@@ -25,14 +25,16 @@ def developer_id(request):
 def safe_string(string_object):
     return mark_safe(json.dumps(string_object))
 
+
 @register.simple_tag
 def notification_count(request):
     count = Notification.objects.filter(user=request.user, is_seen=False).count()
     return count if count > 0 else ""
-# @register.simple_tag
-# def is_developer(request):
-#     developer = Developer.objects.filter(user=request.user)
-#     if developer:
-#         return True
-#     else:
-#         return False
+
+
+@register.filter
+def get_item_at_index(target_list, index):
+    try:
+        return target_list[index]
+    except IndexError:
+        return None

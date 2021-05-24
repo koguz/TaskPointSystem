@@ -259,20 +259,23 @@
         const alertMessages = $('.alert-messages');
         if (alertMessages.children().length < 1) alertMessages.hide(0);
 
-        $(window).resize(function () {
-            if (window.innerWidth < 580) {
-                $('.team-name').removeClass('float-right');
+        const teamName$ = $('.team-name');
+        const taskStatus$ = $('#task-status');
+
+        $(window).on('resize', function () {
+            if (window.innerWidth < 576) {
+                teamName$.removeClass('float-right');
             } else {
-                $('.team-name').addClass('float-right');
+                teamName$.addClass('float-right');
             }
 
             if (window.innerWidth < 1215) {
                 {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'_mobile.png' as imageStatic %}
-                    $('#task-status').attr('src', '{% static imageStatic %}')
+                    taskStatus$.attr('src', '{% static imageStatic %}')
                 {% endwith %}
             } else {
                 {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'.png' as imageStatic %}
-                    $('#task-status').attr('src', '{% static imageStatic %}')
+                    taskStatus$.attr('src', '{% static imageStatic %}')
                 {% endwith %}
             }
         });
@@ -280,12 +283,12 @@
         $(function () {
             if (window.innerWidth < 1215) {
                 {% with 'tasks/task_status_pngs/'|add:task.get_status_display|add:'_mobile.png' as imageStatic %}
-                    $('#task-status').attr('src', '{% static imageStatic %}')
+                    taskStatus$.attr('src', '{% static imageStatic %}')
                 {% endwith %}
             }
 
-            if (window.innerWidth < 580) {
-                $('.team-name').removeClass('float-right');
+            if (window.innerWidth < 576) {
+                teamName$.removeClass('float-right');
             }
         });
 

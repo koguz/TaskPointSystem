@@ -214,6 +214,15 @@ class Developer(models.Model):
     def get_teams(self):
         return Team.objects.all().filter(developerteam__developer=self)
 
+    def get_all_tasks(self):
+        return Task.objects.filter(assignee=self)
+
+    def get_active_tasks(self):
+        return Task.objects.filter(assignee=self, status__range=(1, 3))
+
+    def get_attention_needed_tasks(self):
+        return Task.objects.filter(team__developerteam__developer=self, status__in=(1, 3)).exclude(assignee=self)
+
 
 class Task(models.Model):
     PRIORITY = (

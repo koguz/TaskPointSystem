@@ -69,7 +69,6 @@ def supervisor(request):  # this view is for the supervisors only...
     supervised_teams = Team.objects.all().filter(supervisor=s)
     all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
 
-
     context = {
         'page_title': page_title,
         'supervisor_name': supervisor_name,
@@ -78,6 +77,7 @@ def supervisor(request):  # this view is for the supervisors only...
         'all_teammates': all_teammates,
         'supervisor_photo_url': supervisor_photo_url,
     }
+
     return render(request, 'tasks/supervisor.html', context)
 
 
@@ -519,9 +519,10 @@ def team_points(request, team_id):
 
 @login_required
 def send_vote(request, task_id, status_id, button_id):
+    developer = Developer.objects.get(user=request.user)
     status_id = int(status_id)
     button_id = int(button_id)
-    vote = Vote(voter=request.user, task=Task.objects.get(pk=task_id))
+    vote = Vote(voter=developer, task=Task.objects.get(pk=task_id))
     task = get_object_or_404(Task, pk=task_id)
     action_type = 0
 
@@ -529,19 +530,19 @@ def send_vote(request, task_id, status_id, button_id):
         return HttpResponseRedirect('/tasks/choose/')
 
     if status_id == 1 and button_id == 1:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 1
         action_type = 6
     elif status_id == 1 and button_id == 2:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 2
         action_type = 8
     elif status_id == 3 and button_id == 3:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 3
         action_type = 9
     elif status_id == 3 and button_id == 4:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 4
         action_type = 11
 
@@ -660,13 +661,17 @@ def supervisor_edit_task(request, task_id):
 
             return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:
-        form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
-                                                     'title': task_to_edit.title,
-                                                     'description': task_to_edit.description,
-                                                     'due': task_to_edit.due,
-                                                     'priority': task_to_edit.priority,
-                                                     'difficulty': task_to_edit.difficulty
-                                                     })
+        form = TaskSupervisorForm(
+            dev_team,
+            initial={
+                'assignee': developer,
+                'title': task_to_edit.title,
+                'description': task_to_edit.description,
+                'due': task_to_edit.due,
+                'priority': task_to_edit.priority,
+                'difficulty': task_to_edit.difficulty
+            }
+        )
     return render(
         request,
         'tasks/supervisor_task_form.html',
@@ -683,13 +688,19 @@ def supervisor_edit_task(request, task_id):
 
 def profile(request):
     developer = Developer.objects.get(user=request.user)
-    user_task_list = developer.assignee.all().filter(status__lt=5).order_by('due')[:5]
     developer_photo_url = developer.photo_url
+    user_active_tasks = developer.get_active_tasks().order_by('due')
+    user_attention_tasks = developer.get_attention_needed_tasks().order_by('due')
+    user_all_tasks = developer.get_all_tasks()
+
     return render(
         request,
         'tasks/profile.html',
         {
-            'user_task_list': user_task_list,
+            'page_title': 'Profile',
+            'user_active_tasks': user_active_tasks,
+            'user_attention_tasks': user_attention_tasks,
+            'user_all_tasks': user_all_tasks,
             'developer': developer,
             'developer_photo_url': developer_photo_url,
         }
@@ -705,6 +716,7 @@ def visit_profile(request, developer_id):
         request,
         'tasks/profile.html',
         {
+            'page_title': developer.get_name(),
             'user_task_list': user_task_list,
             'developer': developer,
             'developer_photo_url': developer_photo,
@@ -723,6 +735,7 @@ def teams(request):
         request,
         'tasks/teams.html',
         {
+            'page_title': 'Teams',
             'teams': teams_list,
             'all_teammates': all_teammates,
             'tasks_status': tasks_status_list,
@@ -731,16 +744,19 @@ def teams(request):
 
 
 def notifications(request):
-    notifications = Notification.objects.filter(user=request.user)
-    for notification in notifications:
+    user_notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+
+    for notification in user_notifications:
         notification.is_seen = True
         notification.save()
+
     return render(
         request,
         'tasks/notifications.html',
         {
-            "user": request.user,
-            "notifications": notifications,
+            'page_title': 'Notifications',
+            'user': request.user,
+            'notifications': user_notifications,
         }
     )
 
@@ -749,6 +765,9 @@ def grades(request):
     return render(
         request,
         'tasks/grades.html',
+        {
+            'page_title': 'Contributions',
+        }
     )
 
 
@@ -756,13 +775,26 @@ def comments(request):
     return render(
         request,
         'tasks/comments.html',
+        {
+            'page_title': 'Comments',
+        }
     )
 
 
 def calendar(request):
+    user_all_tasks = []
+    developer = Developer.objects.filter(user=request.user).first()
+
+    if developer:
+        user_all_tasks = developer.get_all_tasks()
+
     return render(
         request,
         'tasks/calendar.html',
+        {
+            'page_title': 'Calendar',
+            'user_all_tasks': user_all_tasks,
+        }
     )
 
 
