@@ -6,13 +6,13 @@
             {% if user_task_list %}
                 <div class="all-tasks-search">
                     <h3>Your Active Tasks</h3>
-                    <a href="{% url 'tasks:task-all' team_id 'status' %}" class="btn btn-default btn-info" role="button">
+                    <a href="{% url 'tasks:task-all' team_id 'status' %}" class="btn btn-info" role="button">
                         Sort by status
                     </a>
-                    <a href="{% url 'tasks:task-all' team_id 'last_modified' %}" class="btn btn-default btn-info" role="button">
+                    <a href="{% url 'tasks:task-all' team_id 'last_modified' %}" class="btn btn-info" role="button">
                         Sort by last modified
                     </a>
-                    <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-default btn-info" role="button">
+                    <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-info" role="button">
                         Sort by due date
                     </a>
                 </div>

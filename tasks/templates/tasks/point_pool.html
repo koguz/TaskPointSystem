@@ -43,7 +43,7 @@
                 <div class="to-be-removed" style="display: none">
                     {% for course_, id in course_id_name_dict.items %}
                         {% if course_ == course %}
-                             <a id="{{ id }}" href="{% url 'tasks:calculate_point_pool' id %}" style="margin-top: 10px" class="btn btn-default btn-primary" role="button">Calculate Point Pool For {{ course }}</a>
+                             <a id="{{ id }}" href="{% url 'tasks:calculate_point_pool' id %}" style="margin-top: 10px" class="btn btn-primary" role="button">Calculate Point Pool For {{ course }}</a>
                         {% endif %}
                     {% endfor %}
                 </div>

@@ -16,9 +16,9 @@
         <div class="your-active-tasks-header">
             <h3 style="float: left">Your Active Tasks</h3>
             <div class="create-new-task-button">
-                <a href="{% url 'tasks:team-points' team_id %}" class="btn btn-default" role="button">View Points</a>
-                <a href="{% url 'tasks:task-create-developer' team_id %}" class="btn btn-default btn-info" role="button" style="float: right; margin-left: 10px">Create a new task</a>
-                <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-default btn-info" role="button" style="float: right">View All Tasks</a>
+                <a href="{% url 'tasks:team-points' team_id %}" class="btn" role="button">View Points</a>
+                <a href="{% url 'tasks:task-create-developer' team_id %}" class="btn btn-info" role="button" style="float: right; margin-left: 10px">Create a new task</a>
+                <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-info" role="button" style="float: right">View All Tasks</a>
             </div>
         </div>
         {% if user_task_list %}
@@ -57,7 +57,7 @@
                 </div>
             </div>
 
-            <a id="rename-team" class="btn btn-default btn-info" type="button" name="button" style="float: right">Rename Team</a>
+            <a id="rename-team" class="btn btn-info" type="button" name="button" style="float: right">Rename Team</a>
         </div>
         <div class="team-accordion">
         {% for mate, tasks in teammates_task_dict.items %}
@@ -112,8 +112,8 @@
 var name_change_count = '{{name_change_count}}'
 $(document).ready(function() {
     if( name_change_count > 3){
-        $("#rename-team").removeClass('btn btn-default btn-info');
-        $("#rename-team").addClass('btn btn-default btn-secondary');
+        $("#rename-team").removeClass('btn btn-info');
+        $("#rename-team").addClass('btn btn-secondary');
         $("#rename-team").prop('title', "Your team's name was already changed the limit of 3 times");
         $("#rename-team").attr('disabled', 'disabled');
         $("#rename-team").css('cursor', 'context-menu');

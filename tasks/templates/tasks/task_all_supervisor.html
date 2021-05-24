@@ -6,13 +6,13 @@
         {% if task_list %}
             <div class="all-tasks-search">
                 <h3>All Tasks of {{ team_name }}</h3>
-                <a href="{% url 'tasks:team-all-tasks' team_id 'status' %}" class="btn btn-default btn-info" role="button">
+                <a href="{% url 'tasks:team-all-tasks' team_id 'status' %}" class="btn btn-info" role="button">
                     Sort by status
                 </a>
-                <a href="{% url 'tasks:team-all-tasks' team_id 'last_modified' %}" class="btn btn-default btn-info" role="button">
+                <a href="{% url 'tasks:team-all-tasks' team_id 'last_modified' %}" class="btn btn-info" role="button">
                     Sort by last modified
                 </a>
-                <a href="{% url 'tasks:team-all-tasks' team_id 'due' %}" class="btn btn-default btn-info" role="button">
+                <a href="{% url 'tasks:team-all-tasks' team_id 'due' %}" class="btn btn-info" role="button">
                     Sort by due date
                 </a>
             </div>
@@ -36,23 +36,23 @@
                             <td class="supervisor-task-operations" height="65">
                                 {% if task.status != 2 and task.status != 5 and task.status != 6 %}
                                     {% if task.status == 1 %}
-                                        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+                                        <a href="{% url 'tasks:update' task.id 2 %}" class="btn btn-success" role="button" onclick="return ensure('accept')">Accept</a>
                                     {% else %}
-                                        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-default btn-success" role="button" onclick="return ensure('accept')">Accept</a>
+                                        <a href="{% url 'tasks:update' task.id 6 %}" class="btn btn-success" role="button" onclick="return ensure('accept')">Accept</a>
                                     {% endif %}
-                                    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-default btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
-                                    <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-default btn-primary" role="button">Edit</a>
+                                    <a href="{% url 'tasks:update' task.id 5 %}" class="btn btn-danger" role="button" onclick="return ensure('reject')">Reject</a>
+                                    <a href="{% url 'tasks:task-edit-supervisor' task_id=task.id %}" class="btn btn-primary" role="button">Edit</a>
                                 {% else %}
                                     <div class="disabled">
-                                        <a href="#" class="btn btn-default btn-secondary" role="button" onclick="return ensure('accept')">Accept</a>
-                                        <a href="#" class="btn btn-default btn-secondary" role="button" onclick="return ensure('reject')">Reject</a>
-                                        <a href="#" class="btn btn-default btn-secondary" role="button">Edit</a>
+                                        <a href="#" class="btn btn-secondary" role="button" onclick="return ensure('accept')">Accept</a>
+                                        <a href="#" class="btn btn-secondary" role="button" onclick="return ensure('reject')">Reject</a>
+                                        <a href="#" class="btn btn-secondary" role="button">Edit</a>
                                     </div>
                                 {% endif %}
                             </td>
                             <td height="65" class="supervisor-task-operations">
                                 {% if task.get_final_answer and task.get_final_answer.file_url %}
-                                    <a href="{{ task.get_final_answer.file_url }}" target="_blank" role="button" class="btn btn-default btn-info">Go to final answer</a>
+                                    <a href="{{ task.get_final_answer.file_url }}" target="_blank" role="button" class="btn btn-info">Go to final answer</a>
                                 {% elif task.get_final_answer %}
                                     <span data-title="No URL given in the final answer">No URL</span>
                                 {% else %}

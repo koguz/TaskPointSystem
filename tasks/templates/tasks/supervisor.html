@@ -12,7 +12,7 @@
           </div>
       </div>
         <div style="float: right; margin-top: 20px">
-           <a href="{% url 'tasks:account-settings' %}" class="btn btn-default" role="button">Account Settings</a>
+           <a href="{% url 'tasks:account-settings' %}" class="btn" role="button">Account Settings</a>
         </div>
     </div>
 </div>
@@ -37,7 +37,7 @@
 {#                            Due date: {{ task.due }}<br />#}
 {#                            Status: {{ task.get_status_display }}#}
 {#                        </p>#}
-{#                        <p style="text-align: right"><a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a></p>#}
+{#                        <p style="text-align: right"><a href="{% url 'tasks:view-task' task.id %}" class="btn btn-info" role="button">View Task</a></p>#}
 {#                    </li>#}
                     <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
                         <li>
@@ -83,12 +83,12 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-6">
-                        <a href="{% url 'tasks:team-all-tasks' mteam.id 'due' %}" class="btn btn-default btn-info" role="button">
+                        <a href="{% url 'tasks:team-all-tasks' mteam.id 'due' %}" class="btn btn-info" role="button">
                             View All Tasks of {{ mteam.name }}
                         </a>
                     </div>
                     <div class="col-sm-6">
-                        <a href="{% url 'tasks:task-create-supervisor' mteam.id %}" class="btn btn-default btn-info" role="button" style="padding-left: 20px; padding-right: 20px; float: right">
+                        <a href="{% url 'tasks:task-create-supervisor' mteam.id %}" class="btn btn-info" role="button" style="padding-left: 20px; padding-right: 20px; float: right">
                             Create Task for {{ mteam.name }}
                         </a>
                     </div>
