@@ -223,7 +223,6 @@ def developer_create(request, team_id):
             task.assignee = developer
             task.team = dev_team
             task.milestone = course.get_current_milestone()
-            task.created_on = datetime.datetime.now()
             task.save()
             task.apply_self_accept(task.assignee, 1)
             action_record = ActionRecord.task_create(1, developer, task)
@@ -797,7 +796,6 @@ def data_analytics(request):
     s = Supervisor.objects.get(user=request.user)
     supervised_courses = Team.objects.values('course', 'course__name', 'course__number_of_students').filter(
         supervisor=s).distinct()
-
     return render(
         request,
         'tasks/data_analytics.html',
@@ -926,9 +924,9 @@ def developer_point_pool_activities(request, course_name, developer_id):
 
     developer = Developer.objects.get(id=developer_id)
     course = Course.objects.get(name=course_name)
-    accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer)
-    rejected_tasks = Task.objects.filter(team__course__id=course.id, status=5, assignee=developer)
-    comments = Comment.objects.filter(owner=developer.user)
+    accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer).order_by('completed_on')
+    rejected_tasks = Task.objects.filter(team__course__id=course.id, status=5, assignee=developer).order_by('completed_on')
+    comments = Comment.objects.filter(owner=developer.user).order_by('created_on')
 
     votes = Vote.objects.filter(voter=developer)
     developer_name = developer.get_name()

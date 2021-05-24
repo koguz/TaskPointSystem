@@ -2,39 +2,71 @@
 {% load static %}
 
 {% block content %}
-    {% for course, teams in course_dict.items %}
-        <div class="col-sm-2 user-feed">
-            <button class="accordion">{{ course }}</button>
-            <ul>
-                {% for team in teams %}
-                    {% for teamName, developerArray in team.items %}
-                        <div class="col-sm-2 user-feed">
-                        <button class="accordion"> {{ teamName }} </button>
+    <div class="row">
+        <div class="col-sm-4" style="margin-left: 100px">
+        {% for course, teams in course_dict.items %}
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="data-analytics">
+                        <img src="https://ultra.content.blackboardcdn.com/ultra/static/images/default-banners/nature4_thumb.jpg" alt="foto">
+                        <div class="teams-name">
+                            <button id="course-button-{{ course }}" class="course-button" onclick='my_func("{{ course }}")'><span class="bold-span">Course: </span>{{ course }}</button>
+                        </div>
+                    </div>
+                    <div id="team-drop-down-{{ course }}" class="row">
                         <ul>
-                        {% with developerArray.0 as developers %}
-                          {% for dev in developers %}
-                            <div class="panel">
-                                <a style="text-decoration: none; color: #1A1A1A">
-                                    <li>
-                                        <a href="{% url 'tasks:developer_point_pool_activities' course dev.id  %}">{{ dev }}</a>
-                                    </li>
-                                </a>
-                            </div>
-                          {% endfor %}
-                        {% endwith %}
+                            {% for team in teams %}
+                                {% for teamName, developerArray in team.items %}
+                                    <div class="user-feed">
+                                        <button class="accordion"> {{ teamName }} </button>
+                                        <ul>
+                                            {% with developerArray.0 as developers %}
+                                                  {% for dev in developers %}
+                                                        <div class="panel">
+                                                            <a style="text-decoration: none; color: #1A1A1A">
+                                                                <li>
+                                                                    <a href="{% url 'tasks:developer_point_pool_activities' course dev.id  %}">{{ dev }}</a>
+                                                                </li>
+                                                            </a>
+                                                        </div>
+                                                  {% endfor %}
+                                            {% endwith %}
+                                        </ul>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                        <div class="button-div-{{ forloop.counter0 }}"></div>
                         </ul>
                     </div>
+                </div>
+            </div>
+                <div class="to-be-removed" style="display: none">
+                    {% for course_, id in course_id_name_dict.items %}
+                        {% if course_ == course %}
+                             <a id="{{ id }}" href="{% url 'tasks:calculate_point_pool' id %}" style="margin-top: 10px" class="btn btn-default btn-primary" role="button">Calculate Point Pool For {{ course }}</a>
+                        {% endif %}
                     {% endfor %}
-                {% endfor %}
-            </ul>
-        </div>
-        <div>
-        {% for course_, id in course_id_name_dict.items %}
-            {% if course_ == course %}
-                 <a href="{% url 'tasks:calculate_point_pool' id %}" class="btn btn-default btn-primary" role="button">Calculate Point Pool For {{ course }}</a>
-            {% endif %}
+                </div>
+            </div>
         {% endfor %}
-        </div>
-    {% endfor %}
+    </div>
+{% endblock %}
+{% block scriptcontent %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function my_func(course) {
+            $("#team-drop-down-" + course).slideToggle();
+        }
+    </script>
+    <script>
+    $(function (){
+        const tobeRemoved$ = $(".to-be-removed")
+        const buttonChilds = tobeRemoved$.children();
+        tobeRemoved$.hide(0);
+        for (let i=0;i<buttonChilds.length;i++){
 
+            $(".button-div-" + i).append(buttonChilds[i]);
+        }
+    })
+    </script>
 {% endblock %}

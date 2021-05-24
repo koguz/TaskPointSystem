@@ -68,7 +68,7 @@ class Milestone(models.Model):
 class Supervisor(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    photo_url = models.CharField("Photo URL:", null= True,max_length=2038)
+    photo_url = models.CharField("Photo URL:", null=True, max_length=2038)
 
     def __str__(self):
         return self.get_name()
@@ -164,7 +164,7 @@ class Team(models.Model):
 class Developer(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    photo_url = models.CharField("Photo URL:", null=True, max_length=2038)
+    photo_url = models.CharField("Photo URL:", null=True, blank=True, max_length=2038)
     # team = models.ForeignKey(Team, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
@@ -243,10 +243,10 @@ class Task(models.Model):
         verbose_name="Assigned to"
     )
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    title = models.CharField("Task title", max_length=256)
-    description = models.TextField("Description")
+    title = models.CharField("Task title", max_length=50)
+    description = models.TextField("Description", max_length=256)
     due = models.DateField("Due Date", validators=[past_date_validator])
-    created_on = models.DateTimeField("Created on", null=False)
+    created_on = models.DateTimeField("Created on", auto_now_add=True, null=False)
     creation_approved_on = models.DateTimeField("Creation approved on", blank=True, null=True)
     submission_approved_on = models.DateTimeField("Submission approved on", blank=True, null=True)
     completed_on = models.DateTimeField("Completed on", blank=True, null=True)
@@ -675,7 +675,7 @@ class PointPool(models.Model):
             entry = GraphIntervals.objects.filter(difficulty=task.difficulty, priority=task.priority).first()
 
             if entry is None:
-                entry = GraphIntervals(difficulty=task.difficulty, priority=task.priority)
+                entry = GraphIntervals(course_id=course_id, difficulty=task.difficulty, priority=task.priority)
                 entry.save()
 
             submission_duration = ((task.completed_on.date() - task.created_on.date()).total_seconds() / 3600)
