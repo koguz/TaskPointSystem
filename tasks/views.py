@@ -1019,4 +1019,5 @@ def set_email(request):
         supervisor = Supervisor.objects.get(user=request.user)
         supervisor.photo_url = request.POST['photo_url']
         supervisor.save()
+
     return redirect(request.META['HTTP_REFERER'])

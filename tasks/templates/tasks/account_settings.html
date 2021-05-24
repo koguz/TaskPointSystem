@@ -9,19 +9,19 @@
                     {% csrf_token %}
                     <div class="form-group login-input-field">
                         <label for="account-first-name">Name:</label>
-                        <input type="text" class="form-control" id="account-first-name" value="{{ first_name }}" disabled>
+                        <input type="text" class="form-control" name="first_name" id="account-first-name" value="{{ first_name }}" disabled>
                     </div>
                     <div class="form-group" >
                         <label for="account-last-name">Surname:</label>
-                        <input type="text" class="form-control" id="account-last-name" value="{{ last_name }}" disabled>
+                        <input type="text" class="form-control" name="last_name" id="account-last-name" value="{{ last_name }}" disabled>
                     </div>
                     <div class="form-group" >
                         <label for="account-email">Email:</label>
-                        <input type="email" class="form-control" id="account-email" value="{{ email }}">
+                        <input type="email" class="form-control" name="email" id="account-email" value="{{ email }}">
                     </div>
                     <div class="form-group" >
                         <label for="account-photo-url">Photo URL:</label>
-                        <input type="text" class="form-control" id="account-photo-url" value="{{ user_photo_url }}">
+                        <input type="text" class="form-control" name="photo_url" id="account-photo-url" value="{{ user_photo_url }}">
                     </div>
                     <button type="submit" class="btn btn-success">Submit Changes</button>
                     <a href="{% url 'tasks:password_change' %}" class="btn btn-warning" role="button">Change Password</a>
