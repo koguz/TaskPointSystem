@@ -442,27 +442,11 @@ class Task(models.Model):
 class Comment(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    response_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
     body = models.TextField("Comment")
     file_url = models.URLField("File URL", max_length=512, blank=True, null=True)
     created_on = models.DateTimeField("Date", auto_now_add=True)
     points = models.IntegerField("Upvotes", default=0)
     is_final = models.BooleanField(default=False)
-
-    def is_direct_comment(self):
-        if self.response_to:
-            return False
-        return True
-
-    # https://anytree.readthedocs.io/en/2.8.0/index.html, https://pypi.org/project/anytree/
-    def make_children_nodes(self, depth, parent):
-        children = Comment.objects.filter(response_to=self)
-        if parent:
-            root = Node(parent=parent, id=self.id, depth=depth)
-        else:
-            root = Node(id=self.id, depth=depth)
-        for child in children:
-            self.make_children_nodes(child, depth + 1, root)
 
     def __str__(self):
         return self.body

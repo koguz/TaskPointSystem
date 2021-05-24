@@ -953,7 +953,6 @@ def calculate_point_pool(request, course_id):
 
 
 def developer_point_pool_activities(request, course_name, developer_id):
-
     developer = Developer.objects.get(id=developer_id)
     course = Course.objects.get(name=course_name)
     accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer).order_by('completed_on')
