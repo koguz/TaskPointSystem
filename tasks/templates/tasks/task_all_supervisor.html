@@ -1,10 +1,10 @@
 {% extends "tasks/base.html" %}
 
 {% block content %}
-<div class="row" style="justify-content: center; align-items: center; margin-top: 10px">
+<div class="row supervisor-all-tasks-row">
     <div class="col-sm-12">
         {% if task_list %}
-            <div class="all-tasks-search sticky" style="margin-bottom: 20px;">
+            <div class="all-tasks-search">
                 <h3>All Tasks of {{ team_name }}</h3>
                 <a href="{% url 'tasks:team-all-tasks' team_id 'status' %}" class="btn btn-default btn-info" role="button">
                     Sort by status
@@ -16,7 +16,7 @@
                     Sort by due date
                 </a>
             </div>
-            <div style="margin-top: 102px; padding-right: 20px">
+            <div class="mg-t-10">
                 <table class="supervisor-all-tasks">
                     <tr class="table-header-row">
                         <th style="min-width: 300px">Task Title</th>

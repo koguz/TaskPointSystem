@@ -98,7 +98,7 @@
 <form action="{% url 'tasks:send-comment' tid %}" method="post">
     {% csrf_token %}
     {{ form }}
-    <div style="text-align: right; padding: 4px;"><input type="submit" value="Submit" class="btn btn-success" id="send" /></div>
+    <div class="text-right pad-4"><input type="submit" value="Submit" class="btn btn-success" id="send" /></div>
 </form>
 <hr />
 

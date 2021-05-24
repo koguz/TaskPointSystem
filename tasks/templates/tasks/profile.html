@@ -68,7 +68,7 @@
                         {% endif %}
                     {% endfor %}
                 </ul>
-                <div class="float-right">
+                <div>
                     <button class="btn btn-link see-all-button" id="active-see-all">See all</button>
                 </div>
             {% else %}
@@ -83,7 +83,10 @@
                         {% if forloop.counter0 < 5 %}
                             <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
                                 <li>
-                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                    <div class="task-date">
+                                        <p><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                        <p class="mg-t-minus-5"><span class="bold-span">Assignee: </span>{{ task.assignee }}</p>
+                                    </div>
                                     <div class="task-header">
                                         <h4>{{ task.title }}</h4>
                                         <p><span class="bold-span">Course: </span>{{ task.team.course }}</p>
@@ -115,7 +118,7 @@
                         {% endif %}
                     {% endfor %}
                 </ul>
-                <div class="float-right">
+                <div>
                     <button class="btn btn-link see-all-button" id="attention-see-all">See all</button>
                 </div>
             {% else %}
@@ -125,7 +128,7 @@
     </div>
     <div class="row">
         <div class="col-sm-3"></div>
-        <div class="col-sm-6 user-calendar">
+        <div class="col-sm-6 user-calendar mg-t-10">
             <div id='wrap'>
                 <div id='calendar'></div>
                 <div style='clear:both'></div>

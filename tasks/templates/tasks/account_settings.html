@@ -2,9 +2,9 @@
 
 {% block content %}
     <div class="formDiv">
-        <div class="row">
-
+        <div class="row account-settings-row">
             <div class="col-sm-4">
+                <h3>Account Settings</h3>
                 <form action=" {% url 'tasks:set_email' %}" method="post">
                     {% csrf_token %}
                     <div class="form-group login-input-field">

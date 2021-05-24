@@ -758,8 +758,6 @@ a[aria-expanded="true"] {
   text-align: left;
   padding: 8px 16px 8px 16px;
   background-color: #d1d1d1;
-  position: sticky;
-  position: -webkit-sticky;
   top: 112px;
   z-index: 2;
 }
@@ -784,8 +782,10 @@ a[aria-expanded="true"] {
 }
 
 .all-tasks-search {
-  background-color: #fff;
-  height: 113px;
+  padding-top: 50px;
+  /*margin-bottom: 20px;*/
+  /*margin-top: 50px;*/
+  /*height: 113px;*/
 }
 
 [data-title] {
@@ -848,4 +848,41 @@ a[aria-expanded="true"] {
   padding: 0;
   border: none;
   background: none;
+}
+
+.account-settings-row {
+  align-items: center;
+  justify-content: center;
+  padding-top: 50px;
+}
+
+.task-all-column {
+  padding-top: 10px;
+  padding-right: 20px
+}
+
+.your-teams-active-tasks {
+  padding-bottom: 38px;
+}
+
+.mg-t-minus-5 {
+  margin-top: -5px;
+}
+
+.task-form-column {
+  padding: 50px 0 0 20px;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.pad-4 {
+  padding: 4px;
+}
+
+.supervisor-all-tasks-row {
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px
 }
