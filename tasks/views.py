@@ -68,7 +68,6 @@ def supervisor(request):  # this view is for the supervisors only...
     supervised_teams = Team.objects.all().filter(supervisor=s)
     all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
 
-
     context = {
         'page_title': page_title,
         'supervisor_name': supervisor_name,
@@ -76,6 +75,7 @@ def supervisor(request):  # this view is for the supervisors only...
         'supervised_teams': supervised_teams,
         'all_teammates': all_teammates,
     }
+
     return render(request, 'tasks/supervisor.html', context)
 
 
