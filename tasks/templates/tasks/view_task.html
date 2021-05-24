@@ -258,6 +258,7 @@
 
         const alertMessages = $('.alert-messages');
         if (alertMessages.children().length < 1) alertMessages.hide(0);
+        else alertMessages.empty();
 
         const teamName$ = $('.team-name');
         const taskStatus$ = $('#task-status');

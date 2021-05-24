@@ -421,14 +421,6 @@ a[aria-expanded="true"] {
   padding-top: 50px;
 }
 
-.your-active-tasks.your-notifications {
-  padding-top: 1px;
-}
-
-.your-active-tasks-header.your-notifications-header {
-  margin-bottom: 45px;
-}
-
 /* CALENDAR */
 
 #wrap {
@@ -505,11 +497,17 @@ a[aria-expanded="true"] {
     .profile-card-buttons a {
       margin-bottom: 10px;
     }
+
+
 }
 
 @media only screen and (max-width: 713px) {
   .user-calendar {
     display: none;
+  }
+
+  .team-dev-name {
+    padding-top: 20px;
   }
 }
 
@@ -529,11 +527,63 @@ a[aria-expanded="true"] {
   .main-screen {
     padding-left: 20px;
   }
+
+  .your-active-tasks-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .team-main-row .col-sm-6:last-child {
+    margin-top: 0 !important;
+  }
 }
 
 @media only screen and (max-width: 957px) {
   .main-calendar {
     margin-top: 40px;
+  }
+}
+
+@media only screen and (max-width: 913px) {
+  .team-main-row .col-sm-6:last-child {
+    margin-top: 20px;
+  }
+}
+
+@media only screen and (max-width: 1569px) {
+  .team-active-task-buttons a {
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .your-active-tasks-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .team-member-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .team-member-header .col-sm-4 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .rename-team-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 }
 
@@ -552,7 +602,15 @@ a[aria-expanded="true"] {
   text-align: left;
   outline: none;
   font-size: 15px;
-  transition: 0.4s;
+}
+
+.accordion:before {
+   font-family: "Font Awesome 5 Free";
+   content: "\f078";
+   display: inline-block;
+   padding-right: 8px;
+   vertical-align: middle;
+   font-weight: 900;
 }
 
 .active, .accordion:hover {
@@ -582,15 +640,11 @@ a[aria-expanded="true"] {
 
 /*****************************     TEAM     *****************************/
 
-.team-member-header {
-  padding-bottom: 50px;
-}
-
-.team-accordion{
+.team-accordion {
   padding-top: 4px;
 }
 
-.view-all-task-button{
+.view-all-task-button {
   padding-left: 3px;
 }
 
@@ -885,4 +939,18 @@ a[aria-expanded="true"] {
   justify-content: center;
   align-items: center;
   margin-top: 10px
+}
+
+.team-main-row {
+  padding-top: 30px;
+}
+
+.team-dev-name {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pad-b-10 {
+  padding-bottom: 10px;
 }
