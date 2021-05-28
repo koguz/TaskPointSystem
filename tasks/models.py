@@ -18,7 +18,12 @@ def past_date_validator(value):
 
 
 class Course(models.Model):
+    TERM = (
+        (2, 'Spring'),
+        (1, 'Winter'),
+    )
     name = models.CharField("Course Name", max_length=256)
+    course = models.CharField("Course", max_length=256)
     number_of_students = models.PositiveSmallIntegerField(
         "Number of Students",
         default=40,
@@ -34,11 +39,13 @@ class Course(models.Model):
         default=60,
         validators=[MaxValueValidator(99), MinValueValidator(1)]
     )
-    section = models.PositiveSmallIntegerField("Section", default=1, validators=[MaxValueValidator(99), MinValueValidator(1)])
+    section = models.PositiveSmallIntegerField("Section", default=1, blank=False, validators=[MaxValueValidator(99), MinValueValidator(1)])
+    year = models.PositiveSmallIntegerField("Year", default=2020, blank=False)
+    term = models.PositiveSmallIntegerField("Term", choices=TERM, default=1, blank=False)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['name', 'section'], name='Course section constraint')
+            models.UniqueConstraint(fields=['course', 'section', 'year', 'term', 'section'], name='Course unique constraint')
         ]
 
     def __str__(self):
@@ -54,6 +61,10 @@ class Course(models.Model):
             return milestones[0]
 
         return "No Milestone"
+
+    def create_course_name(self):
+        self.name = str(self.course) + "-" + str(self.year) + "-" + str(self.term) + "-" + str(self.section)
+        self.save()
 
 
 class Milestone(models.Model):

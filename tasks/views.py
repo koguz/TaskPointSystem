@@ -912,26 +912,30 @@ class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
 
 def point_pool(request):
     supervisor = Supervisor.objects.get(user=request.user)
-    course_list = Team.objects.values('course__name', 'name', 'course_id').filter(supervisor=supervisor)
-    course_dict = {}
-    course_id_name_dict = {}
-    for course in course_list:
-        team = Team.objects.filter(supervisor=supervisor, name=course['name'])
-        all_teammates = get_all_teammates_of_each_team(team, supervisor.user_id)
+    course_entry = Course.objects.values().filter(team__supervisor=supervisor)
+    course_list = {}
+    already_in = []
+    team_list_with_team_members = {}
+    for index, value in enumerate(course_entry):
+        teams = Team.objects.filter(supervisor=supervisor, course=value['id'])
+        for idx, team in enumerate(teams):
+            all_teammates = team.get_team_members()
+            team_list_with_team_members.update({idx: {'team': team, 'team_members': all_teammates}})
 
-        if course['course__name'] in course_dict:
-            course_dict[course['course__name']].append({course['name']: all_teammates})
+        if not value['course'] in already_in:
+            course_list.update({index: {'course': value['course'], 'course_name': value['name'], 'number_of_students': value['number_of_students'], 'team_weight': value['team_weight'], 'ind_weight': value['ind_weight'], 'teams': team_list_with_team_members}})
+            already_in.append(value['course'])
 
-        else:
-            course_dict.update({course['course__name']: [{course['name']: all_teammates}]})
-            course_id_name_dict.update({course['course__name']: course['course_id']})
+    pp= pprint.PrettyPrinter(indent=5)
+
+    pp.pprint(course_list)
+
 
     return render(
         request,
         'tasks/point_pool.html',
         {
-            'course_dict': course_dict,
-            'course_id_name_dict': course_id_name_dict,
+            'course_list': course_list,
         }
     )
 
@@ -1080,14 +1084,23 @@ def add_a_course(request):
 def add_the_course(request):
     course_entry = Course()
 
-    if request.POST['course-name'] and course_entry.name != request.POST['course-name']:
-        course_entry.name = request.POST['course-name']
+    if request.POST['course'] and course_entry.name != request.POST['course']:
+        course_entry.course = request.POST['course']
     if request.POST['no-of-students'] and course_entry.number_of_students != request.POST['no-of-students']:
         course_entry.number_of_students = request.POST['no-of-students']
     if request.POST['team-weight'] and course_entry.team_weight != request.POST['team-weight']:
         course_entry.team_weight = request.POST['team-weight']
     if request.POST['individual-weight'] and course_entry.ind_weight != request.POST['individual-weight']:
         course_entry.ind_weight = request.POST['individual-weight']
+    if request.POST['year'] and course_entry.ind_weight != request.POST['year']:
+        course_entry.year = request.POST['year']
+    if request.POST['term'] and course_entry.ind_weight != request.POST['term']:
+        course_entry.term = request.POST['term']
+    if request.POST['section'] and course_entry.ind_weight != request.POST['section']:
+        course_entry.section = request.POST['section']
+
+    course_entry.save()
+    course_entry.create_course_name()
     course_entry.save()
 
     course_list = Course.objects.all()
