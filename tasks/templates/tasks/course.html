@@ -34,18 +34,20 @@
             <h3 class="milestone-course-list">Milestones</h3>
             {% for milestone in milestones %}
                 <ul>
-                    <li>
-                        <p class="task-date"><span class="bold-span">Due: </span>{{ milestone.due }}</p>
-                        <div class="task-header">
-                            <h4>{{ task.title }}</h4>
-                            <p><span class="bold-span">Milestone: </span>{{ milestone.name }}</p>
-                            <p><span class="bold-span">Weight: </span>{{ milestone.weight }}</p>
-                        </div>
-                        <hr class="content-separator">
-                        <div class="task-content">
-                            <p class="content-text">{{ milestone.description }}</p>
-                        </div>
-                    </li>
+                    <a href="{% url 'tasks:milestone' course.id milestone.id %}">
+                        <li>
+                            <p class="task-date"><span class="bold-span">Due: </span>{{ milestone.due }}</p>
+                            <div class="task-header">
+                                <h4>{{ task.title }}</h4>
+                                <p><span class="bold-span">Milestone: </span>{{ milestone.name }}</p>
+                                <p><span class="bold-span">Weight: </span>{{ milestone.weight }}</p>
+                            </div>
+                            <hr class="content-separator">
+                            <div class="task-content">
+                                <p class="content-text">{{ milestone.description }}</p>
+                            </div>
+                        </li>
+                    </a>
                 </ul>
             {% endfor %}
         </div>

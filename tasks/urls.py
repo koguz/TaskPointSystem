@@ -57,6 +57,8 @@ app_urls = ([
     re_path(r'^courses/(?P<course_id>[0-9]+)/#$', views.edit_course, name='edit_course'),
     re_path(r'^courses/(?P<course_id>[0-9]+)/add-a-milestone$', views.add_a_milestone, name='add_a_milestone'),
     re_path(r'^courses/(?P<course_id>[0-9]+)/add-a-milestone/#$', views.add_the_milestone, name='add_the_milestone'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/edit-the-milestone/(?P<milestone_id>[0-9]+)/$', views.milestone, name='milestone'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/edit-the-milestone/(?P<milestone_id>[0-9]+)/#$', views.edit_milestone, name='edit_milestone'),
 ], 'tasks')
 
 urlpatterns = [

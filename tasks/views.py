@@ -1140,3 +1140,50 @@ def add_the_milestone(request, course_id):
             'course_list': course_list
         }
     )
+
+
+@login_required
+def milestone(request, course_id, milestone_id):
+    course_entry = Course.objects.get(id=course_id)
+    milestone_entry = Milestone.objects.get(id=milestone_id)
+    course_list = Course.objects.all()
+    milestone_due = str(milestone_entry.due)
+
+    return render(
+        request,
+        'tasks/milestone.html',
+        {
+            'course': course_entry,
+            'milestone': milestone_entry,
+            'course_list': course_list,
+            'due_date': milestone_due,
+        }
+    )
+
+
+@login_required
+def edit_milestone(request, course_id, milestone_id):
+    milestone_entry = Milestone.objects.get(id=milestone_id)
+    course_list = Course.objects.all()
+    print("Course Name: ", milestone_entry.course)
+
+    if request.POST['course-name']:
+        course_entry = Course.objects.get(name=request.POST['course-name'])
+        milestone_entry.course = course_entry
+    if request.POST['milestone-name']:
+        milestone_entry.name = request.POST['milestone-name']
+    if request.POST['description']:
+        milestone_entry.description = request.POST['description']
+    if request.POST['weight']:
+        milestone_entry.weight = request.POST['weight']
+    if request.POST['due-date']:
+        milestone_entry.due = request.POST['due-date']
+
+    milestone_entry.save()
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list
+        }
+    )
