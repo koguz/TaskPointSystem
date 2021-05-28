@@ -1,0 +1,22 @@
+{% extends "tasks/base.html" %}
+
+{% block content %}
+    <a href="{% url 'tasks:add_a_course' %}" class="btn btn-info" role="button" style="margin-top: 50px">Add Course</a>
+    <div class="row">
+        {% for course in course_list %}
+            <div class="col-sm-2 data-analytics">
+                <img src="https://ultra.content.blackboardcdn.com/ultra/static/images/default-banners/nature4_thumb.jpg">
+                <a  href="{% url 'tasks:course' course.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                    <ul>
+                        <li>
+                            <p class="teams-course"><span class="bold-span">Course: </span>{{ course.name }}</p>
+                            <p class="teams-course"><span class="bold-span">Team Weight: </span>{{ course.team_weight }}</p>
+                            <p class="teams-course"><span class="bold-span">Number Of  Students: </span>{{ course.number_of_students }}</p>
+                            <p class="teams-course"><span class="bold-span">Individual Weight: </span>{{ course.ind_weight }}</p>
+                        </li>
+                    </ul>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

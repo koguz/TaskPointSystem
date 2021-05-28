@@ -50,6 +50,15 @@ app_urls = ([
     re_path(r'^reset/done/$', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
     re_path(r'^account-settings/$', views.account_settings, name='account-settings'),
     re_path(r'^account-settings/#$', views.set_email, name='set_email'),
+    re_path(r'^courses$', views.courses, name='courses'),
+    re_path(r'^courses/add-a-course$', views.add_a_course, name='add_a_course'),
+    re_path(r'^courses/add-a-course/#$', views.add_the_course, name='add_the_course'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/$', views.course, name='course'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/#$', views.edit_course, name='edit_course'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/add-a-milestone$', views.add_a_milestone, name='add_a_milestone'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/add-a-milestone/#$', views.add_the_milestone, name='add_the_milestone'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/edit-the-milestone/(?P<milestone_id>[0-9]+)/$', views.milestone, name='milestone'),
+    re_path(r'^courses/(?P<course_id>[0-9]+)/edit-the-milestone/(?P<milestone_id>[0-9]+)/#$', views.edit_milestone, name='edit_milestone'),
 ], 'tasks')
 
 urlpatterns = [
