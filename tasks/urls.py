@@ -40,7 +40,7 @@ app_urls = ([
     re_path(r'^course-data-analytics/(?P<course_id>[0-9]+)/#$', views.set_point_pool_interval, name='set_point_pool_interval'),
     re_path(r'^course-data-analytics/(?P<course_id>[0-9]+)/(?P<difficulty_and_priority>[0-9]+_[0-9]+)/$', views.data_graph_inspect, name='data_graph_inspect'),
     re_path(r'^point_pool/$', views.point_pool, name='point_pool'),
-    re_path(r'^point_pool/course/(?P<course_id>[0-9]+)/$', views.calculate_point_pool, name='calculate_point_pool'),
+    re_path(r'^point_pool/course/(?P<course_name>(.*))/$', views.calculate_point_pool, name='calculate_point_pool'),
     re_path(r'^point_pool/developer/(?P<course_name>(.*))/(?P<developer_id>[0-9]+)/$', views.developer_point_pool_activities, name='developer_point_pool_activities'),
     re_path(r'^password_change/done/$', auth_views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'), name='password_change_done'),
     re_path(r'^password_change/$', auth_views.PasswordChangeView.as_view(template_name='registration/password_change.html'), name='password_change'),
