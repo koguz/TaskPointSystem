@@ -914,24 +914,27 @@ def point_pool(request):
     supervisor = Supervisor.objects.get(user=request.user)
     course_entry = Course.objects.values().filter(team__supervisor=supervisor)
     course_list = {}
-    already_in = []
+    already_in_course = []
+    already_in_team = []
     team_list_with_team_members = {}
-
-    print(course_entry)
-
+    counter = 0
     for index, value in enumerate(course_entry):
         teams = Team.objects.filter(supervisor=supervisor, course=value['id'])
         for idx, team in enumerate(teams):
             all_teammates = team.get_team_members()
-            team_list_with_team_members.update({idx: {'team': team, 'team_members': all_teammates}})
+            if not team in already_in_team:
+                team_list_with_team_members.update({counter: {'team': team, 'team_members': all_teammates}})
+                counter += 1
+                already_in_team.append(team)
 
-        if not value['course'] in already_in:
+        if not value['course'] in already_in_course:
             course_list.update({index: {'id': value['id'], 'course': value['course'], 'course_name': value['name'], 'number_of_students': value['number_of_students'], 'team_weight': value['team_weight'], 'ind_weight': value['ind_weight'], 'teams': team_list_with_team_members}})
-            already_in.append(value['course'])
+            already_in_course.append(value['course'])
 
-    pp= pprint.PrettyPrinter(indent=5)
 
-    pp.pprint(course_list)
+
+
+
 
 
     return render(
