@@ -1,0 +1,48 @@
+{% extends "tasks/base.html" %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-sm-6 user-feed" style="display: flex; justify-content: center; margin-top: 15px">
+        <h2>Input Form</h2>
+        <div class="your-active-tasks">
+
+        </div>
+    </div>
+    <div class="col-sm-6" style="display: flex; justify-content: center; margin-top: 15px">
+        <h2>Data Preview</h2>
+    </div>
+    <button  id="post_teams" class="btn btn-default" type="button">Finalize</button>
+
+</div>
+<hr/>
+<div class="row">
+<form action="{% url 'tasks:import-preview' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit">
+</form>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<script type="text/javascript">
+$(function() {
+    jsonCourse = JSON.parse('{{ course | escapejs }}');
+    $("#post_teams").click(
+        function(){
+            $.ajax({
+            url: "{% url 'tasks:course-import' %}",
+            method: "POST",
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+            data: JSON.stringify(jsonCourse),
+            contentType: 'application/json; charset=utf-8',
+            })
+        }
+    );
+    console.log(jsonCourse)
+});
+
+</script>
+{% endblock %}

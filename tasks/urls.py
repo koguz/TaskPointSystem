@@ -50,6 +50,8 @@ app_urls = ([
     re_path(r'^reset/done/$', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
     re_path(r'^account-settings/$', views.account_settings, name='account-settings'),
     re_path(r'^account-settings/#$', views.set_email, name='set_email'),
+    re_path(r'^course-import/$', views.course_import, name='course-import'),
+    re_path(r'^import-preview/$', views.import_preview, name='import-preview'),
 ], 'tasks')
 
 urlpatterns = [

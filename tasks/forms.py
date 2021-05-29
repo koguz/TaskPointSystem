@@ -53,3 +53,9 @@ class TeamRenameForm(BSModalModelForm):
         widgets = {
             'body': Textarea(attrs={'cols': 25, 'rows': 1}),
         }
+
+
+class CourseImportForm(forms.Form):
+    course_name = forms.ModelChoiceField(label="Course Name", queryset = Course.objects.all().order_by('id'))
+    team_size = forms.IntegerField(label="Team Size")
+    course_list_file = forms.FileField(label="Course List File")
