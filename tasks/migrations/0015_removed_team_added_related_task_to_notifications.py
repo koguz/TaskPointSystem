@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0014_auto_20210517_0222'),
+        ('tasks', '0014_notification_table_created'),
     ]
 
     operations = [

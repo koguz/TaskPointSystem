@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0016_merge_20210522_1805'),
-        ('tasks', '0012_auto_20210522_1917'),
+        ('tasks', '0016_0015_and_0012_renamed_all_auto_now_migration_merge'),
+        ('tasks', '0012_pointpool_graphintervals_created_task_datetime_fields_modified'),
     ]
 
     operations = [

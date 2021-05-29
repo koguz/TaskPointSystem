@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0021_auto_20210524_1706'),
+        ('tasks', '0021_developer_photo_url_task_field_rename'),
     ]
 
     operations = [
