@@ -1,40 +1,44 @@
-{% extends "tasks/base_legacy.html" %}
+{% extends "tasks/base.html" %}
+{% load tags %}
 
-{% block leftcontent %}
-<h3>Teams and Tasks</h3>
-<ul class="list-group">
-{% for team in teams %}
-  <li class="list-group-item">
-    <p><b>{{ team.name }}</b></p>
-    {% for t in team.task_set.all %}
-      <p>{{ t.title }} <i>({{t.milestone.name}})</i><br />
-        {{t.get_status_display}} - <a href="{% url 'tasks:view-task' t.id %}">view details</a></p>
-    {% endfor %}
-  </li>
-{% endfor %}
-</ul>
-
-{% endblock %}
-
-{% block rightcontent %}
-<h3>Teams and Grades</h3>
-{% for team in teams %}
-  <li class="list-group-item">
-    <p><b>{{ team.name }}</b></p>
-    Team milestone points:
-    <ul>
-    {% for m, g in team.get_milestone_list.items %}
-      <li> {{ m }} : {{ g }}</li>
-    {% endfor %}
-    </ul>
-    {% for d in team.developer_set.all %}
-      <p>{{ d }} has an individual grade of {{ d.getProjectGrade }}</p>
-      <p><ul>
-        {% for m, g in d.getMilestoneList.items %}
-          <li>{{ m }} : {{ g }}</li>
-        {% endfor %}
-      </ul></p>
-    {% endfor %}
-  </li>
-{% endfor %}
+{% block content %}
+    <div class="row team-and-developer-points">
+        <div class="col-sm-6 mg-b-10">
+            <h3>Teams and Tasks</h3>
+            <ul class="list-group">
+            {% for team in teams %}
+                <li class="list-group-item">
+                    <h4>{{ team.name }}</h4>
+                    {% for t in team.task_set.all %}
+                        <p>{{ t.title }} <i>({{ t.milestone.name }})</i><br />
+                        {{ t.get_status_display }} - <a href="{% url 'tasks:view-task' t.id %}">view details</a></p>
+                    {% endfor %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        <div class="col-sm-6">
+            <h3>Teams and Grades</h3>
+            <ul class="list-group">
+            {% for team in teams %}
+                <li class="list-group-item">
+                    <h4>{{ team.name }}</h4>
+                    <b>Team milestone points:</b>
+                    <ul>
+                        {% for m, g in team.get_milestone_list.items %}
+                            <li> {{ m }} : {{ g }}%</li>
+                        {% endfor %}
+                    </ul>
+                    {% for dev in team.get_team_members %}
+                        <hr>
+                        <p><b>{{ dev }}</b> has an individual grade of {% get_project_grade_tag dev team %}</p>
+                        <ul>
+                            {% get_milestone_grade_tag dev team %}
+                        </ul>
+                    {% endfor %}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
 {% endblock %}

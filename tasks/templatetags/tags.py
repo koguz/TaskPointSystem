@@ -43,3 +43,16 @@ def get_item_at_index(target_list, index):
 @register.simple_tag
 def get_project_grade_tag(developer, team):
     return developer.get_project_grade(team)
+
+
+@register.simple_tag
+def get_milestone_grade_tag(developer, team):
+    grades = developer.get_milestone_list(team)
+    result = ''
+
+    for milestone, grade in grades.items():
+        result += milestone + ': ' + str(grade) + ', '
+
+    result = result[:-2]
+
+    return result
