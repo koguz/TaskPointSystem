@@ -240,20 +240,6 @@ a[aria-expanded="true"] {
 
 /* PROFILE PAGE */
 
-.profile-row {
-  position: sticky;
-  left: 200px;
-  min-width: 350px;
-  height: 235px;
-}
-
-.profile-card {
-  position: sticky;
-  /*left: 200px;*/
-  min-width: 350px;
-  margin-top: -5px;
-}
-
 .main-screen {
   margin-left: 0;
   padding: 10px 20px 10px 220px;
@@ -275,6 +261,16 @@ a[aria-expanded="true"] {
   display: inline-flex;
 }
 
+.profile-card-buttons {
+  padding-left: 30px;
+  padding-top: 50px;
+  display: inline-flex;
+}
+
+  .profile-card-buttons a {
+    margin-right: 10px;
+  }
+
 .profile-info {
   padding-left: 25px;
 }
@@ -283,41 +279,45 @@ a[aria-expanded="true"] {
   width: 100px;
   height: 150px;
   border-radius: 10%;
-  margin-bottom: 50px;
+  margin-bottom: 10px;
 }
 
 .profile-card h1 {
   padding-top: 10px;
 }
 
+.see-all-button {
+  font-size: 1.2rem;
+}
+
 /* FEED */
 
 .user-feed {
-  /*position: sticky;*/
-  /*left: 200px;*/
   min-width: 350px;
 }
 
-.user-feed ul {
-  list-style: none;
-  margin-left: -37.5px;
-}
+  .user-feed ul {
+    list-style: none;
+    margin-left: -37.5px;
+  }
 
-.user-feed ul li {
-  margin: 10px 0;
-  border: 1px solid rgba(22, 22, 22, 0.2);
-  font-size: 20px;
-  padding-left: 10px;
-  min-height: 50px;
-  box-shadow: 3px 2px #CFCFCF;
-  border-radius: 5px;
-  transition: 0.3s;
-}
+    .user-feed ul li {
+      margin: 10px 0;
+      border: 1px solid rgba(22, 22, 22, 0.2);
+      font-size: 20px;
+      padding-left: 10px;
+      min-height: 50px;
+      box-shadow: 2px 1px #CFCFCF;
+      border-radius: 20px;
+      transition: 0.3s;
+      background-color: #fff;
+    }
 
-.user-feed ul li:hover {
-  background-color: rgba(185, 185, 185, 1);
-  box-shadow: none;
-}
+    .user-feed ul li:hover {
+      background-color: rgba(185, 185, 185, 1);
+      box-shadow: none;
+      cursor: pointer;
+    }
 
 /* SUPERVOSOR FEED */
 
@@ -345,6 +345,7 @@ a[aria-expanded="true"] {
 
 .task-header {
   display: block;
+  padding-top: 5px;
 }
 
 .task-header p {
@@ -356,7 +357,7 @@ a[aria-expanded="true"] {
 }
 
 .content-separator {
-  margin: 4px 10px 4px 0px;
+  margin: 4px 10px 4px 0;
   background-color: rgba(165, 165, 165, 0.2);
   border: 0.8px solid rgba(165, 165, 165, 0.2);
 }
@@ -364,10 +365,9 @@ a[aria-expanded="true"] {
 .task-date {
   float: right;
   padding-right: 5px;
-  padding-top: 2px;
+  padding-top: 5px;
   font-weight: 500;
 }
-
 
 .task-date-supervisor {
   float: right;
@@ -378,7 +378,28 @@ a[aria-expanded="true"] {
 
 /* Teams */
 
-.teams-course{
+.select-team-row {
+  justify-content: center;
+  align-items: center;
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+
+.team-column {
+  border: 1px solid #cccccc;
+  border-radius: 20px;
+  background: #F8F8F8;
+  padding: 5px 10px 0 10px;
+  margin: 5px;
+}
+
+.teams-main-column {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.teams-course {
   /*float: right;*/
   padding-right: 5px;
   padding-top: 2px;
@@ -386,53 +407,110 @@ a[aria-expanded="true"] {
   text-align: center;
 }
 
-.teams-name{
+.teams-name {
   display: block;
   text-align: center;
 }
-.teams-content{
+.teams-content {
   display: block;
   text-align: center;
 }
 
-
-.your-active-tasks.your-notifications{
-  padding-top: 1px;
-}
-
-.your-active-tasks-header.your-notifications-header{
-  margin-bottom: 45px;
+.notifications-main-row {
+  justify-content: center;
+  height: 100vh;
+  padding-top: 50px;
 }
 
 /* CALENDAR */
 
-.user-calendar {
-  min-width: 350px;
-  position: sticky;
-  left: 667.98px;
+#wrap {
+  /*width: 200px;*/
+  margin: 0 auto;
 }
 
-.calendar-header {
-  text-align: center;
+#external-events {
+  float: left;
+  width: 150px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+#external-events h4 {
+  font-size: 16px;
+  margin-top: 0;
+  padding-top: 1em;
+}
+
+.external-event { /* try to mimick the look of a real event */
+  margin: 10px 0;
+  padding: 2px 4px;
+  background: #3366CC;
+  color: #fff;
+  font-size: .85em;
+  cursor: pointer;
+}
+
+#external-events p {
+  margin: 1.5em 0;
+  font-size: 11px;
+  color: #666;
+}
+
+#external-events p input {
+  margin: 0;
+  vertical-align: middle;
 }
 
 #calendar {
-  margin-top: 10px;
-  width: 911px;
-  height: 82%;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(255, 87, 34, 0.5);
+  border-radius: 6px;
 }
 
-#previous,
-#next {
-  position: sticky;
-  top: 300px;
+.user-calendar {
+  min-width: 620px;
 }
 
-.table-bordered thead tr th {
-  width: 130px;
+.main-calendar {
+  min-width: 620px;
+  margin-top: 15px;
 }
 
 /* MEDIA AND COMPATIBILITY */
+
+@media only screen and (max-width: 350px) {
+  .user-feed {
+    min-width: 300px;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .profile-card-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+    .profile-card-buttons a {
+      margin-bottom: 10px;
+    }
+
+
+}
+
+@media only screen and (max-width: 713px) {
+  .user-calendar {
+    display: none;
+  }
+
+  .team-dev-name {
+    padding-top: 20px;
+  }
+}
 
 @media only screen and (max-width: 800px) {
   #sidebar {
@@ -450,6 +528,64 @@ a[aria-expanded="true"] {
   .main-screen {
     padding-left: 20px;
   }
+
+  .your-active-tasks-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .team-main-row .col-sm-6:last-child {
+    margin-top: 0 !important;
+  }
+}
+
+@media only screen and (max-width: 957px) {
+  .main-calendar {
+    margin-top: 40px;
+  }
+}
+
+@media only screen and (max-width: 913px) {
+  .team-main-row .col-sm-6:last-child {
+    margin-top: 20px;
+  }
+}
+
+@media only screen and (max-width: 1569px) {
+  .team-active-task-buttons a {
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .your-active-tasks-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .team-member-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .team-member-header .col-sm-4 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .rename-team-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 /*****************************     TEAMS     *****************************/
@@ -457,16 +593,25 @@ a[aria-expanded="true"] {
 /* ACCORDION */
 
 .accordion {
-  background-color: #eee;
+  background-color: #ddd;
   color: #444;
   cursor: pointer;
   padding: 18px;
   width: 100%;
   border: none;
+  border-radius: 20px;
   text-align: left;
   outline: none;
   font-size: 15px;
-  transition: 0.4s;
+}
+
+.accordion:before {
+   font-family: "Font Awesome 5 Free";
+   content: "\f078";
+   display: inline-block;
+   padding-right: 8px;
+   vertical-align: middle;
+   font-weight: 900;
 }
 
 .active, .accordion:hover {
@@ -496,15 +641,11 @@ a[aria-expanded="true"] {
 
 /*****************************     TEAM     *****************************/
 
-.team-member-header {
-  padding-bottom: 50px;
-}
-
-.team-accordion{
+.team-accordion {
   padding-top: 4px;
 }
 
-.view-all-task-button{
+.view-all-task-button {
   padding-left: 3px;
 }
 
@@ -639,6 +780,7 @@ a[aria-expanded="true"] {
 }
 
 .list-group-item {
+  border: 1px solid #cccccc;
   border-radius: 20px !important;
   margin-bottom: 10px;
 }
@@ -672,8 +814,6 @@ a[aria-expanded="true"] {
   text-align: left;
   padding: 8px 16px 8px 16px;
   background-color: #d1d1d1;
-  position: sticky;
-  position: -webkit-sticky;
   top: 112px;
   z-index: 2;
 }
@@ -697,10 +837,6 @@ a[aria-expanded="true"] {
   background-color: #eeeeee;
 }
 
-.all-tasks-search {
-  background-color: #fff;
-  height: 113px;
-}
 
 [data-title] {
   position: relative;
@@ -723,4 +859,113 @@ a[aria-expanded="true"] {
 .no-style-links a {
   color: inherit;
   text-decoration: none;
+}
+
+.data-analytics {
+  min-width: 350px;
+  margin: 10px 20px;
+  border: 1px solid rgba(22, 22, 22, 0.2);
+  font-size: 20px;
+  padding-left: 10px;
+  min-height: 50px;
+  box-shadow: 3px 2px #CFCFCF;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.data-analytics img{
+  margin-top: 10px;
+  width: 316px;
+  height: 130px;
+  border-radius: 5px;
+  margin-left: 5px;
+}
+
+.data-analytics li{
+  padding-right: 10px;
+}
+.data-analytics ul {
+  list-style: none;
+  margin-left: -37.5px;
+}
+
+.data-analytics:hover {
+  background-color: rgba(185, 185, 185, 1);
+  box-shadow: none;
+}
+
+.course-button{
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.account-settings-row {
+  align-items: center;
+  justify-content: center;
+  padding-top: 50px;
+}
+
+.task-all-column {
+  padding-top: 10px;
+  padding-right: 20px
+}
+
+.your-teams-active-tasks {
+  padding-bottom: 38px;
+}
+
+.mg-t-minus-5 {
+  margin-top: -5px;
+}
+
+.task-form-column {
+  padding: 50px 0 0 20px;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.pad-4 {
+  padding: 4px;
+}
+
+.supervisor-all-tasks-row {
+  justify-content: center;
+  align-items: center;
+  padding-top: 40px;
+}
+
+.milestone-course-list{
+  margin-top: 50px;
+}
+
+.team-main-row {
+  padding-top: 30px;
+}
+
+.team-dev-name {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pad-b-10 {
+  padding-bottom: 10px;
+}
+
+.team-and-developer-points {
+  padding-top: 40px;
+}
+
+.team-and-developer-points .user-feed ul li {
+  align-items: center;
+  display: flex;
+}
+
+.team-and-developer-points .user-feed ul li:hover {
+  background-color: #fff;
+  box-shadow: 2px 1px #CFCFCF;
+  cursor: default;
 }

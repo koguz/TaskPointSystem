@@ -1,14 +1,14 @@
 {% extends "tasks/base.html" %}
 
 {% block content %}
-<div class="row" style="justify-content: center; align-items: center; margin-top: 100px">
+<div class="row" style="justify-content: center; align-items: center; margin-top: 60px">
     <div class="col-sm-6">
         <h3>Supervised Teams</h3>
         <hr />
         {% if supervised_teams %}
             <ul class="list-group">
                 {% for mteam in supervised_teams %}
-                    <div class="row" style="justify-content: center; align-items: center; margin-top: 125px">
+                    <div class="row" style="justify-content: center; align-items: center; margin-bottom: 40px">
                         <div class="col-sm-8 supervisor-feed">
                             <ul>
                                 <li>
@@ -24,12 +24,12 @@
                             </ul>
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <a href="{% url 'tasks:team-all-tasks' mteam.id 'due' %}" class="btn btn-default btn-info" role="button">
+                                    <a href="{% url 'tasks:team-all-tasks' mteam.id 'due' %}" class="btn btn-info" role="button">
                                         View All Tasks of {{ mteam.name }}
                                     </a>
                                 </div>
                                 <div class="col-sm-6">
-                                    <a href="{% url 'tasks:task-create-supervisor' mteam.id %}" class="btn btn-default btn-info" role="button" style="padding-left: 20px; padding-right: 20px; float: right">
+                                    <a href="{% url 'tasks:task-create-supervisor' mteam.id %}" class="btn btn-info" role="button" style="padding-left: 20px; padding-right: 20px; float: right">
                                         Create Task for {{ mteam.name }}
                                     </a>
                                 </div>

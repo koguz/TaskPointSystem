@@ -18,7 +18,12 @@ def past_date_validator(value):
 
 
 class Course(models.Model):
+    TERM = (
+        (2, 'Spring'),
+        (1, 'Winter'),
+    )
     name = models.CharField("Course Name", max_length=256)
+    course = models.CharField("Course", max_length=256)
     number_of_students = models.PositiveSmallIntegerField(
         "Number of Students",
         default=40,
@@ -34,6 +39,14 @@ class Course(models.Model):
         default=60,
         validators=[MaxValueValidator(99), MinValueValidator(1)]
     )
+    section = models.PositiveSmallIntegerField("Section", default=1, blank=False, validators=[MaxValueValidator(99), MinValueValidator(1)])
+    year = models.PositiveSmallIntegerField("Year", default=2020, blank=False)
+    term = models.PositiveSmallIntegerField("Term", choices=TERM, default=1, blank=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'section', 'year', 'term', 'section'], name='Course unique constraint')
+        ]
 
     def __str__(self):
         return self.name
@@ -49,6 +62,10 @@ class Course(models.Model):
 
         return "No Milestone"
 
+    def create_course_name(self):
+        self.name = str(self.course) + "-" + str(self.year) + "-" + str(self.term) + "-" + str(self.section)
+        self.save()
+
 
 class Milestone(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -61,6 +78,11 @@ class Milestone(models.Model):
     )
     due = models.DateField("Due Date")
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'name'], name='Milestone course constraint')
+        ]
+
     def __str__(self):
         return self.name
 
@@ -68,7 +90,7 @@ class Milestone(models.Model):
 class Supervisor(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    photo_url = models.CharField("Photo URL:", null= True,max_length=2038)
+    photo_url = models.CharField("Photo URL:", null=True, blank=True, max_length=2038)
 
     def __str__(self):
         return self.get_name()
@@ -107,6 +129,11 @@ class Team(models.Model):
         validators=[MaxValueValidator(99), MinValueValidator(1)]
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'name'], name='Course team name constraint')
+        ]
+
     def __str__(self):
         return self.name
 
@@ -114,39 +141,46 @@ class Team(models.Model):
     # every milestone...
     def get_all_task_points(self, m):
         p = 0
+
         for task in self.task_set.all().filter(milestone=m):
             p = p + task.get_points()
+
         return p
 
     def get_all_accepted_points(self, m):
         p = 0
+
         for task in self.task_set.all().filter(milestone=m):
-            if task.status == 5:
+            if task.status == 6:
                 p = p + task.get_points()
+
         return p
 
     def get_milestone_list(self):
         milestone_list = {}
+
         for m in self.course.milestone_set.all():
             milestone_list[m.name] = self.get_team_grade(m)
+
         return milestone_list
 
     # this should be based on milestone, as well.
     def get_team_grade(self, m):
         g = 0
+
         if self.get_all_task_points(m) > 0:
             g = round((self.get_all_accepted_points(m) / self.get_all_task_points(m)) * 100)
+
         return g
 
     def get_developer_average(self, m):
         return self.get_all_task_points(m) / self.get_team_members().count()
 
     def get_team_size(self):
-        size = self.team_size
-        return size
+        return self.team_size
 
     def get_team_members(self):
-        return Developer.objects.all().filter(developerteam__team_id=self.id)
+        return Developer.objects.filter(developerteam__team_id=self.id)
 
     def get_tasks(self):
         return self.task_set.all()
@@ -164,7 +198,7 @@ class Team(models.Model):
 class Developer(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    photo_url = models.CharField("Photo URL:", null=True, max_length=2038)
+    photo_url = models.CharField("Photo URL:", null=True, blank=True, max_length=2038)
     # team = models.ForeignKey(Team, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
@@ -176,43 +210,61 @@ class Developer(models.Model):
     def get_only_name(self):
         return self.user.first_name
 
-    def get_all_accepted_points(self, m):
+    def get_all_accepted_points(self, team, milestone):
         p = 0
-        for task in self.assignee.all().filter(milestone=m):
-            if task.status == 5:
+
+        for task in self.assignee.all().filter(milestone=milestone, team=team):
+            if task.status == 6:
                 p = p + task.get_points()
+
         return p
 
     # since we compute the team grade with the milestone, we should compute
     # the individual grade as such, too...
     def get_developer_grade(self, team, milestone):
         g = 0
+
         if team.get_developer_average(milestone) > 0:
-            g = round((self.get_all_accepted_points(milestone) / team.get_developer_average(milestone)) * 100)
+            g = round((self.get_all_accepted_points(team, milestone) / team.get_developer_average(milestone)) * 100)
+
             if g > 100:
                 g = 100
+
         return g
 
     # this function is for the "view all teams" - we have to get the milestone names and points
     # for those milestones in a dictionary, so that i can loop through it in the template...
     def get_milestone_list(self, team):
         milestone_list = {}
+
         for milestone in team.course.milestone_set.all():
             milestone_list[milestone.name] = self.get_developer_grade(team, milestone)
+
         return milestone_list
 
     def get_project_grade(self, team):
         # loop through the milestones, get developer grade and team grade...
         team_grade = 0
-        ind_grade = 0
-        c = team.course
-        for milestone in c.milestone_set.all():
+        individual_grade = 0
+        team_course = team.course
+
+        for milestone in team_course.milestone_set.all():
             team_grade = team_grade + team.get_team_grade(milestone) * (milestone.weight / 100)
-            ind_grade = ind_grade + self.get_developer_grade(team, milestone) * (milestone.weight / 100)
-        return round(team_grade * (c.team_weight / 100) + ind_grade * (c.ind_weight / 100))
+            individual_grade = individual_grade + self.get_developer_grade(team, milestone) * (milestone.weight / 100)
+
+        return round(team_grade * (team_course.team_weight / 100) + individual_grade * (team_course.ind_weight / 100))
 
     def get_teams(self):
         return Team.objects.all().filter(developerteam__developer=self)
+
+    def get_all_tasks(self):
+        return Task.objects.filter(assignee=self)
+
+    def get_active_tasks(self):
+        return Task.objects.filter(assignee=self, status__range=(1, 3))
+
+    def get_attention_needed_tasks(self):
+        return Task.objects.filter(team__developerteam__developer=self, status__in=(1, 3)).exclude(assignee=self)
 
 
 class Task(models.Model):
@@ -243,10 +295,10 @@ class Task(models.Model):
         verbose_name="Assigned to"
     )
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    title = models.CharField("Task title", max_length=256)
-    description = models.TextField("Description")
+    title = models.CharField("Task title", max_length=50)
+    description = models.TextField("Description", max_length=256)
     due = models.DateField("Due Date", validators=[past_date_validator])
-    created_on = models.DateTimeField("Created on", null=False)
+    created_on = models.DateTimeField("Created on", auto_now_add=True, null=False)
     creation_approved_on = models.DateTimeField("Creation approved on", blank=True, null=True)
     submission_approved_on = models.DateTimeField("Submission approved on", blank=True, null=True)
     completed_on = models.DateTimeField("Completed on", blank=True, null=True)
@@ -433,27 +485,11 @@ class Task(models.Model):
 class Comment(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    response_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
     body = models.TextField("Comment")
     file_url = models.URLField("File URL", max_length=512, blank=True, null=True)
     created_on = models.DateTimeField("Date", auto_now_add=True)
     points = models.IntegerField("Upvotes", default=0)
     is_final = models.BooleanField(default=False)
-
-    def is_direct_comment(self):
-        if self.response_to:
-            return False
-        return True
-
-    # https://anytree.readthedocs.io/en/2.8.0/index.html, https://pypi.org/project/anytree/
-    def make_children_nodes(self, depth, parent):
-        children = Comment.objects.filter(response_to=self)
-        if parent:
-            root = Node(parent=parent, id=self.id, depth=depth)
-        else:
-            root = Node(id=self.id, depth=depth)
-        for child in children:
-            self.make_children_nodes(child, depth + 1, root)
 
     def __str__(self):
         return self.body
@@ -675,7 +711,7 @@ class PointPool(models.Model):
             entry = GraphIntervals.objects.filter(difficulty=task.difficulty, priority=task.priority).first()
 
             if entry is None:
-                entry = GraphIntervals(difficulty=task.difficulty, priority=task.priority)
+                entry = GraphIntervals(course_id=course_id, difficulty=task.difficulty, priority=task.priority)
                 entry.save()
 
             submission_duration = ((task.completed_on.date() - task.created_on.date()).total_seconds() / 3600)

@@ -2,9 +2,9 @@
 
 {% block leftcontent %}
     <h3>{{ developer_name }}</h3>
-    <div style="text-align: right">
-      <a href="{% url 'tasks:change-pass' %}" class="btn btn-default" role="button">Change Password</a>
-      <a href="{% url 'tasks:leave' %}" class="btn btn-default" role="button">Logout</a>
+    <div class="text-right">
+      <a href="{% url 'tasks:change-pass' %}" class="btn" role="button">Change Password</a>
+      <a href="{% url 'tasks:leave' %}" class="btn" role="button">Logout</a>
     </div>
 <hr />
 {% if user_task_list %}
@@ -23,9 +23,9 @@
     </p>
     <p style="text-align: right">
       {% if task.status == 2 %}
-       <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-default btn-warning" role="button">Submit for Review</a>
+       <a href="{% url 'tasks:update' task.id 3 %}" class="btn btn-warning" role="button">Submit for Review</a>
       {% endif %}
-       <a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a>
+       <a href="{% url 'tasks:view-task' task.id %}" class="btn btn-info" role="button">View Task</a>
     </p>
 </li>
 {% endfor %}
@@ -40,14 +40,14 @@
     <h3>{{ team_name }}</h3>
     <div style="text-align: right">
       {% if request.user.is_superuser %}
-        <a href="{% url 'tasks:view-all-teams' %}" class="btn btn-default" role="button">View All Teams</a>
+        <a href="{% url 'tasks:view-all-teams' %}" class="btn" role="button">View All Teams</a>
       {% endif %}
     {% if github_url %}
-      <a href="{{ github_url }}" class="btn btn-default" role="button">Git Page</a>
+      <a href="{{ github_url }}" class="btn" role="button">Git Page</a>
     {% endif %}
-      <a href="{% url 'tasks:team-points' team_id %}" class="btn btn-default" role="button">View Team/Developer Points</a>
-      <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-default" role="button">View All Tasks</a>
-      <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-default btn-info" role="button">Create Task for the team</a>
+      <a href="{% url 'tasks:team-points' team_id %}" class="btn" role="button">View Team/Developer Points</a>
+      <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn" role="button">View All Tasks</a>
+      <a href="{% url 'tasks:task-create-developer' %}" class="btn btn-info" role="button">Create Task for the team</a>
     </div>
     <hr />
     {% if team_task_list %}
@@ -67,7 +67,7 @@
           Status: {{ task.get_status_display }}
         </p>
         <p style="text-align: right">
-          <a href="{% url 'tasks:view-task' task.id %}" class="btn btn-default btn-info" role="button">View Task</a>
+          <a href="{% url 'tasks:view-task' task.id %}" class="btn btn-info" role="button">View Task</a>
         </p>
     </li>
     {% endfor %}

@@ -10,13 +10,15 @@
                     <th style="min-width: 250px">Student Name</th>
                     <th style="min-width: 250px">Grade</th>
                 </tr>
-                {% for developer, grade in developers_and_grades.items %}
-                    <tr>
-                        <td height="65"><a role="button" class="views-link">{{ course }}</a></td>
-                        <td height="65"><a role="button" class="views-link">{{ developer }}</a></td>
-                        <td height="65"><a role="button" class="views-link">{{ grade }}</a></td>
-                        </td>
-                    </tr>
+                {% for course, developerDict in developers_and_grades.items %}
+                    {% for developerName, developerGrade in developerDict.items %}
+                        <tr>
+                            <td height="65"><a role="button" class="views-link">{{ course }}</a></td>
+                                <td height="65"><a role="button" class="views-link">{{ developerName }}</a></td>
+                                <td height="65"><a role="button" class="views-link">{{ developerGrade }}</a></td>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
             </table>
         </div>

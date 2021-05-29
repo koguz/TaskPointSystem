@@ -1,0 +1,38 @@
+{% extends "tasks/base.html" %}
+
+{% block content %}
+    <div class="row" style="margin-top: 50px">
+        <form action="{% url 'tasks:add_the_course' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="course">Course:</label>
+                <input type="text" class="form-control" name="course" value="{{ course.course }}">
+            </div>
+            <div class="form-group" >
+                <label for="no-of-students">Number of Students:</label>
+                <input type="number" class="form-control" name="no-of-students" value="{{ course.number_of_students }}">
+            </div>
+            <div class="form-group" >
+                <label for="team-weight">Team Weight:</label>
+                <input type="number" class="form-control" name="team-weight" value="{{ course.team_weight }}">
+            </div>
+            <div class="form-group" >
+                <label for="individual-weight">Individual Weight:</label>
+                <input type="number" class="form-control" name="individual-weight" value="{{ course.ind_weight }}">
+            </div>
+            <div class="form-group" >
+                <label for="year">Year:</label>
+                <input type="number" class="form-control" name="year" value="{{ course.year }}">
+            </div>
+            <div class="form-group" >
+                <label for="term">Term:</label>
+                <input type="number" class="form-control" name="term" value="{{ course.term }}">
+            </div>
+            <div class="form-group" >
+                <label for="section">Section:</label>
+                <input type="number" class="form-control" name="section" value="{{ course.section }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Create a Course</button>
+        </form>
+    </div>
+{% endblock %}

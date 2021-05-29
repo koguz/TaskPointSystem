@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0018_auto_20210522_2135'),
+        ('tasks', '0018_timestamp_added_to_notification'),
     ]
 
     operations = [

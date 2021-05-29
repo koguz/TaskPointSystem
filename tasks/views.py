@@ -73,7 +73,6 @@ def supervisor(request):  # this view is for the supervisors only...
     supervised_teams = Team.objects.all().filter(supervisor=s)
     all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
 
-
     context = {
         'page_title': page_title,
         'supervisor_name': supervisor_name,
@@ -82,9 +81,10 @@ def supervisor(request):  # this view is for the supervisors only...
         'all_teammates': all_teammates,
         'supervisor_photo_url': supervisor_photo_url,
     }
+
     return render(request, 'tasks/supervisor.html', context)
 
-
+@login_required
 def supervisor_teams(request):
     try:
         s = Supervisor.objects.get(user=request.user)
@@ -113,6 +113,7 @@ def team(request, team_id):  # this view is for the developer only...
     try:
         dev_team = Team.objects.get(pk=team_id, developerteam__developer=developer)
     except ObjectDoesNotExist:
+        leave_site(request)
         return HttpResponseRedirect('/tasks/profile/')
 
     page_title = dev_team.name + " Team Page"
@@ -145,16 +146,14 @@ def team(request, team_id):  # this view is for the developer only...
 
 @login_required
 def view_all_teams(request):
-    if not request.user.is_superuser:
-        leave_site(request)
-        return HttpResponseRedirect('/tasks/')
+    if Supervisor.objects.filter(user=request.user).first() is None:
+        return HttpResponseRedirect('/tasks/choose')
 
     context = {
         'page_title': 'All teams and their points',
         'teams': Team.objects.all(),
-        'developers': Developer.objects.all(),
-        'milestones': Milestone.objects.all(),
     }
+
     return render(request, 'tasks/view_all_teams.html', context)
 
 
@@ -227,7 +226,6 @@ def developer_create(request, team_id):
             task.assignee = developer
             task.team = dev_team
             task.milestone = course.get_current_milestone()
-            task.created_on = datetime.datetime.now()
             task.save()
             task.apply_self_accept(task.assignee, 1)
             action_record = ActionRecord.task_create(1, developer, task)
@@ -368,6 +366,7 @@ def view_task(request, task_id):
     final_comment, all_comments_but_final = check_is_final(comment_list)
     vote_list = task.vote_set.all()
     form = CommentForm()
+
     return render(
         request,
         'tasks/view_task.html',
@@ -524,9 +523,10 @@ def team_points(request, team_id):
 
 @login_required
 def send_vote(request, task_id, status_id, button_id):
+    developer = Developer.objects.get(user=request.user)
     status_id = int(status_id)
     button_id = int(button_id)
-    vote = Vote(voter=request.user, task=Task.objects.get(pk=task_id))
+    vote = Vote(voter=developer, task=Task.objects.get(pk=task_id))
     task = get_object_or_404(Task, pk=task_id)
     action_type = 0
 
@@ -534,19 +534,19 @@ def send_vote(request, task_id, status_id, button_id):
         return HttpResponseRedirect('/tasks/choose/')
 
     if status_id == 1 and button_id == 1:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 1
         action_type = 6
     elif status_id == 1 and button_id == 2:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(1, 2)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(1, 2)).delete()
         vote.vote_type = 2
         action_type = 8
     elif status_id == 3 and button_id == 3:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 3
         action_type = 9
     elif status_id == 3 and button_id == 4:
-        Vote.objects.all().filter(voter=request.user, task=task, vote_type__range=(3, 4)).delete()
+        Vote.objects.all().filter(voter=developer, task=task, vote_type__range=(3, 4)).delete()
         vote.vote_type = 4
         action_type = 11
 
@@ -665,13 +665,17 @@ def supervisor_edit_task(request, task_id):
 
             return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:
-        form = TaskSupervisorForm(dev_team, initial={'assignee': developer,
-                                                     'title': task_to_edit.title,
-                                                     'description': task_to_edit.description,
-                                                     'due': task_to_edit.due,
-                                                     'priority': task_to_edit.priority,
-                                                     'difficulty': task_to_edit.difficulty
-                                                     })
+        form = TaskSupervisorForm(
+            dev_team,
+            initial={
+                'assignee': developer,
+                'title': task_to_edit.title,
+                'description': task_to_edit.description,
+                'due': task_to_edit.due,
+                'priority': task_to_edit.priority,
+                'difficulty': task_to_edit.difficulty
+            }
+        )
     return render(
         request,
         'tasks/supervisor_task_form.html',
@@ -686,21 +690,29 @@ def supervisor_edit_task(request, task_id):
     )
 
 
+@login_required
 def profile(request):
     developer = Developer.objects.get(user=request.user)
-    user_task_list = developer.assignee.all().filter(status__lt=5).order_by('due')[:5]
     developer_photo_url = developer.photo_url
+    user_active_tasks = developer.get_active_tasks().order_by('due')
+    user_attention_tasks = developer.get_attention_needed_tasks().order_by('due')
+    user_all_tasks = developer.get_all_tasks()
+
     return render(
         request,
         'tasks/profile.html',
         {
-            'user_task_list': user_task_list,
+            'page_title': 'Profile',
+            'user_active_tasks': user_active_tasks,
+            'user_attention_tasks': user_attention_tasks,
+            'user_all_tasks': user_all_tasks,
             'developer': developer,
             'developer_photo_url': developer_photo_url,
         }
     )
 
 
+@login_required
 def visit_profile(request, developer_id):
     developer = Developer.objects.get(id=developer_id)
     developer_photo = developer.photo_url
@@ -710,6 +722,7 @@ def visit_profile(request, developer_id):
         request,
         'tasks/profile.html',
         {
+            'page_title': developer.get_name(),
             'user_task_list': user_task_list,
             'developer': developer,
             'developer_photo_url': developer_photo,
@@ -717,6 +730,7 @@ def visit_profile(request, developer_id):
     )
 
 
+@login_required
 def teams(request):
     current_developer = Developer.objects.get(user=request.user)
     teams_list = current_developer.get_teams()
@@ -728,6 +742,7 @@ def teams(request):
         request,
         'tasks/teams.html',
         {
+            'page_title': 'Teams',
             'teams': teams_list,
             'all_teammates': all_teammates,
             'tasks_status': tasks_status_list,
@@ -735,39 +750,62 @@ def teams(request):
     )
 
 
+@login_required
 def notifications(request):
-    notifications = Notification.objects.filter(user=request.user)
-    for notification in notifications:
+    user_notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+
+    for notification in user_notifications:
         notification.is_seen = True
         notification.save()
+
     return render(
         request,
         'tasks/notifications.html',
         {
-            "user": request.user,
-            "notifications": notifications,
+            'page_title': 'Notifications',
+            'user': request.user,
+            'notifications': user_notifications,
         }
     )
 
 
+@login_required
 def grades(request):
     return render(
         request,
         'tasks/grades.html',
+        {
+            'page_title': 'Contributions',
+        }
     )
 
 
+@login_required
 def comments(request):
     return render(
         request,
         'tasks/comments.html',
+        {
+            'page_title': 'Comments',
+        }
     )
 
 
+@login_required
 def calendar(request):
+    user_all_tasks = []
+    developer = Developer.objects.filter(user=request.user).first()
+
+    if developer:
+        user_all_tasks = developer.get_all_tasks()
+
     return render(
         request,
         'tasks/calendar.html',
+        {
+            'page_title': 'Calendar',
+            'user_all_tasks': user_all_tasks,
+        }
     )
 
 
@@ -785,8 +823,13 @@ def sort_active_tasks(request):
 
 @login_required
 def course_data_analytics(request, course_id):
-    if not os.path.isfile('tasks/static/tasks/gaussian_plots/' + course_id + '/difficult_low_figure.png'):
-        calculate_time_diff_and_plot(course_id)
+    try:
+        Supervisor.objects.get(user=request.user)
+        if not os.path.isfile('tasks/static/tasks/gaussian_plots/' + course_id + '/difficult_low_figure.png'):
+            calculate_time_diff_and_plot(course_id)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     return render(
         request,
         'tasks/course_data_analytics.html',
@@ -798,10 +841,12 @@ def course_data_analytics(request, course_id):
 
 @login_required
 def data_analytics(request):
-    s = Supervisor.objects.get(user=request.user)
-    supervised_courses = Team.objects.values('course', 'course__name', 'course__number_of_students').filter(
-        supervisor=s).distinct()
-
+    try:
+        s = Supervisor.objects.get(user=request.user)
+        supervised_courses = Team.objects.values('course', 'course__name', 'course__number_of_students').filter(
+            supervisor=s).distinct()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
     return render(
         request,
         'tasks/data_analytics.html',
@@ -813,21 +858,24 @@ def data_analytics(request):
 
 @login_required
 def data_graph_inspect(request, difficulty_and_priority, course_id):
-    difficulty_and_priority_temp = difficulty_and_priority.split("_")
-    difficulty = difficulty_and_priority_temp[0]
-    priority = difficulty_and_priority_temp[1]
-    task_list = Task.objects.filter(team__course__id=course_id, difficulty=difficulty, priority=priority, status=6)
-    average = get_average_completion_time(task_list)
-    max, min = get_max_min_completion_time(task_list)
-    entry = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first()
+    try:
+        Supervisor.objects.get(user=request.user)
+        difficulty_and_priority_temp = difficulty_and_priority.split("_")
+        difficulty = difficulty_and_priority_temp[0]
+        priority = difficulty_and_priority_temp[1]
+        task_list = Task.objects.filter(team__course__id=course_id, difficulty=difficulty, priority=priority, status=6)
+        average = get_average_completion_time(task_list)
+        max, min = get_max_min_completion_time(task_list)
+        entry = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first()
 
-    if entry is None:
-        entry = GraphIntervals(course_id=course_id, difficulty=difficulty, priority=priority)
-        entry.save()
+        if entry is None:
+            entry = GraphIntervals(course_id=course_id, difficulty=difficulty, priority=priority)
+            entry.save()
 
-    lower_bound = entry.lower_bound
-    upper_bound = entry.upper_bound
-
+        lower_bound = entry.lower_bound
+        upper_bound = entry.upper_bound
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
     return render(
         request,
         'tasks/data_graph_inspect.html',
@@ -844,23 +892,28 @@ def data_graph_inspect(request, difficulty_and_priority, course_id):
     )
 
 
+@login_required
 def set_point_pool_interval(request, course_id):
-    if 'lower_bound' in request.POST and 'upper_bound' in request.POST:
-        lower_bound = request.POST['lower_bound']
-        upper_bound = request.POST['upper_bound']
-        difficulty_and_priority = request.POST['difficulty_and_priority']
-        difficulty_and_priority_split = difficulty_and_priority.split("_")
-        difficulty = difficulty_and_priority_split[0]
-        priority = difficulty_and_priority_split[1]
-        try:
-            entry = GraphIntervals.objects.get(course=course_id, difficulty=str(difficulty), priority=str(priority))
-            if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
-                entry.upper_bound = upper_bound
-                entry.lower_bound = lower_bound
-            entry.save()
-        except ObjectDoesNotExist:
-            entry = GraphIntervals(course=course_id, difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
-            entry.save()
+    try:
+        Supervisor.objects.get(user=request.user)
+        if 'lower_bound' in request.POST and 'upper_bound' in request.POST:
+            lower_bound = request.POST['lower_bound']
+            upper_bound = request.POST['upper_bound']
+            difficulty_and_priority = request.POST['difficulty_and_priority']
+            difficulty_and_priority_split = difficulty_and_priority.split("_")
+            difficulty = difficulty_and_priority_split[0]
+            priority = difficulty_and_priority_split[1]
+            try:
+                entry = GraphIntervals.objects.get(course=course_id, difficulty=str(difficulty), priority=str(priority))
+                if not lower_bound == entry.lower_bound or not upper_bound == entry.upper_bound:
+                    entry.upper_bound = upper_bound
+                    entry.lower_bound = lower_bound
+                entry.save()
+            except ObjectDoesNotExist:
+                entry = GraphIntervals(course=course_id, difficulty=str(difficulty), priority=str(priority), lower_bound=lower_bound, upper_bound=upper_bound)
+                entry.save()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
 
     return redirect(request.META['HTTP_REFERER'])
 
@@ -884,58 +937,81 @@ class TeamRenameView(UserPassesTestMixin, BSModalUpdateView):
         return False
 
 
+@login_required
 def point_pool(request):
-    supervisor = Supervisor.objects.get(user=request.user)
-    course_list = Team.objects.values('course__name', 'name', 'course_id').filter(supervisor=supervisor)
-    course_dict = {}
-    course_id_name_dict = {}
-    for course in course_list:
-        team = Team.objects.filter(supervisor=supervisor, name=course['name'])
-        all_teammates = get_all_teammates_of_each_team(team, supervisor.user_id)
-
-        if course['course__name'] in course_dict:
-            course_dict[course['course__name']].append({course['name']: all_teammates})
-
-        else:
-            course_dict.update({course['course__name']: [{course['name']: all_teammates}]})
-            course_id_name_dict.update({course['course__name']: course['course_id']})
+    try:
+        supervisor = Supervisor.objects.get(user=request.user)
+        course_entry = Course.objects.values().filter(team__supervisor=supervisor)
+        course_list = {}
+        already_in_course = []
+        already_in_team = []
+        team_list_with_team_members = {}
+        counter = 0
+        counter2 = -1
+        for index, value in enumerate(course_entry):
+            if not value['course'] in already_in_course:
+                teams = Team.objects.filter(supervisor=supervisor, course=value['id'])
+                for idx, team in enumerate(teams):
+                    all_teammates = team.get_team_members()
+                    if not (team in already_in_team):
+                        team_list_with_team_members.update({counter: {'team': team, 'team_members': all_teammates}})
+                        counter += 1
+                        already_in_team.append(team)
+                counter2 += 1
+                course_list.update({counter2: {'id': value['id'], 'course': value['course'], 'course_name': value['name'], 'number_of_students': value['number_of_students'], 'team_weight': value['team_weight'], 'ind_weight': value['ind_weight'], 'teams': team_list_with_team_members}})
+                already_in_course.append(value['course'])
+                counter = 0
+            team_list_with_team_members = {}
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
 
     return render(
         request,
         'tasks/point_pool.html',
         {
-            'course_dict': course_dict,
-            'course_id_name_dict': course_id_name_dict,
+            'course_list': course_list,
         }
     )
 
 
-def calculate_point_pool(request, course_id):
-    s = Supervisor.objects.get(user=request.user)
-    course = Course.objects.get(id=course_id)
-    if s:
-        developers_and_grades = s.calculate_point_pool(course_id)
+@login_required
+def calculate_point_pool(request, course_name):
+    try:
+        s = Supervisor.objects.get(user=request.user)
+        courses = Course.objects.filter(course=course_name)
+        developers_and_grades = {}
+        print(courses)
+        if s:
+            for course in courses:
+                developers_and_grades.update({course: s.calculate_point_pool(course.id)})
+
+        print(developers_and_grades)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
 
     return render(
         request,
         'tasks/point_pool_course_grade.html',
         {
-            'course': course,
             'developers_and_grades': developers_and_grades,
         }
     )
 
 
+@login_required
 def developer_point_pool_activities(request, course_name, developer_id):
+    try:
+        Supervisor.objects.get(user=request.user)
+        developer = Developer.objects.get(id=developer_id)
+        course = Course.objects.get(name=course_name)
+        accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer).order_by('completed_on')
+        rejected_tasks = Task.objects.filter(team__course__id=course.id, status=5, assignee=developer).order_by('completed_on')
+        comments = Comment.objects.filter(owner=developer.user).order_by('created_on')
 
-    developer = Developer.objects.get(id=developer_id)
-    course = Course.objects.get(name=course_name)
-    accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer)
-    rejected_tasks = Task.objects.filter(team__course__id=course.id, status=5, assignee=developer)
-    comments = Comment.objects.filter(owner=developer.user)
-
-    votes = Vote.objects.filter(voter=developer)
-    developer_name = developer.get_name()
+        votes = Vote.objects.filter(voter=developer)
+        developer_name = developer.get_name()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
 
     return render(
         request,
@@ -953,17 +1029,22 @@ def developer_point_pool_activities(request, course_name, developer_id):
 
 @login_required
 def account_settings(request):
-    if Developer.objects.filter(user=request.user):
-        user = User.objects.values('first_name', 'last_name', 'email', 'developer__photo_url').get(
-            username=request.user)
-        user_photo_url = str(user['developer__photo_url'])
-    else:
-        user = User.objects.values('first_name', 'last_name', 'email', 'supervisor__photo_url').get(
-            username=request.user)
-        user_photo_url = str(user['supervisor__photo_url'])
-    user_first_name = str(user['first_name'])
-    user_last_name = str(user['last_name'])
-    user_email = str(user['email'])
+    try:
+        if Developer.objects.filter(user=request.user).first():
+            user = User.objects.values('first_name', 'last_name', 'email', 'developer__photo_url').get(
+                username=request.user)
+            user_photo_url = str(user['developer__photo_url'])
+        elif Supervisor.objects.filter(user=request.user).first():
+            user = User.objects.values('first_name', 'last_name', 'email', 'supervisor__photo_url').get(
+                username=request.user)
+            user_photo_url = str(user['supervisor__photo_url'])
+
+        user_first_name = str(user['first_name'])
+        user_last_name = str(user['last_name'])
+        user_email = str(user['email'])
+
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
 
     return render(
         request,
@@ -980,20 +1061,234 @@ def account_settings(request):
 
 @login_required()
 def set_email(request):
-    if 'email' in request.POST:
-        print(request.POST['email'])
-        user = User.objects.get(username=request.user)
-        user.email = request.POST['email']
-        user.save()
-    if 'photo_url' in request.POST and Developer.objects.filter(user=request.user):
-        developer = Developer.objects.get(user=request.user)
-        developer.photo_url = request.POST['photo_url']
-        developer.save()
-    elif 'photo_url' in request.POST and Supervisor.objects.filter(user=request.user):
-        supervisor = Supervisor.objects.get(user=request.user)
-        supervisor.photo_url = request.POST['photo_url']
-        supervisor.save()
+    try:
+        if 'email' in request.POST:
+            print(request.POST['email'])
+            user = User.objects.get(username=request.user)
+            user.email = request.POST['email']
+            user.save()
+        if 'photo_url' in request.POST and Developer.objects.filter(user=request.user):
+            developer = Developer.objects.get(user=request.user)
+            developer.photo_url = request.POST['photo_url']
+            developer.save()
+        elif 'photo_url' in request.POST and Supervisor.objects.filter(user=request.user):
+            supervisor = Supervisor.objects.get(user=request.user)
+            supervisor.photo_url = request.POST['photo_url']
+            supervisor.save()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     return redirect(request.META['HTTP_REFERER'])
+
+
+@login_required
+def courses(request):
+    try:
+        Supervisor.objects.get(user=request.user)
+        course_list = Course.objects.all()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list,
+        }
+    )
+
+
+@login_required
+def course(request, course_id):
+    try:
+        Supervisor.objects.get(user=request.user)
+        course_entry = Course.objects.get(id=course_id)
+        milestone_list = Milestone.objects.filter(course=course_entry)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/course.html',
+        {
+            'course': course_entry,
+            'milestones': milestone_list,
+        }
+    )
+
+
+@login_required
+def edit_course(request, course_id):
+    try:
+        Supervisor.objects.get(user=request.user)
+        course_entry = Course.objects.get(id=course_id)
+
+        if request.POST['course-name'] and course_entry.name != request.POST['course-name']:
+            course_entry.name = request.POST['course-name']
+        if request.POST['no-of-students'] and course_entry.number_of_students != request.POST['no-of-students']:
+            course_entry.number_of_students = request.POST['no-of-students']
+        if request.POST['team-weight'] and course_entry.team_weight != request.POST['team-weight']:
+            course_entry.team_weight = request.POST['team-weight']
+        if request.POST['individual-weight'] and course_entry.ind_weight != request.POST['individual-weight']:
+            course_entry.ind_weight = request.POST['individual-weight']
+        course_entry.save()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return redirect(request.META['HTTP_REFERER'])
+
+
+@login_required
+def add_a_course(request):
+    try:
+        Supervisor.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/add_a_course.html'
+    )
+
+
+@login_required
+def add_the_course(request):
+    try:
+        Supervisor.objects.get(user=request.user)
+        course_entry = Course()
+        if request.POST['course'] and course_entry.name != request.POST['course']:
+            course_entry.course = request.POST['course']
+        if request.POST['no-of-students'] and course_entry.number_of_students != request.POST['no-of-students']:
+            course_entry.number_of_students = request.POST['no-of-students']
+        if request.POST['team-weight'] and course_entry.team_weight != request.POST['team-weight']:
+            course_entry.team_weight = request.POST['team-weight']
+        if request.POST['individual-weight'] and course_entry.ind_weight != request.POST['individual-weight']:
+            course_entry.ind_weight = request.POST['individual-weight']
+        if request.POST['year'] and course_entry.ind_weight != request.POST['year']:
+            course_entry.year = request.POST['year']
+        if request.POST['term'] and course_entry.ind_weight != request.POST['term']:
+            course_entry.term = request.POST['term']
+        if request.POST['section'] and course_entry.ind_weight != request.POST['section']:
+            course_entry.section = request.POST['section']
+        course_entry.save()
+        course_entry.create_course_name()
+        course_entry.save()
+
+        course_list = Course.objects.all()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list
+        }
+    )
+
+
+@login_required
+def add_a_milestone(request, course_id):
+    try:
+        Supervisor.objects.get(user=request.user)
+        course_entry = Course.objects.get(id=course_id)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/add_a_milestone.html',
+        {
+            'course': course_entry,
+        }
+    )
+
+
+@login_required
+def add_the_milestone(request, course_id):
+    try:
+        Supervisor.objects.get(user=request.user)
+        milestone_entry = Milestone()
+        course_entry = Course.objects.get(id=course_id)
+        milestone_entry.course = course_entry
+
+        if request.POST['milestone-name']:
+            milestone_entry.name = request.POST['milestone-name']
+        if request.POST['description']:
+            milestone_entry.description = request.POST['description']
+        if request.POST['weight']:
+            milestone_entry.weight = request.POST['weight']
+        if request.POST['due-date']:
+            milestone_entry.due = request.POST['due-date']
+        milestone_entry.save()
+
+        course_list = Course.objects.all()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list
+        }
+    )
+
+
+@login_required
+def milestone(request, course_id, milestone_id):
+    try:
+        Supervisor.objects.get(user=request.user)
+        course_entry = Course.objects.get(id=course_id)
+        milestone_entry = Milestone.objects.get(id=milestone_id)
+        course_list = Course.objects.all()
+        milestone_due = str(milestone_entry.due)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/milestone.html',
+        {
+            'course': course_entry,
+            'milestone': milestone_entry,
+            'course_list': course_list,
+            'due_date': milestone_due,
+        }
+    )
+
+
+@login_required
+def edit_milestone(request, course_id, milestone_id):
+    try:
+        Supervisor.objects.get(user=request.user)
+        milestone_entry = Milestone.objects.get(id=milestone_id)
+        course_list = Course.objects.all()
+        print("Course Name: ", milestone_entry.course)
+
+        if request.POST['course-name']:
+            course_entry = Course.objects.get(name=request.POST['course-name'])
+            milestone_entry.course = course_entry
+        if request.POST['milestone-name']:
+            milestone_entry.name = request.POST['milestone-name']
+        if request.POST['description']:
+            milestone_entry.description = request.POST['description']
+        if request.POST['weight']:
+            milestone_entry.weight = request.POST['weight']
+        if request.POST['due-date']:
+            milestone_entry.due = request.POST['due-date']
+
+        milestone_entry.save()
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
+    return render(
+        request,
+        'tasks/courses.html',
+        {
+            'course_list': course_list
+        }
+    )
 
 
 @login_required()

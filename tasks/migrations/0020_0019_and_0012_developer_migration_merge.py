@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tasks', '0019_auto_20210522_2144'),
-        ('tasks', '0012_auto_20210514_2120'),
+        ('tasks', '0019_task_last_modified_added_and_task_difference_actionrecord_created'),
+        ('tasks', '0012_developer_supervisor_photo_url_and_actionrecord_modified'),
     ]
 
     operations = [

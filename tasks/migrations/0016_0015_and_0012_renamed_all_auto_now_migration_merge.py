@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tasks', '0012_renamed_all_auto_now_date_fields_name_to_created_on'),
-        ('tasks', '0015_auto_20210517_1331'),
+        ('tasks', '0015_removed_team_added_related_task_to_notifications'),
     ]
 
     operations = [

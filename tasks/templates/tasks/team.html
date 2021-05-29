@@ -1,131 +1,130 @@
 {% extends "tasks/base.html" %}
 
 {% block content %}
-
-<div class="row">
-    <div class="col-sm-6" style="display: flex; justify-content: center; margin-top: 15px">
-        <h2>{{ developer_name }}</h2>
-    </div>
-    <div class="col-sm-6" style="display: flex; justify-content: center; margin-top: 15px">
-        <h2>{{ team_name }}</h2>
-    </div>
-</div>
-<hr/>
-<div class="row">
+<div class="row team-main-row">
     <div class="col-sm-6 user-feed">
-        <div class="your-active-tasks-header">
-            <h3 style="float: left">Your Active Tasks</h3>
-            <div class="create-new-task-button">
-                <a href="{% url 'tasks:team-points' team_id %}" class="btn btn-default" role="button">View Points</a>
-                <a href="{% url 'tasks:task-create-developer' team_id %}" class="btn btn-default btn-info" role="button" style="float: right; margin-left: 10px">Create a new task</a>
-                <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-default btn-info" role="button" style="float: right">View All Tasks</a>
+        <div class="team-dev-name">
+            <h2>{{ developer_name }}</h2>
+        </div>
+        <hr>
+        <div class="row your-active-tasks-row pad-b-10">
+            <div class="col-sm-5 your-active-tasks-header">
+                <h3>Your Active Tasks</h3>
+            </div>
+            <div class="col-sm-7">
+                <div class="team-active-task-buttons float-right">
+                    <a href="{% url 'tasks:team-points' team_id %}" class="btn btn-info" role="button">View Points</a>
+                    <a href="{% url 'tasks:task-create-developer' team_id %}" class="btn btn-info" role="button">Create a task</a>
+                    <a href="{% url 'tasks:task-all' team_id 'due' %}" class="btn btn-info" role="button">View All Tasks</a>
+                </div>
             </div>
         </div>
         {% if user_task_list %}
             <div class="your-active-tasks">
-                    <ul>
-                        {% for task in user_task_list %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
-                                <li>
-                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
-                                    <div class="task-header">
-                                        <h4>{{ task.title }}</h4>
-                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
-                                    </div>
-                                    <hr class="content-separator">
-                                    <div class="task-content">
-                                        <p class="content-text">{{ task.description }}</p>
-                                    </div>
-                                </li>
-                            </a>
-                        {% endfor %}
-                    </ul>
+                <ul>
+                    {% for task in user_task_list %}
+                        <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                            <li>
+                                <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
+                                <div class="task-header">
+                                    <h4>{{ task.title }}</h4>
+                                    <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
+                                </div>
+                                <hr class="content-separator">
+                                <div class="task-content">
+                                    <p class="content-text">{{ task.description }}</p>
+                                </div>
+                            </li>
+                        </a>
+                    {% endfor %}
+                </ul>
             </div>
-
-
         {% else %}
             <p>You don't have any tasks assigned to you.</p>
         {% endif %}
     </div>
-
     <div class="col-sm-6 user-feed">
-        <div class="team-member-header">
-            <h3 style="float: left">Team Members</h3>
-            <div class="modal fade" tabindex="-1" role="dialog" id="modal" data-backdrop="false">
-                <div class="modal-dialog" role="document" >
-                    <div class="modal-content" ></div>
+        <div class="team-dev-name">
+            <h2>{{ team_name }}</h2>
+        </div>
+        <hr>
+        <div class="row team-member-header pad-b-10">
+            <div class="col-sm-4">
+                <h3 style="float: left">Team Members</h3>
+            </div>
+            <div class="col-sm-8">
+                <div class="float-right rename-team-div">
+                    <a id="rename-team" class="btn btn-info" type="button">Rename Team</a>
                 </div>
             </div>
-
-            <a id="rename-team" class="btn btn-default btn-info" type="button" name="button" style="float: right">Rename Team</a>
+            <div class="modal fade" tabindex="-1" role="dialog" id="modal" data-backdrop="false">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content"></div>
+                </div>
+            </div>
         </div>
         <div class="team-accordion">
-        {% for mate, tasks in teammates_task_dict.items %}
-            <button class="accordion">{{ mate }}</button>
-            <ul>
-            {% for mate_task in tasks %}
-                <div class="panel">
-                     <a href="{% url 'tasks:view-task' mate_task.id %}" style="text-decoration: none; color: #1A1A1A">
-                        <li>
-                            <p class="task-date"><span class="bold-span">Due: </span>{{ mate_task.due }}</p>
-                            <div class="task-header">
-                                <h4>{{ mate_task.title }}</h4>
-                                <p><span class="bold-span">Status: </span>{{ mate_task.get_status_display }}</p>
-                            </div>
-                            <hr class="content-separator">
-                            <div class="task-content">
-                                <p class="content-text">{{ mate_task.description }}</p>
-                            </div>
-                        </li>
-                     </a>
-                </div>
+            {% for mate, tasks in teammates_task_dict.items %}
+                <button class="accordion">{{ mate }}</button>
+                <ul>
+                {% for mate_task in tasks %}
+                    <div class="panel">
+                         <a href="{% url 'tasks:view-task' mate_task.id %}" style="text-decoration: none; color: #1A1A1A">
+                            <li>
+                                <p class="task-date"><span class="bold-span">Due: </span>{{ mate_task.due }}</p>
+                                <div class="task-header">
+                                    <h4>{{ mate_task.title }}</h4>
+                                    <p><span class="bold-span">Status: </span>{{ mate_task.get_status_display }}</p>
+                                </div>
+                                <hr class="content-separator">
+                                <div class="task-content">
+                                    <p class="content-text">{{ mate_task.description }}</p>
+                                </div>
+                            </li>
+                         </a>
+                    </div>
+                {% endfor %}
+                </ul>
             {% endfor %}
-            </ul>
-        {% endfor %}
         </div>
     </div>
 </div>
-{#<script>#}
-{#    const acc = document.getElementsByClassName("accordion");#}
-{#    let i;#}
-{##}
-{#    for (i = 0; i < acc.length; i++) {#}
-{#      acc[i].addEventListener("click", function() {#}
-{#        this.classList.toggle("active");#}
-{#          let task_list = this.nextElementSibling;#}
-{#          for (let task_index = 0; task_index < task_list.children.length; task_index++) {#}
-{#            let task = task_list.children.item(task_index);#}
-{#            if (task.style.display === "block") {#}
-{#                task.style.display = "none";#}
-{#            } else {#}
-{#                task.style.display = "block";#}
-{#            }#}
-{#          }#}
-{#      });#}
-{#    }#}
+{% endblock %}
+{% block scriptcontent %}
+<script>
+    const renameTeamButton$ = $('#rename-team');
+    const renameTeamButtonDiv$ = $('.rename-team-div');
+    const activeTaskButtons$ = $('.team-active-task-buttons');
+    const name_change_count = '{{ name_change_count }}';
 
+    $(function() {
+        if( name_change_count > 3) {
+            renameTeamButton$.removeClass('btn btn-info');
+            renameTeamButton$.addClass('btn btn-secondary');
+            renameTeamButton$.prop('title', "Your team's name was already changed the limit of 3 times");
+            renameTeamButton$.attr('disabled', 'disabled');
+            renameTeamButton$.css('cursor', 'context-menu');
+        } else{
+            renameTeamButton$.modalForm({
+                formURL: "{% url 'tasks:rename-team' team_id %}"
+            });
+        }
 
-{#</script>#}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-<script type="text/javascript">
-var name_change_count = '{{name_change_count}}'
-$(document).ready(function() {
-    if( name_change_count > 3){
-        $("#rename-team").removeClass('btn btn-default btn-info');
-        $("#rename-team").addClass('btn btn-default btn-secondary');
-        $("#rename-team").prop('title', "Your team's name was already changed the limit of 3 times");
-        $("#rename-team").attr('disabled', 'disabled');
-        $("#rename-team").css('cursor', 'context-menu');
-    }
-    else{
-        $("#rename-team").modalForm({
-            formURL: "{% url 'tasks:rename-team' team_id %}"
-        });
-    }
-});
+        if (window.innerWidth < 1570) {
+            activeTaskButtons$.removeClass('float-right');
+            renameTeamButtonDiv$.removeClass('float-right');
+        }
+    });
 
-
+    $(window).on('resize', function () {
+        if (window.innerWidth < 1570) {
+            activeTaskButtons$.removeClass('float-right');
+            renameTeamButtonDiv$.removeClass('float-right');
+        } else {
+            activeTaskButtons$.addClass('float-right');
+            renameTeamButtonDiv$.addClass('float-right');
+        }
+    });
 </script>
 {% endblock %}
 
