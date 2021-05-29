@@ -183,11 +183,13 @@ class Developer(models.Model):
     def get_only_name(self):
         return self.user.first_name
 
-    def get_all_accepted_points(self, m):
+    def get_all_accepted_points(self, team, milestone):
         p = 0
-        for task in self.assignee.all().filter(milestone=m):
+
+        for task in self.assignee.all().filter(milestone=milestone, team=team):
             if task.status == 6:
                 p = p + task.get_points()
+
         return p
 
     # since we compute the team grade with the milestone, we should compute
@@ -196,7 +198,7 @@ class Developer(models.Model):
         g = 0
 
         if team.get_developer_average(milestone) > 0:
-            g = round((self.get_all_accepted_points(milestone) / team.get_developer_average(milestone)) * 100)
+            g = round((self.get_all_accepted_points(team, milestone) / team.get_developer_average(milestone)) * 100)
 
             if g > 100:
                 g = 100
