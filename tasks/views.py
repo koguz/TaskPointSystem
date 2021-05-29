@@ -141,16 +141,14 @@ def team(request, team_id):  # this view is for the developer only...
 
 @login_required
 def view_all_teams(request):
-    if not request.user.is_superuser:
-        leave_site(request)
-        return HttpResponseRedirect('/tasks/')
+    if Supervisor.objects.filter(user=request.user).first() is None:
+        return HttpResponseRedirect('/tasks/choose')
 
     context = {
         'page_title': 'All teams and their points',
         'teams': Team.objects.all(),
-        'developers': Developer.objects.all(),
-        'milestones': Milestone.objects.all(),
     }
+
     return render(request, 'tasks/view_all_teams.html', context)
 
 

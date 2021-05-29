@@ -169,7 +169,7 @@ class Team(models.Model):
         return self.team_size
 
     def get_team_members(self):
-        return Developer.objects.all().filter(developerteam__team_id=self.id)
+        return Developer.objects.filter(developerteam__team_id=self.id)
 
     def get_tasks(self):
         return self.task_set.all()

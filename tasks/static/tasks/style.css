@@ -780,6 +780,7 @@ a[aria-expanded="true"] {
 }
 
 .list-group-item {
+  border: 1px solid #cccccc;
   border-radius: 20px !important;
   margin-bottom: 10px;
 }
@@ -836,12 +837,6 @@ a[aria-expanded="true"] {
   background-color: #eeeeee;
 }
 
-.all-tasks-search {
-  padding-top: 50px;
-  /*margin-bottom: 20px;*/
-  /*margin-top: 50px;*/
-  /*height: 113px;*/
-}
 
 [data-title] {
   position: relative;
@@ -939,7 +934,7 @@ a[aria-expanded="true"] {
 .supervisor-all-tasks-row {
   justify-content: center;
   align-items: center;
-  margin-top: 10px
+  padding-top: 40px;
 }
 
 .milestone-course-list{

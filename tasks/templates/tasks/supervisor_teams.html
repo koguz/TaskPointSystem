@@ -1,14 +1,14 @@
 {% extends "tasks/base.html" %}
 
 {% block content %}
-<div class="row" style="justify-content: center; align-items: center; margin-top: 100px">
+<div class="row" style="justify-content: center; align-items: center; margin-top: 60px">
     <div class="col-sm-6">
         <h3>Supervised Teams</h3>
         <hr />
         {% if supervised_teams %}
             <ul class="list-group">
                 {% for mteam in supervised_teams %}
-                    <div class="row" style="justify-content: center; align-items: center; margin-top: 125px">
+                    <div class="row" style="justify-content: center; align-items: center; margin-bottom: 40px">
                         <div class="col-sm-8 supervisor-feed">
                             <ul>
                                 <li>

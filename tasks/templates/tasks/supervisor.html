@@ -12,7 +12,8 @@
           </div>
       </div>
         <div style="float: right; margin-top: 20px">
-           <a href="{% url 'tasks:account-settings' %}" class="btn" role="button">Account Settings</a>
+            <a href="{% url 'tasks:view-all-teams' %}" class="btn" role="button">View All Teams</a>
+            <a href="{% url 'tasks:account-settings' %}" class="btn" role="button">Account Settings</a>
         </div>
     </div>
 </div>
@@ -24,21 +25,6 @@
             {% if completed_task_list %}
                 <ul>
                 {% for task in completed_task_list %}
-{#                    <li>#}
-{#                        <h4>{{ task.title }}</h4>#}
-{#                        <p>#}
-{#                            Assigned to: {{ task.assignee }}<br />#}
-{#                            Team: {{ task.team }}<br />#}
-{#                            P/D/M:#}
-{#                            {{ task.get_priority_display }} /#}
-{#                            {{ task.get_difficulty_display }} /#}
-{#                            {{ task.modifier }}<br />#}
-{#                            Milestone: {{ task.milestone }} (Due: {{ task.milestone.due }})<br />#}
-{#                            Due date: {{ task.due }}<br />#}
-{#                            Status: {{ task.get_status_display }}#}
-{#                        </p>#}
-{#                        <p style="text-align: right"><a href="{% url 'tasks:view-task' task.id %}" class="btn btn-info" role="button">View Task</a></p>#}
-{#                    </li>#}
                     <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
                         <li>
                             <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
@@ -75,7 +61,7 @@
                     </div>
                     <div class="col-sm-8">
                         <div style="display: inline-flex; float: right;">
-                            {% for developer in mteam.developer_set.all %}
+                            {% for developer in mteam.get_team_members %}
                                 <p style="padding-right: 10px; font-size: 18px">{{ developer.get_only_name }},</p>
                             {% endfor %}
                         </div>
