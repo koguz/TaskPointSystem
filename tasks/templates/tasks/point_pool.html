@@ -40,6 +40,7 @@
                                 {% endfor %}
                             {% endfor %}
                         </div>
+                    <a href="{% url 'tasks:calculate_point_pool' course_items.course %}" class="btn btn-info" role="button"> Calculate Point Pool For {{ course_items.course }}</a>
                 </div>
             </div>
         {% endfor %}

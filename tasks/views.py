@@ -916,6 +916,9 @@ def point_pool(request):
     course_list = {}
     already_in = []
     team_list_with_team_members = {}
+
+    print(course_entry)
+
     for index, value in enumerate(course_entry):
         teams = Team.objects.filter(supervisor=supervisor, course=value['id'])
         for idx, team in enumerate(teams):
@@ -923,7 +926,7 @@ def point_pool(request):
             team_list_with_team_members.update({idx: {'team': team, 'team_members': all_teammates}})
 
         if not value['course'] in already_in:
-            course_list.update({index: {'course': value['course'], 'course_name': value['name'], 'number_of_students': value['number_of_students'], 'team_weight': value['team_weight'], 'ind_weight': value['ind_weight'], 'teams': team_list_with_team_members}})
+            course_list.update({index: {'id': value['id'], 'course': value['course'], 'course_name': value['name'], 'number_of_students': value['number_of_students'], 'team_weight': value['team_weight'], 'ind_weight': value['ind_weight'], 'teams': team_list_with_team_members}})
             already_in.append(value['course'])
 
     pp= pprint.PrettyPrinter(indent=5)
@@ -940,17 +943,20 @@ def point_pool(request):
     )
 
 
-def calculate_point_pool(request, course_id):
+def calculate_point_pool(request, course_name):
     s = Supervisor.objects.get(user=request.user)
-    course = Course.objects.get(id=course_id)
+    courses = Course.objects.filter(course=course_name)
+    developers_and_grades = {}
+    print(courses)
     if s:
-        developers_and_grades = s.calculate_point_pool(course_id)
+        for course in courses:
+            developers_and_grades.update({course: s.calculate_point_pool(course.id)})
 
+    print(developers_and_grades)
     return render(
         request,
         'tasks/point_pool_course_grade.html',
         {
-            'course': course,
             'developers_and_grades': developers_and_grades,
         }
     )
