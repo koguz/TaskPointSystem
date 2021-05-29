@@ -363,6 +363,7 @@ def view_task(request, task_id):
     final_comment, all_comments_but_final = check_is_final(comment_list)
     vote_list = task.vote_set.all()
     form = CommentForm()
+
     return render(
         request,
         'tasks/view_task.html',
