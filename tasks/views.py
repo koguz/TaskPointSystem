@@ -685,6 +685,7 @@ def supervisor_edit_task(request, task_id):
         }
     )
 
+
 @login_required
 def profile(request):
     developer = Developer.objects.get(user=request.user)
@@ -706,6 +707,7 @@ def profile(request):
         }
     )
 
+
 @login_required
 def visit_profile(request, developer_id):
     developer = Developer.objects.get(id=developer_id)
@@ -722,6 +724,7 @@ def visit_profile(request, developer_id):
             'developer_photo_url': developer_photo,
         }
     )
+
 
 @login_required
 def teams(request):
@@ -742,6 +745,7 @@ def teams(request):
         }
     )
 
+
 @login_required
 def notifications(request):
     user_notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
@@ -760,6 +764,7 @@ def notifications(request):
         }
     )
 
+
 @login_required
 def grades(request):
     return render(
@@ -770,6 +775,7 @@ def grades(request):
         }
     )
 
+
 @login_required
 def comments(request):
     return render(
@@ -779,6 +785,7 @@ def comments(request):
             'page_title': 'Comments',
         }
     )
+
 
 @login_required
 def calendar(request):
@@ -813,7 +820,7 @@ def sort_active_tasks(request):
 @login_required
 def course_data_analytics(request, course_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         if not os.path.isfile('tasks/static/tasks/gaussian_plots/' + course_id + '/difficult_low_figure.png'):
             calculate_time_diff_and_plot(course_id)
     except ObjectDoesNotExist:
@@ -848,7 +855,7 @@ def data_analytics(request):
 @login_required
 def data_graph_inspect(request, difficulty_and_priority, course_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         difficulty_and_priority_temp = difficulty_and_priority.split("_")
         difficulty = difficulty_and_priority_temp[0]
         priority = difficulty_and_priority_temp[1]
@@ -884,7 +891,7 @@ def data_graph_inspect(request, difficulty_and_priority, course_id):
 @login_required
 def set_point_pool_interval(request, course_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         if 'lower_bound' in request.POST and 'upper_bound' in request.POST:
             lower_bound = request.POST['lower_bound']
             upper_bound = request.POST['upper_bound']
@@ -990,7 +997,7 @@ def calculate_point_pool(request, course_name):
 @login_required
 def developer_point_pool_activities(request, course_name, developer_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         developer = Developer.objects.get(id=developer_id)
         course = Course.objects.get(name=course_name)
         accepted_tasks = Task.objects.filter(team__course__id=course.id, status=6, assignee=developer).order_by('completed_on')
@@ -1019,11 +1026,11 @@ def developer_point_pool_activities(request, course_name, developer_id):
 @login_required
 def account_settings(request):
     try:
-        if Developer.objects.get(user=request.user):
+        if Developer.objects.filter(user=request.user).first():
             user = User.objects.values('first_name', 'last_name', 'email', 'developer__photo_url').get(
                 username=request.user)
             user_photo_url = str(user['developer__photo_url'])
-        elif Supervisor.objects.get(user=request.user):
+        elif Supervisor.objects.filter(user=request.user).first():
             user = User.objects.values('first_name', 'last_name', 'email', 'supervisor__photo_url').get(
                 username=request.user)
             user_photo_url = str(user['supervisor__photo_url'])
@@ -1073,7 +1080,7 @@ def set_email(request):
 @login_required
 def courses(request):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         course_list = Course.objects.all()
     except ObjectDoesNotExist:
         return HttpResponseRedirect('/tasks/choose/')
@@ -1090,7 +1097,7 @@ def courses(request):
 @login_required
 def course(request, course_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         course_entry = Course.objects.get(id=course_id)
         milestone_list = Milestone.objects.filter(course=course_entry)
     except ObjectDoesNotExist:
@@ -1109,7 +1116,7 @@ def course(request, course_id):
 @login_required
 def edit_course(request, course_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         course_entry = Course.objects.get(id=course_id)
 
         if request.POST['course-name'] and course_entry.name != request.POST['course-name']:
@@ -1130,7 +1137,7 @@ def edit_course(request, course_id):
 @login_required
 def add_a_course(request):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
     except ObjectDoesNotExist:
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -1142,9 +1149,8 @@ def add_a_course(request):
 
 @login_required
 def add_the_course(request):
-
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         course_entry = Course()
         if request.POST['course'] and course_entry.name != request.POST['course']:
             course_entry.course = request.POST['course']
@@ -1180,7 +1186,7 @@ def add_the_course(request):
 @login_required
 def add_a_milestone(request, course_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         course_entry = Course.objects.get(id=course_id)
     except ObjectDoesNotExist:
         return HttpResponseRedirect('/tasks/choose/')
@@ -1197,7 +1203,7 @@ def add_a_milestone(request, course_id):
 @login_required
 def add_the_milestone(request, course_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         milestone_entry = Milestone()
         course_entry = Course.objects.get(id=course_id)
         milestone_entry.course = course_entry
@@ -1228,7 +1234,7 @@ def add_the_milestone(request, course_id):
 @login_required
 def milestone(request, course_id, milestone_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         course_entry = Course.objects.get(id=course_id)
         milestone_entry = Milestone.objects.get(id=milestone_id)
         course_list = Course.objects.all()
@@ -1251,7 +1257,7 @@ def milestone(request, course_id, milestone_id):
 @login_required
 def edit_milestone(request, course_id, milestone_id):
     try:
-        supervisor = Supervisor.objects.get(user=request.user)
+        Supervisor.objects.get(user=request.user)
         milestone_entry = Milestone.objects.get(id=milestone_id)
         course_list = Course.objects.all()
         print("Course Name: ", milestone_entry.course)

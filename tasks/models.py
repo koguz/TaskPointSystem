@@ -90,7 +90,7 @@ class Milestone(models.Model):
 class Supervisor(models.Model):
     id = models.CharField("ID", max_length=12, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    photo_url = models.CharField("Photo URL:", null=True, max_length=2038)
+    photo_url = models.CharField("Photo URL:", null=True, blank=True, max_length=2038)
 
     def __str__(self):
         return self.get_name()
