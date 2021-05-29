@@ -316,6 +316,7 @@ a[aria-expanded="true"] {
     .user-feed ul li:hover {
       background-color: rgba(185, 185, 185, 1);
       box-shadow: none;
+      cursor: pointer;
     }
 
 /* SUPERVOSOR FEED */
@@ -953,4 +954,19 @@ a[aria-expanded="true"] {
 
 .pad-b-10 {
   padding-bottom: 10px;
+}
+
+.team-and-developer-points {
+  padding-top: 40px;
+}
+
+.team-and-developer-points .user-feed ul li {
+  align-items: center;
+  display: flex;
+}
+
+.team-and-developer-points .user-feed ul li:hover {
+  background-color: #fff;
+  box-shadow: 2px 1px #CFCFCF;
+  cursor: default;
 }

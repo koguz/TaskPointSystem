@@ -38,3 +38,8 @@ def get_item_at_index(target_list, index):
         return target_list[index]
     except IndexError:
         return None
+
+
+@register.simple_tag
+def get_project_grade_tag(developer, team):
+    return developer.get_project_grade(team)

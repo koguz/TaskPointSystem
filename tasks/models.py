@@ -114,36 +114,43 @@ class Team(models.Model):
     # every milestone...
     def get_all_task_points(self, m):
         p = 0
+
         for task in self.task_set.all().filter(milestone=m):
             p = p + task.get_points()
+
         return p
 
     def get_all_accepted_points(self, m):
         p = 0
+
         for task in self.task_set.all().filter(milestone=m):
-            if task.status == 5:
+            if task.status == 6:
                 p = p + task.get_points()
+
         return p
 
     def get_milestone_list(self):
         milestone_list = {}
+
         for m in self.course.milestone_set.all():
             milestone_list[m.name] = self.get_team_grade(m)
+
         return milestone_list
 
     # this should be based on milestone, as well.
     def get_team_grade(self, m):
         g = 0
+
         if self.get_all_task_points(m) > 0:
             g = round((self.get_all_accepted_points(m) / self.get_all_task_points(m)) * 100)
+
         return g
 
     def get_developer_average(self, m):
         return self.get_all_task_points(m) / self.get_team_members().count()
 
     def get_team_size(self):
-        size = self.team_size
-        return size
+        return self.team_size
 
     def get_team_members(self):
         return Developer.objects.all().filter(developerteam__team_id=self.id)
@@ -179,7 +186,7 @@ class Developer(models.Model):
     def get_all_accepted_points(self, m):
         p = 0
         for task in self.assignee.all().filter(milestone=m):
-            if task.status == 5:
+            if task.status == 6:
                 p = p + task.get_points()
         return p
 
@@ -187,29 +194,36 @@ class Developer(models.Model):
     # the individual grade as such, too...
     def get_developer_grade(self, team, milestone):
         g = 0
+
         if team.get_developer_average(milestone) > 0:
             g = round((self.get_all_accepted_points(milestone) / team.get_developer_average(milestone)) * 100)
+
             if g > 100:
                 g = 100
+
         return g
 
     # this function is for the "view all teams" - we have to get the milestone names and points
     # for those milestones in a dictionary, so that i can loop through it in the template...
     def get_milestone_list(self, team):
         milestone_list = {}
+
         for milestone in team.course.milestone_set.all():
             milestone_list[milestone.name] = self.get_developer_grade(team, milestone)
+
         return milestone_list
 
     def get_project_grade(self, team):
         # loop through the milestones, get developer grade and team grade...
         team_grade = 0
-        ind_grade = 0
-        c = team.course
-        for milestone in c.milestone_set.all():
+        individual_grade = 0
+        team_course = team.course
+
+        for milestone in team_course.milestone_set.all():
             team_grade = team_grade + team.get_team_grade(milestone) * (milestone.weight / 100)
-            ind_grade = ind_grade + self.get_developer_grade(team, milestone) * (milestone.weight / 100)
-        return round(team_grade * (c.team_weight / 100) + ind_grade * (c.ind_weight / 100))
+            individual_grade = individual_grade + self.get_developer_grade(team, milestone) * (milestone.weight / 100)
+
+        return round(team_grade * (team_course.team_weight / 100) + individual_grade * (team_course.ind_weight / 100))
 
     def get_teams(self):
         return Team.objects.all().filter(developerteam__developer=self)
