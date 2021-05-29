@@ -3,8 +3,7 @@
 {% load static %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-sm-4" style="margin-left: 100px">
+    <div class="row" style="margin: 50px 20px">
         {% for key,course_items in course_list.items %}
             <div class="row">
                 <div class="col-sm-6 user-feed">
@@ -14,7 +13,8 @@
                             <button id="course-button-{{ course_items.course }}" class="course-button" onclick='team_closer("{{ course_items.course }}")'><span class="bold-span">Course: </span>{{ course_items.course }}</button>
                         </div>
                     </div>
-                        <div id="team-drop-down-{{ course_items.course }}">
+                    <div class="row">
+                        <div id="team-drop-down-{{ course_items.course }}" class="col-sm-6 user-feed">
                             {% for key, team in course_items.teams.items %}
                                  {% for key, team_items in team.items %}
                                      {% if key == 'team' %}
@@ -41,10 +41,10 @@
                             {% endfor %}
                         </div>
                     <a href="{% url 'tasks:calculate_point_pool' course_items.course %}" class="btn btn-info" role="button"> Calculate Point Pool For {{ course_items.course }}</a>
+                    </div>
                 </div>
             </div>
         {% endfor %}
-        </div>
     </div>
 {% endblock %}
 {% block scriptcontent %}

@@ -918,24 +918,21 @@ def point_pool(request):
     already_in_team = []
     team_list_with_team_members = {}
     counter = 0
+    counter2 = -1
     for index, value in enumerate(course_entry):
-        teams = Team.objects.filter(supervisor=supervisor, course=value['id'])
-        for idx, team in enumerate(teams):
-            all_teammates = team.get_team_members()
-            if not team in already_in_team:
-                team_list_with_team_members.update({counter: {'team': team, 'team_members': all_teammates}})
-                counter += 1
-                already_in_team.append(team)
-
         if not value['course'] in already_in_course:
-            course_list.update({index: {'id': value['id'], 'course': value['course'], 'course_name': value['name'], 'number_of_students': value['number_of_students'], 'team_weight': value['team_weight'], 'ind_weight': value['ind_weight'], 'teams': team_list_with_team_members}})
+            teams = Team.objects.filter(supervisor=supervisor, course=value['id'])
+            for idx, team in enumerate(teams):
+                all_teammates = team.get_team_members()
+                if not (team in already_in_team):
+                    team_list_with_team_members.update({counter: {'team': team, 'team_members': all_teammates}})
+                    counter += 1
+                    already_in_team.append(team)
+            counter2 += 1
+            course_list.update({counter2: {'id': value['id'], 'course': value['course'], 'course_name': value['name'], 'number_of_students': value['number_of_students'], 'team_weight': value['team_weight'], 'ind_weight': value['ind_weight'], 'teams': team_list_with_team_members}})
             already_in_course.append(value['course'])
-
-
-
-
-
-
+            counter = 0
+        team_list_with_team_members = {}
 
     return render(
         request,
