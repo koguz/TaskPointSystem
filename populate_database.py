@@ -26,9 +26,10 @@ for user in dev_users:
 
 
 courses = []
-courses.append(Course(name='SE 302', number_of_students=40, team_weight=60, ind_weight=40))
-courses.append(Course(name='CE 350', number_of_students=40, team_weight=60, ind_weight=40))
+courses.append(Course(course='SE 302',section=1,year = 2020, term=2, number_of_students=40, team_weight=60, ind_weight=40))
+courses.append(Course(course='CE 350',section=1,year = 2020, term=2, number_of_students=40, team_weight=60, ind_weight=40))
 for course in courses:
+    course.create_course_name()
     course.save()
 
 milestones = []
