@@ -12,11 +12,15 @@ from .utilities import *
 from .models import PointPool
 from bootstrap_modal_forms.mixins import PassRequestMixin
 from bootstrap_modal_forms.generic import BSModalUpdateView
-from .forms import TeamRenameForm, CommentForm, TaskSupervisorForm, TaskDeveloperForm
+from .forms import *
 from copy import deepcopy
 import logging
 import os.path
 from django.contrib import messages
+import random
+import math
+import json
+import unidecode
 
 logger = logging.getLogger('task')
 
@@ -1286,3 +1290,97 @@ def edit_milestone(request, course_id, milestone_id):
             'course_list': course_list
         }
     )
+
+
+@login_required()
+def course_import(request):
+    try:
+        supervisor = Supervisor.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        leave_site(request)
+    if request.method == 'POST':
+        course = request.read()
+        course_data = json.loads(course)
+        print(course_data)
+        if len(course_data) > 1:
+            return HttpResponseRedirect('/tasks/choose/')
+        for course_name, teams in course_data.items():
+            for team_name, team_members in teams.items():
+                team = Team(course=Course.objects.filter(name=course_name).first(), name=team_name, supervisor=supervisor)
+                team.save()
+                for student_no, student_data in team_members.items():
+                    try:
+                        developer = Developer.objects.get(id=student_no)
+                    except Developer.DoesNotExist:
+                        username = (unidecode.unidecode(student_data['first_name']+student_data['last_name']).replace(' ','')).lower()
+                        username_salt = ''
+                        if username_salt := User.objects.filter(username__icontains=username).count():
+                            username = username + str(username_salt)
+                        user = User.objects.create_user(
+                            username=username,
+                            first_name=student_data['first_name'],
+                            last_name=student_data['last_name'],
+                            password=student_no)
+                        user.save()
+                        developer = Developer(id=student_no, user=user)
+                        developer.save()
+                    DeveloperTeam(developer=developer, team=team).save()
+                try:
+                    DeveloperTeam.objects.filter(team=team)
+                except DeveloperTeam.DoesNotExist:
+                    team.delete()
+
+        return HttpResponseRedirect('/tasks/choose/')
+    else:
+        form = CourseImportForm()
+    return render(
+        request,
+        'tasks/course_import.html',
+        {
+            "user": request.user,
+            "supervisor": supervisor,
+            "form": form,
+            "course": 'None',
+        }
+    )
+
+@login_required()
+def import_preview(request):
+    try:
+        supervisor = Supervisor.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        leave_site(request)
+    form = CourseImportForm(request.POST, request.FILES)
+    if request.method == 'POST' and form.is_valid():
+        course = form.cleaned_data["course_name"]
+        course_name = course.name
+        team_size = form.cleaned_data["team_size"]
+        course_list_file = form.cleaned_data["course_list_file"]
+        students = parse_course_html(course_list_file)
+        teams = {}
+        num_of_teams = math.ceil(len(students) / team_size)
+        teams_from_before = Team.objects.filter(course=course).count()
+        for i in range(1, num_of_teams + 1):
+            teams['Team-' + str(i+teams_from_before)] = {}
+            if not len(students) % team_size:
+                students_to_add = team_size
+            else:
+                students_to_add = team_size - 1
+            for j in range(students_to_add):
+                student_no, student_values = random.choice(list(students.items()))
+                teams['Team-' + str(i+teams_from_before)][student_no] = student_values
+                students.pop(student_no)
+
+        course_dict = {str(course_name): teams}
+        course_json = json.dumps(course_dict, ensure_ascii=False).encode('utf8')
+        return render(
+            request,
+            'tasks/course_import.html',
+            {
+                "user": request.user,
+                "supervisor": supervisor,
+                "form": form,
+                "course": course_json.decode(),
+                "course_dict": course_dict
+            }
+        )

@@ -77,13 +77,4 @@ class Migration(migrations.Migration):
             name='task',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tasks.task'),
         ),
-        migrations.CreateModel(
-            name='PointPool',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('point', models.PositiveIntegerField(default=0)),
-                ('developer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tasks.developer')),
-                ('team', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tasks.team')),
-            ],
-        ),
     ]

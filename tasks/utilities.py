@@ -15,6 +15,8 @@ import os.path
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import statistics
+from html.parser import HTMLParser
+import codecs
 
 
 def reset_task_submission_change_votes(task):
@@ -207,3 +209,35 @@ def get_max_min_completion_time(task_list):
         time_diff = np.append(time_diff, ((task.completed_on - task.created_on).total_seconds() / 3600))
 
     return math.floor(max(time_diff)), math.floor(min(time_diff))
+
+
+def parse_course_html(course_file):
+    class MyHTMLParser(HTMLParser):
+
+        def handle_starttag(self, tag, attrs):
+            if attrs == [('class', 'align-middle')] or attrs == [('class', 'align-middle print-fs-8')] and tag == 'td':
+                self.start_tag_count += 1
+            elif attrs == [('class', 'align-middle text-center font-weight-bold')]:
+                self.start_tag_count = 0
+
+        def handle_data(self, data):
+            if 0 < self.start_tag_count < 4 and data.strip() != '':
+                if self.start_tag_count == 1:
+                    self.current_student = data
+                    self.dict[self.current_student] = {}
+                elif self.start_tag_count == 2:
+                    self.dict[self.current_student]['first_name'] = data
+                elif self.start_tag_count == 3:
+                    self.dict[self.current_student]['last_name'] = data
+
+        def __init__(self, dict):
+            self.start_tag_count = 10
+            self.dict = dict
+            self.current_student = ''
+            HTMLParser.__init__(self)
+
+    file = codecs.EncodedFile(course_file,"utf-8")
+    students = {}
+    parser = MyHTMLParser(students)
+    parser.feed(file.read().decode("utf-8"))
+    return students
