@@ -49,7 +49,7 @@ class Course(models.Model):
         ]
 
     def __str__(self):
-        return self.name
+        return self.course + "-" + "Section " + str(self.section)
 
     def get_number_of_students(self):
         return self.number_of_students

@@ -26,7 +26,7 @@
                 </form>
             </div>
             <div class="row">
-                <a class="btn btn-info" role="button" style="margin-top: 50px">Import Students</a>
+                <a href="{% url 'tasks:course-import' %}" class="btn btn-info" role="button" style="margin-top: 50px">Import Students</a>
                 <a href="{% url 'tasks:add_a_milestone' course.id %}" class="btn btn-info" role="button" style="margin-top: 50px">Add Milestone</a>
             </div>
         </div>
