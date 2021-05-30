@@ -68,7 +68,7 @@ def supervisor(request):  # this view is for the supervisors only...
 
     supervisor_name = s.get_name()
     supervisor_photo_url = s.photo_url
-    page_title = "Supervisor page"
+    page_title = "Supervisor"
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
     all_teammates = get_all_teammates_of_each_team(supervised_teams, s.user_id)
@@ -94,7 +94,7 @@ def supervisor_teams(request):
         return HttpResponseRedirect('/tasks/')
 
     supervisor_name = s.get_name()
-    page_title = "Supervisor page"
+    page_title = "Supervised Teams"
     completed_task_list = Task.objects.all().filter(team__supervisor=s, status__range=(3, 4)).order_by('team', 'due')
     supervised_teams = Team.objects.all().filter(supervisor=s)
 
@@ -151,7 +151,7 @@ def view_all_teams(request):
         return HttpResponseRedirect('/tasks/choose')
 
     context = {
-        'page_title': 'All teams and their points',
+        'page_title': 'All Teams and Their Points',
         'teams': Team.objects.all(),
     }
 
@@ -194,7 +194,7 @@ def supervisor_create(request, team_id):
         request,
         'tasks/supervisor_task_form.html',
         {
-            'page_title': 'Create new task for ' + team_name,
+            'page_title': 'Create Task For ' + team_name,
             'form': form,
             'team_id': dev_team.id,
             'milestone': milestone,
@@ -243,7 +243,7 @@ def developer_create(request, team_id):
         request,
         'tasks/developer_task_form.html',
         {
-            'page_title': 'Create new task',
+            'page_title': 'Create Task',
             'form': form,
             'team_id': dev_team.id,
             'milestone': milestone
@@ -372,7 +372,7 @@ def view_task(request, task_id):
         request,
         'tasks/view_task.html',
         {
-            'page_title': 'View task',
+            'page_title': 'View Task',
             'task': task,
             'tid': task_id,
             'all_comments_but_final': all_comments_but_final,
@@ -495,8 +495,8 @@ def task_all(request, team_id, order_by):
         request,
         'tasks/task_all.html',
         {
-            'user_task_list': user_task_list,
             'page_title': 'All tasks',
+            'user_task_list': user_task_list,
             'task_list': task_list,
             'team_id': dev_team.id
         }
@@ -515,7 +515,7 @@ def team_points(request, team_id):
         request,
         'tasks/team_points.html',
         {
-            'page_title': 'Team points',
+            'page_title': 'Team Points',
             'team': dev_team,
             'developers': dev_team.get_team_members(),
             'milestones': dev_team.course.milestone_set.all()
@@ -771,28 +771,6 @@ def notifications(request):
 
 
 @login_required
-def grades(request):
-    return render(
-        request,
-        'tasks/grades.html',
-        {
-            'page_title': 'Contributions',
-        }
-    )
-
-
-@login_required
-def comments(request):
-    return render(
-        request,
-        'tasks/comments.html',
-        {
-            'page_title': 'Comments',
-        }
-    )
-
-
-@login_required
 def calendar(request):
     user_all_tasks = []
     developer = Developer.objects.filter(user=request.user).first()
@@ -835,6 +813,7 @@ def course_data_analytics(request, course_id):
         request,
         'tasks/course_data_analytics.html',
         {
+            'page_title': 'Course Data Analytics',
             'course_id': course_id,
         }
     )
@@ -852,6 +831,7 @@ def data_analytics(request):
         request,
         'tasks/data_analytics.html',
         {
+            'page_title': 'Data Analytics',
             'courses': supervised_courses,
         }
     )
@@ -881,6 +861,7 @@ def data_graph_inspect(request, difficulty_and_priority, course_id):
         request,
         'tasks/data_graph_inspect.html',
         {
+            'page_title': 'Graph Inspect',
             'difficulty_and_priority': difficulty_and_priority,
             'task_list': task_list,
             'average_completion_time': average,
@@ -970,6 +951,7 @@ def point_pool(request):
         request,
         'tasks/point_pool.html',
         {
+            'page_title': 'Point Pool',
             'course_list': course_list,
         }
     )
@@ -994,6 +976,7 @@ def calculate_point_pool(request, course_name):
         request,
         'tasks/point_pool_course_grade.html',
         {
+            'page_title': 'Point Pool Course Grade',
             'developers_and_grades': developers_and_grades,
         }
     )
@@ -1018,6 +1001,7 @@ def developer_point_pool_activities(request, course_name, developer_id):
         request,
         'tasks/developer_point_pool_activities.html',
         {
+            'page_title': 'Point Pool Activities',
             'accepted_tasks': accepted_tasks,
             'rejected_tasks': rejected_tasks,
             'developer_name': developer_name,
@@ -1051,6 +1035,7 @@ def account_settings(request):
         request,
         'tasks/account_settings.html',
         {
+            'page_title': 'Account Settings',
             'user_photo_url': user_photo_url,
             'first_name': user_first_name,
             'last_name': user_last_name,
@@ -1094,6 +1079,7 @@ def courses(request):
         request,
         'tasks/courses.html',
         {
+            'page_title': 'Courses',
             'course_list': course_list,
         }
     )
@@ -1112,6 +1098,7 @@ def course(request, course_id):
         request,
         'tasks/course.html',
         {
+            'page_title': course_entry.name,
             'course': course_entry,
             'milestones': milestone_list,
         }
@@ -1148,7 +1135,10 @@ def add_a_course(request):
 
     return render(
         request,
-        'tasks/add_a_course.html'
+        'tasks/add_a_course.html',
+        {
+            'page_title': 'Add a Course',
+        }
     )
 
 
@@ -1183,6 +1173,7 @@ def add_the_course(request):
         request,
         'tasks/courses.html',
         {
+            'page_title': 'Courses',
             'course_list': course_list
         }
     )
@@ -1200,6 +1191,7 @@ def add_a_milestone(request, course_id):
         request,
         'tasks/add_a_milestone.html',
         {
+            'page_title': 'Add a Milestone',
             'course': course_entry,
         }
     )
@@ -1231,6 +1223,7 @@ def add_the_milestone(request, course_id):
         request,
         'tasks/courses.html',
         {
+            'page_title': 'Courses',
             'course_list': course_list
         }
     )
@@ -1251,6 +1244,7 @@ def milestone(request, course_id, milestone_id):
         request,
         'tasks/milestone.html',
         {
+            'page_title': 'Edit Milestone',
             'course': course_entry,
             'milestone': milestone_entry,
             'course_list': course_list,
@@ -1287,6 +1281,7 @@ def edit_milestone(request, course_id, milestone_id):
         request,
         'tasks/courses.html',
         {
+            'page_title': 'Courses',
             'course_list': course_list
         }
     )
@@ -1337,6 +1332,7 @@ def course_import(request):
         request,
         'tasks/course_import.html',
         {
+            'page_title': 'Import Students',
             "user": request.user,
             "supervisor": supervisor,
             "form": form,
@@ -1377,6 +1373,7 @@ def import_preview(request):
             request,
             'tasks/course_import.html',
             {
+                'page_title': 'Import Students',
                 "user": request.user,
                 "supervisor": supervisor,
                 "form": form,

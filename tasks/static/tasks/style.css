@@ -218,6 +218,8 @@ a[aria-expanded="true"] {
 .fa-book,
 .fa-calendar-alt,
 .fa-sign-out-alt,
+.fa-chart-bar,
+.fa-list-ol,
 .fa-user {
   padding-left: 6px;
 }
@@ -227,11 +229,12 @@ a[aria-expanded="true"] {
 }
 
 #sidebar-user,
-#sidebar-comments,
 #sidebar-notifications,
 #sidebar-teams,
-#sidebar-grades,
 #sidebar-calendar,
+#sidebar-data-analytics,
+#sidebar-point-pool,
+#sidebar-courses,
 #sidebar-sign-out {
   position: absolute;
   left: 65px;
