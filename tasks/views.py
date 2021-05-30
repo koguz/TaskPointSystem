@@ -80,6 +80,7 @@ def supervisor(request):  # this view is for the supervisors only...
 
     return render(request, 'tasks/supervisor.html', context)
 
+
 @login_required
 def supervisor_teams(request):
     try:
