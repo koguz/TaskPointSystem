@@ -544,6 +544,10 @@ a[aria-expanded="true"] {
   .main-calendar {
     margin-top: 40px;
   }
+
+  .your-teams-active-tasks {
+    padding-bottom: 0 !important;
+  }
 }
 
 @media only screen and (max-width: 913px) {
@@ -906,11 +910,6 @@ a[aria-expanded="true"] {
   padding-top: 50px;
 }
 
-.task-all-column {
-  padding-top: 10px;
-  padding-right: 20px
-}
-
 .your-teams-active-tasks {
   padding-bottom: 38px;
 }
@@ -968,4 +967,16 @@ a[aria-expanded="true"] {
   background-color: #fff;
   box-shadow: 2px 1px #CFCFCF;
   cursor: default;
+}
+
+.task-all-row {
+  padding-top: 40px;
+}
+
+.pd-r-10 {
+  padding-right: 10px;
+}
+
+.pd-l-10 {
+  padding-left: 10px;
 }

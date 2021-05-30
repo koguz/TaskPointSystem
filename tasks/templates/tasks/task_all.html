@@ -2,9 +2,10 @@
 
 {% block content %}
 <div class="row task-all-row">
-        <div class="col-sm-6 user-feed">
+        {% include "tasks/search_bar.html" with placeholder="Search from assignees, titles, and status" first_task_list=user_task_list second_task_list=task_list search_fields="assignee, title, status" %}
+        <div class="col-sm-6 user-feed mg-b-10">
             {% if user_task_list %}
-                <div class="all-tasks-search">
+                <div>
                     <h3>Your Active Tasks</h3>
                     <a href="{% url 'tasks:task-all' team_id 'status' %}" class="btn btn-info" role="button">
                         Sort by status
@@ -16,10 +17,10 @@
                         Sort by due date
                     </a>
                 </div>
-                <div class="task-all-column">
+                <div>
                     <ul>
                         {% for task in user_task_list %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
                                 <li>
                                     <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
                                     <div class="task-header">
@@ -48,7 +49,7 @@
                 <div class="task-all-column">
                     <ul>
                         {% for task in task_list %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
                                 <li>
                                     <div class="task-date">
                                         <p><span class="bold-span">Due: </span>{{ task.due }}</p>
@@ -75,8 +76,3 @@
 </div>
 
 {% endblock %}
-
-{% block scriptcontent %}
-
-{% endblock %}
-

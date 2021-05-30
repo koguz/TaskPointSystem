@@ -10,7 +10,7 @@
                 <img src="{{ developer_photo_url }}" alt="Profile Picture">
                 <div class="profile-info">
                     <h1>{{ developer.get_name }}</h1>
-                    {% if not developer.id %}
+                    {% if developer.id %}
                         <p>{{ developer.id }}</p>
                     {% else %}
                         <p>201612061612</p>
@@ -28,13 +28,14 @@
     </div>
     <hr>
     <div class="row">
+        {% include "tasks/search_bar.html" with placeholder="Search from courses, assignees, titles, and status" first_task_list=user_active_tasks second_task_list=user_attention_tasks search_fields="course, assignee, title, status" %}
         <div class="col-sm-6 user-feed">
             {% if user_active_tasks %}
                 <h3>Your Active Tasks</h3>
                 <ul>
                     {% for task in user_active_tasks %}
                         {% if forloop.counter0 < 5 %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
                                 <li>
                                     <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
                                     <div class="task-header">
@@ -50,7 +51,7 @@
                             </a>
                         {% else %}
                             <div class="active-tasks-extras">
-                                <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                                <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
                                     <li>
                                         <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
                                         <div class="task-header">
@@ -69,7 +70,9 @@
                     {% endfor %}
                 </ul>
                 <div>
-                    <button class="btn btn-link see-all-button" id="active-see-all">See all</button>
+                    {% if user_active_tasks.count > 5 %}
+                        <button class="btn btn-link see-all-button" id="active-see-all">See all</button>
+                    {% endif %}
                 </div>
             {% else %}
                 <p>You don't have any active tasks.</p>
@@ -81,7 +84,7 @@
                 <ul>
                     {% for task in user_attention_tasks %}
                         {% if forloop.counter0 < 5 %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
                                 <li>
                                     <div class="task-date">
                                         <p><span class="bold-span">Due: </span>{{ task.due }}</p>
@@ -100,7 +103,7 @@
                             </a>
                         {% else %}
                             <div class="attention-tasks-extras">
-                                <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A">
+                                <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
                                     <li>
                                         <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
                                         <div class="task-header">
@@ -119,7 +122,9 @@
                     {% endfor %}
                 </ul>
                 <div>
-                    <button class="btn btn-link see-all-button" id="attention-see-all">See all</button>
+                    {% if user_attention_tasks.count > 5 %}
+                        <button class="btn btn-link see-all-button" id="attention-see-all">See all</button>
+                    {% endif %}
                 </div>
             {% else %}
                 <p>No task requires your attention.</p>

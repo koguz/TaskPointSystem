@@ -4,7 +4,7 @@
 <div class="row supervisor-all-tasks-row">
     <div class="col-sm-12">
         {% if task_list %}
-            <div class="all-tasks-search">
+            <div>
                 <h3>All Tasks of {{ team_name }}</h3>
                 <a href="{% url 'tasks:team-all-tasks' team_id 'status' %}" class="btn btn-info" role="button">
                     Sort by status
@@ -15,6 +15,7 @@
                 <a href="{% url 'tasks:team-all-tasks' team_id 'due' %}" class="btn btn-info" role="button">
                     Sort by due date
                 </a>
+                {% include 'tasks/search_bar.html' with placeholder='Search from creators, assignees, titles, and status' first_task_list=task_list search_fields='creator, assignee, title, status' %}
             </div>
             <div class="mg-t-10">
                 <table class="supervisor-all-tasks">
@@ -28,7 +29,7 @@
                         <th style="min-width: 150px">Due Date</th>
                     </tr>
                     {% for task in task_list %}
-                        <tr data-href="{% url 'tasks:view-task' task.id %}">
+                        <tr id="{{ task.id }}">
                             <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.title }}</a></td>
                             <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.creator }}</a></td>
                             <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.assignee }}</a></td>
@@ -75,16 +76,19 @@
 {% block scriptcontent %}
 <script>
 $(function() {
-    const taskDescriptions = document.getElementsByClassName("task-description");
-    for (let i = 0; i < taskDescriptions.length; i++) {
-        let description = taskDescriptions[i].innerHTML;
+    const taskDescriptions$ = document.getElementsByClassName("task-description");
+
+    for (let i = 0; i < taskDescriptions$.length; i++) {
+        let description = taskDescriptions$[i].innerHTML;
         if (description.length > 127) {
-            taskDescriptions[i].innerHTML = description.substr(0, 114) + "... ";
+            taskDescriptions$[i].innerHTML = description.substr(0, 114) + "... ";
         } else {
-            taskDescriptions[i].innerHTML = description.substr(0, 114);
+            taskDescriptions$[i].innerHTML = description.substr(0, 114);
         }
     }
 });
+
+
 </script>
 {% endblock %}
 
