@@ -60,16 +60,4 @@
             $("#dev-team-" + team).slideToggle();
         }
     </script>
-
-    <script>
-    $(function (){
-        const tobeRemoved$ = $(".to-be-removed")
-        const buttonChilds = tobeRemoved$.children();
-        tobeRemoved$.hide(0);
-        for (let i=0;i<buttonChilds.length;i++){
-
-            $(".button-div-" + i).append(buttonChilds[i]);
-        }
-    })
-    </script>
 {% endblock %}
