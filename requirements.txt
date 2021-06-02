@@ -25,5 +25,5 @@ requests==2.25.1
 scipy==1.6.3
 six==1.15.0
 sqlparse==0.4.1
-urllib3==1.26.4
+urllib3==1.26.5
 Unidecode==1.2.0
