@@ -34,6 +34,15 @@
             </div>
         </div>
     </div>
+
+    <div class="row alert-messages">
+        {% for message in messages %}
+            <div class="alert alert-danger">
+                <a class="close" href="#" data-dismiss="alert">&nbsp;×</a>
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}
 {% block scriptcontent %}
     <script>

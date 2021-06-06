@@ -1110,16 +1110,55 @@ def edit_course(request, course_id):
     try:
         Supervisor.objects.get(user=request.user)
         course_entry = Course.objects.get(id=course_id)
+        error = False
 
-        if request.POST['course-name'] and course_entry.name != request.POST['course-name']:
-            course_entry.name = request.POST['course-name']
-        if request.POST['no-of-students'] and course_entry.number_of_students != request.POST['no-of-students']:
-            course_entry.number_of_students = request.POST['no-of-students']
-        if request.POST['team-weight'] and course_entry.team_weight != request.POST['team-weight']:
-            course_entry.team_weight = request.POST['team-weight']
-        if request.POST['individual-weight'] and course_entry.ind_weight != request.POST['individual-weight']:
-            course_entry.ind_weight = request.POST['individual-weight']
-        course_entry.save()
+        if request.POST['team-weight'] is '' or request.POST['individual-weight'] is '' or not int(request.POST['team-weight']) + int(request.POST['individual-weight']) == 100:
+            messages.error(request, 'Team weight and individual weight must add up to 100')
+            error = True
+        if request.POST['no-of-students'] is '' or int(request.POST['no-of-students']) >= 0:
+            messages.error(request, 'Number of students has to be greater than 0.')
+            error = True
+        if request.POST['term'] is '' or not 2 >= int(request.POST['term']) >= 1:
+            messages.error(request, 'Term has to be between 1 (Winter) and 2 (Summer).')
+            error = True
+        if request.POST['section'] is '' or int(request.POST['section']) >= 0:
+            messages.error(request, 'Section has to be greater than 0.')
+            error = True
+        if request.POST['year'] is '' or int(request.POST['year']) >= 2020:
+            messages.error(request, 'Year must be greater than 2020')
+            error = True
+
+        if not error:
+            if not int(request.POST['team-weight']) + int(request.POST['individual-weight']) == 100:
+                messages.error(request, 'Team weight and individual weight must add up to 100')
+            if int(request.POST['no-of-students']) <= 0:
+                messages.error(request, 'Number of students has to be greater than 0.')
+            if not 2 >= int(request.POST['term']) >= 1:
+                messages.error(request, 'Term has to be between 1 (Winter) and 2 (Summer).')
+            if int(request.POST['section']) <= 0:
+                messages.error(request, 'Section has to be greater than 0.')
+            if int(request.POST['year']) <= 2020:
+                messages.error(request, 'Year must be greater than 2020')
+
+            if request.POST['course']:
+                course_entry.course = request.POST['course']
+            if request.POST['no-of-students']:
+                course_entry.number_of_students = request.POST['no-of-students']
+            if request.POST['team-weight']:
+                course_entry.team_weight = request.POST['team-weight']
+            if request.POST['individual-weight']:
+                course_entry.ind_weight = request.POST['individual-weight']
+            if request.POST['year']:
+                course_entry.year = request.POST['year']
+            if request.POST['term']:
+                course_entry.term = request.POST['term']
+            if request.POST['section']:
+                course_entry.section = request.POST['section']
+            course_entry.save()
+            course_entry.create_course_name()
+            course_entry.save()
+        else:
+            return redirect(request.META['HTTP_REFERER'])
     except ObjectDoesNotExist:
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -1147,25 +1186,45 @@ def add_the_course(request):
     try:
         Supervisor.objects.get(user=request.user)
         course_entry = Course()
-        if request.POST['course'] and course_entry.name != request.POST['course']:
-            course_entry.course = request.POST['course']
-        if request.POST['no-of-students'] and course_entry.number_of_students != request.POST['no-of-students']:
-            course_entry.number_of_students = request.POST['no-of-students']
-        if request.POST['team-weight'] and course_entry.team_weight != request.POST['team-weight']:
-            course_entry.team_weight = request.POST['team-weight']
-        if request.POST['individual-weight'] and course_entry.ind_weight != request.POST['individual-weight']:
-            course_entry.ind_weight = request.POST['individual-weight']
-        if request.POST['year'] and course_entry.ind_weight != request.POST['year']:
-            course_entry.year = request.POST['year']
-        if request.POST['term'] and course_entry.ind_weight != request.POST['term']:
-            course_entry.term = request.POST['term']
-        if request.POST['section'] and course_entry.ind_weight != request.POST['section']:
-            course_entry.section = request.POST['section']
-        course_entry.save()
-        course_entry.create_course_name()
-        course_entry.save()
+        error = False
 
-        course_list = Course.objects.all()
+        if request.POST['team-weight'] is '' or request.POST['individual-weight'] is '' or not int(request.POST['team-weight']) + int(request.POST['individual-weight']) == 100:
+            messages.error(request, 'Team weight and individual weight must add up to 100')
+            error = True
+        if request.POST['no-of-students'] is '' or int(request.POST['no-of-students']) >= 0:
+            messages.error(request, 'Number of students has to be greater than 0.')
+            error = True
+        if request.POST['term'] is '' or not 2 >= int(request.POST['term']) >= 1:
+            messages.error(request, 'Term has to be between 1 (Winter) and 2 (Summer).')
+            error = True
+        if request.POST['section'] is '' or int(request.POST['section']) >= 0:
+            messages.error(request, 'Section has to be greater than 0.')
+            error = True
+        if request.POST['year'] is '' or int(request.POST['year']) >= 2020:
+            messages.error(request, 'Year must be greater than 2020')
+            error = True
+
+        if not error:
+            if request.POST['course']:
+                course_entry.course = request.POST['course']
+            if request.POST['no-of-students']:
+                course_entry.number_of_students = request.POST['no-of-students']
+            if request.POST['team-weight']:
+                course_entry.team_weight = request.POST['team-weight']
+            if request.POST['individual-weight']:
+                course_entry.ind_weight = request.POST['individual-weight']
+            if request.POST['year']:
+                course_entry.year = request.POST['year']
+            if request.POST['term']:
+                course_entry.term = request.POST['term']
+            if request.POST['section']:
+                course_entry.section = request.POST['section']
+            course_entry.save()
+            course_entry.create_course_name()
+            course_entry.save()
+            course_list = Course.objects.all()
+        else:
+            return redirect(request.META['HTTP_REFERER'])
     except ObjectDoesNotExist:
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -1204,18 +1263,30 @@ def add_the_milestone(request, course_id):
         milestone_entry = Milestone()
         course_entry = Course.objects.get(id=course_id)
         milestone_entry.course = course_entry
+        error = False
 
-        if request.POST['milestone-name']:
-            milestone_entry.name = request.POST['milestone-name']
-        if request.POST['description']:
-            milestone_entry.description = request.POST['description']
-        if request.POST['weight']:
-            milestone_entry.weight = request.POST['weight']
-        if request.POST['due-date']:
-            milestone_entry.due = request.POST['due-date']
-        milestone_entry.save()
+        if request.POST['due-date'] is '' or request.POST['due-date'] < str(datetime.date.today()):
+            messages.error(request, "Invalid due date entered.")
+            error = True
+        if request.POST['weight'] is '' or 0 > int(request.POST['weight']) > 100:
+            messages.error(request, "Weight must be between 0-100.")
+            error = True
+        if str(request.POST['description']).strip() is '':
+            messages.error(request, "Please enter a valid description.")
 
-        course_list = Course.objects.all()
+        if not error:
+            if request.POST['milestone-name']:
+                milestone_entry.name = request.POST['milestone-name']
+            if request.POST['description']:
+                milestone_entry.description = request.POST['description']
+            if request.POST['weight']:
+                milestone_entry.weight = request.POST['weight']
+            if request.POST['due-date']:
+                milestone_entry.due = request.POST['due-date']
+            milestone_entry.save()
+            course_list = Course.objects.all()
+        else:
+            return redirect(request.META['HTTP_REFERER'])
     except ObjectDoesNotExist:
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -1342,6 +1413,7 @@ def course_import(request):
             "course": 'None',
         }
     )
+
 
 @login_required()
 def import_preview(request):

@@ -35,4 +35,13 @@
             <button type="submit" class="btn btn-primary">Create a Course</button>
         </form>
     </div>
+
+    <div class="row alert-messages">
+        {% for message in messages %}
+            <div class="alert alert-danger">
+                <a class="close" href="#" data-dismiss="alert">&nbsp;×</a>
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}
