@@ -1307,10 +1307,13 @@ def course_import(request):
                     try:
                         developer = Developer.objects.get(id=student_no)
                     except Developer.DoesNotExist:
-                        username = (unidecode.unidecode(student_data['first_name']+student_data['last_name']).replace(' ','')).lower()
-                        username_salt = ''
-                        if username_salt := User.objects.filter(username__icontains=username).count():
+                        username = (unidecode.unidecode(student_data['first_name']+student_data['last_name']).replace(' ', '')).lower()
+                        user_count = User.objects.filter(username__icontains=username).count()
+
+                        if user_count:
+                            username_salt = user_count
                             username = username + str(username_salt)
+
                         user = User.objects.create_user(
                             username=username,
                             first_name=student_data['first_name'],
