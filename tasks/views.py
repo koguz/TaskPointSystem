@@ -253,11 +253,7 @@ def developer_create(request, team_id):
 
 @login_required
 def update(request, task_id, status_id):
-    developer = None
-
-    if Developer.objects.filter(user=request.user):
-        developer = Developer.objects.get(user=request.user)
-
+    developer = Developer.objects.filter(user=request.user).first()
     task = get_object_or_404(Task, pk=task_id)
     req_status_id = int(status_id)
 
@@ -265,7 +261,7 @@ def update(request, task_id, status_id):
         not task.can_be_changed_status_by(request.user) or
         req_status_id > 6 or
         req_status_id < 1 or
-        (0 < req_status_id < 3 and not task.half_the_team_accepted() and task.get_submission_change_votes().count() < 1)
+        (developer and 0 < req_status_id < 3 and not task.half_the_team_accepted() and task.get_submission_change_votes().count() < 1)
     ):
         return HttpResponseRedirect('/tasks/choose/')
 
@@ -312,7 +308,7 @@ def update(request, task_id, status_id):
             action_record = ActionRecord.task_approval(9, request.user, task)
 
     notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-    send_push_notification_to_team(task.team, notification_body, request.user,task, mail=True)
+    send_push_notification_to_team(task.team, notification_body, request.user, task, mail=True)
 
     if developer:
         return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
