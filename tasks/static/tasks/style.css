@@ -983,3 +983,7 @@ a[aria-expanded="true"] {
 .pd-l-10 {
   padding-left: 10px;
 }
+
+.login-page-padding {
+  padding: 10px 20px;
+}
