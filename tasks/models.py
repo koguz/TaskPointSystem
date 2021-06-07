@@ -44,7 +44,7 @@ class Course(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['course', 'section', 'year', 'term', 'section'], name='Course unique constraint')
+            models.UniqueConstraint(fields=['course', 'section', 'year', 'term'], name='Course unique constraint')
         ]
 
     def __str__(self):
