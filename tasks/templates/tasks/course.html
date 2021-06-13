@@ -7,8 +7,8 @@
                 <form action="{% url 'tasks:edit_course' course.id %}" method="post">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label for="course-name">Course Name:</label>
-                        <input type="text" class="form-control" name="course-name" value="{{ course.name }}">
+                        <label for="course">Course:</label>
+                        <input type="text" class="form-control" name="course" value="{{ course.course }}">
                     </div>
                     <div class="form-group" >
                         <label for="no-of-students">Number of Students:</label>
@@ -22,9 +22,21 @@
                         <label for="individual-weight">Individual Weight:</label>
                         <input type="number" class="form-control" name="individual-weight" value="{{ course.ind_weight }}">
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit Changes</button>
-                </form>
-            </div>
+                    <div class="form-group" >
+                        <label for="year">Year:</label>
+                        <input type="number" class="form-control" name="year" value="{{ course.year }}">
+                    </div>
+                    <div class="form-group" >
+                        <label for="term">Term:</label>
+                        <input type="number" class="form-control" name="term" value="{{ course.term }}">
+                    </div>
+                    <div class="form-group" >
+                        <label for="section">Section:</label>
+                        <input type="number" class="form-control" name="section" value="{{ course.section }}">
+                    </div>
+                        <button type="submit" class="btn btn-primary">Submit Changes</button>
+                    </form>
+                    </div>
             <div class="row">
                 <a href="{% url 'tasks:course-import' %}" class="btn btn-info" role="button" style="margin-top: 50px">Import Students</a>
                 <a href="{% url 'tasks:add_a_milestone' course.id %}" class="btn btn-info" role="button" style="margin-top: 50px">Add Milestone</a>
@@ -51,5 +63,14 @@
                 </ul>
             {% endfor %}
         </div>
+    </div>
+
+    <div class="row alert-messages">
+        {% for message in messages %}
+            <div class="alert alert-danger">
+                <a class="close" href="#" data-dismiss="alert">&nbsp;×</a>
+                {{ message }}
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}
