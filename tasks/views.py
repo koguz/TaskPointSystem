@@ -478,13 +478,13 @@ def task_all(request, team_id, order_by):
     task_list = ""
 
     if order_by == 'due':
-        user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('due')
+        user_task_list = developer.assignee.all().filter(team=dev_team).order_by('due')
         task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by('due')
     elif order_by == 'status':
-        user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('status')
+        user_task_list = developer.assignee.all().filter(team=dev_team).order_by('status')
         task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("status")
     elif order_by == 'last_modified':
-        user_task_list = developer.assignee.all().filter(status__lt=5, team=dev_team).order_by('-last_modified')
+        user_task_list = developer.assignee.all().filter(team=dev_team).order_by('-last_modified')
         task_list = Task.objects.all().filter(team=dev_team).exclude(assignee__id=developer.id).order_by("-last_modified")
 
     return render(
