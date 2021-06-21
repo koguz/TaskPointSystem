@@ -1390,8 +1390,7 @@ def course_import(request):
                         developer.save()
                     DeveloperTeam(developer=developer, team=team).save()
                 try:
-                    dev_count = DeveloperTeam.objects.filter(team=team).count()
-                    team.team_size = dev_count
+                    team.team_size = team.get_team_size()
                     team.save()
                 except DeveloperTeam.DoesNotExist:
                     team.delete()

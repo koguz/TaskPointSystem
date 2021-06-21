@@ -176,7 +176,7 @@ class Team(models.Model):
         return self.get_all_task_points(m) / self.get_team_members().count()
 
     def get_team_size(self):
-        return self.team_size
+        return DeveloperTeam.objects.filter(team=self).count()
 
     def get_team_members(self):
         return Developer.objects.filter(developerteam__team_id=self.id)
@@ -422,7 +422,7 @@ class Task(models.Model):
         return False
 
     def half_the_team_accepted(self):
-        team_size = Team.objects.get(pk=self.team.id).team_size
+        team_size = Team.objects.get(pk=self.team.id).get_team_size()
         return Vote.objects.all().filter(
             task=self,
             vote_type=self.status,
