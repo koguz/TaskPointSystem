@@ -1363,7 +1363,6 @@ def course_import(request):
     if request.method == 'POST':
         course = request.read()
         course_data = json.loads(course)
-        print(course_data)
         if len(course_data) > 1:
             return HttpResponseRedirect('/tasks/choose/')
         for course_name, teams in course_data.items():
@@ -1391,7 +1390,9 @@ def course_import(request):
                         developer.save()
                     DeveloperTeam(developer=developer, team=team).save()
                 try:
-                    DeveloperTeam.objects.filter(team=team)
+                    dev_count = DeveloperTeam.objects.filter(team=team).count()
+                    team.team_size = dev_count
+                    team.save()
                 except DeveloperTeam.DoesNotExist:
                     team.delete()
 

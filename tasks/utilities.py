@@ -114,7 +114,7 @@ def send_push_notification_to_user(user, description, task=None, mail=False):
             email_body,
             'tpsdeneme@gmail.com',
             [user.email],
-            fail_silently=True,
+            fail_silently=False,
         )
 
 
@@ -136,7 +136,7 @@ def send_push_notification_to_team(team, description, excluded_user=None, task=N
                 email_body,
                 'tpsdeneme@gmail.com',
                 [user.email],
-                fail_silently=True,
+                fail_silently=False,
             )
 
 
