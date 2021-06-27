@@ -106,9 +106,9 @@ def send_push_notification_to_user(user, description, task=None, mail=False):
     payload = {"head": "TPS Notification!", "body": description}
     send_user_notification(user=user, payload=payload, ttl=1000)
     if task:
-        Notification(user= user, body=description, related_task=task).save()
+        Notification(user=user, body=description, related_task=task).save()
     if mail:
-        email_body = "Hello " +user.get_full_name()+",\n" + description
+        email_body = "Hello " + user.get_full_name() + ",\n" + description
         send_mail(
             'TPS Nofitication',
             email_body,

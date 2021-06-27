@@ -183,8 +183,8 @@ def supervisor_create(request, team_id):
             task.save()
             action_record = ActionRecord.task_create(1, s, task)
             TaskDifference.record_task_difference(task, action_record)
-            notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " +action_record.get_action_type_display()
-            send_push_notification_to_team(dev_team, notification_body,task, mail=True)
+            notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
+            send_push_notification_to_team(dev_team, notification_body, task=task, mail=True)
 
             return HttpResponseRedirect(reverse('tasks:view-task', args=(task.id,)))
     else:
@@ -278,6 +278,7 @@ def update(request, task_id, status_id):
         action_record = ActionRecord.task_submit(3, developer, task)
     elif task.assignee == developer and status_id == '2' and task.status == 1:
         task.status = status_id
+        task.creation_approved_on = datetime.datetime.now()
         task.save()
         action_record = ActionRecord.task_status_change_by_developer(7, developer, task)
     elif task.assignee == developer and status_id == '2' and task.status == 3:
@@ -287,6 +288,7 @@ def update(request, task_id, status_id):
         action_record = ActionRecord.task_status_change_by_developer(7, developer, task)
     elif task.assignee == developer and status_id == '4' and task.status == 3:
         task.status = status_id
+        task.submission_approved_on = datetime.datetime.now()
         task.save()
         action_record = ActionRecord.task_status_change_by_developer(10, developer, task)
     elif Supervisor.objects.filter(user=request.user).first() is None:
@@ -658,7 +660,7 @@ def supervisor_edit_task(request, task_id):
                 action_record = ActionRecord.task_edit(2, Supervisor.objects.get(user=request.user), task)
                 TaskDifference.record_task_difference(task, action_record)
                 notification_body = request.user.get_full_name() + " acted on task '" + task.title + "': " + action_record.get_action_type_display()
-                send_push_notification_to_team(dev_team, notification_body,task, mail=True)
+                send_push_notification_to_team(dev_team, notification_body, task=task, mail=True)
 
             return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
     else:

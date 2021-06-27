@@ -32,9 +32,7 @@
         {% else %}
             <li id="brand-item"><a href="{% url 'tasks:supervisor-home' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
             <hr>
-            <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications</span></a></li>
             <li><a href="{% url 'tasks:supervisor-view-teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
-            <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
             <li><a href="{% url 'tasks:data-analytics' %}"><i class="far fa-chart-bar fa-2x"></i><span id="sidebar-data-analytics">Data Analytics</span></a></li>
             <li><a href="{% url 'tasks:point_pool' %}"><i class="fas fa-list-ol fa-2x"></i><span id="sidebar-point-pool">Point Pool</span></a></li>
             <li><a href="{% url 'tasks:courses' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-courses">Courses</span></a></li>
