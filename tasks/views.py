@@ -109,7 +109,10 @@ def supervisor_teams(request):
 
 @login_required
 def team(request, team_id):  # this view is for the developer only...
-    developer = Developer.objects.get(user=request.user)
+    try:
+        developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
 
     try:
         dev_team = Team.objects.get(pk=team_id, developerteam__developer=developer)
@@ -470,7 +473,11 @@ def team_all_tasks(request, team_id, order_by="due"):
 
 @login_required
 def task_all(request, team_id, order_by):
-    developer = Developer.objects.get(user=request.user)
+    try:
+        developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     try:
         dev_team = Team.objects.get(pk=team_id, developerteam__developer=developer)
     except ObjectDoesNotExist:
@@ -503,7 +510,11 @@ def task_all(request, team_id, order_by):
 
 @login_required
 def team_points(request, team_id):
-    developer = Developer.objects.get(user=request.user)
+    try:
+        developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     try:
         dev_team = Team.objects.get(pk=team_id, developerteam__developer=developer)
     except ObjectDoesNotExist:
@@ -522,7 +533,11 @@ def team_points(request, team_id):
 
 @login_required
 def send_vote(request, task_id, status_id, button_id):
-    developer = Developer.objects.get(user=request.user)
+    try:
+        developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     status_id = int(status_id)
     button_id = int(button_id)
     vote = Vote(voter=developer, task=Task.objects.get(pk=task_id))
@@ -565,7 +580,11 @@ def send_vote(request, task_id, status_id, button_id):
 @login_required
 def developer_edit_task(request, task_id):
     task_id = int(task_id)
-    task_to_edit = Task.objects.get(pk=task_id)
+
+    try:
+        task_to_edit = Task.objects.get(pk=task_id)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
 
     if task_to_edit.status == 1 and task_to_edit.get_creation_change_votes().count() < 1:
         return HttpResponseRedirect(reverse('tasks:view-task', args=(task_id,)))
@@ -629,12 +648,18 @@ def developer_edit_task(request, task_id):
 @login_required
 def supervisor_edit_task(request, task_id):
     task_id = int(task_id)
-    task_to_edit = Task.objects.get(pk=task_id)
+
+    try:
+        task_to_edit = Task.objects.get(pk=task_id)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     developer = task_to_edit.assignee
 
     if Supervisor.objects.get(user=request.user) is None:
         leave_site(request)
         return HttpResponseRedirect('/tasks/')
+
     dev_team = Team.objects.get(pk=task_to_edit.team.id, developerteam__developer=developer)
     course = dev_team.course
     milestone = course.get_current_milestone()
@@ -691,7 +716,11 @@ def supervisor_edit_task(request, task_id):
 
 @login_required
 def profile(request):
-    developer = Developer.objects.get(user=request.user)
+    try:
+        developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     developer_photo_url = developer.photo_url
     user_active_tasks = developer.get_active_tasks().order_by('due')
     user_attention_tasks = developer.get_attention_needed_tasks().order_by('due')
@@ -713,7 +742,11 @@ def profile(request):
 
 @login_required
 def visit_profile(request, developer_id):
-    developer = Developer.objects.get(id=developer_id)
+    try:
+        developer = Developer.objects.get(id=developer_id)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     developer_photo = developer.photo_url
     user_task_list = developer.assignee.all().filter(status__lt=5).order_by('due')[:5]
 
@@ -731,7 +764,11 @@ def visit_profile(request, developer_id):
 
 @login_required
 def teams(request):
-    current_developer = Developer.objects.get(user=request.user)
+    try:
+        current_developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect('/tasks/choose/')
+
     teams_list = current_developer.get_teams()
     all_teammates = get_all_teammates_of_each_team(teams_list, current_developer.user_id)
     tasks_list = get_all_teams_tasks(teams_list)
