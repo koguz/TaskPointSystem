@@ -31,7 +31,7 @@
 
             {% for task in first_task_list %}
                 taskTitle = '{{ task.title }}'.toLowerCase();
-                taskCreator = '{{ task.creator }}'.toLowerCase();
+                taskCreator = '{{ task.creator.get_full_name }}'.toLowerCase();
                 taskAssignee = '{{ task.assignee }}'.toLowerCase();
                 taskStatus = '{{ task.get_status_display }}'.toLowerCase();
                 taskCourse = '{{ task.team.course }}'.toLowerCase();
@@ -55,7 +55,7 @@
 
             {% for task in second_task_list %}
                 taskTitle = '{{ task.title }}'.toLowerCase();
-                taskCreator = '{{ task.creator }}'.toLowerCase();
+                taskCreator = '{{ task.creator.get_full_name }}'.toLowerCase();
                 taskAssignee = '{{ task.assignee }}'.toLowerCase();
                 taskStatus = '{{ task.get_status_display }}'.toLowerCase();
                 taskCourse = '{{ task.team.course }}'.toLowerCase();

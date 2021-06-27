@@ -31,7 +31,7 @@
                     {% for task in task_list %}
                         <tr id="{{ task.id }}">
                             <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.title }}</a></td>
-                            <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.creator }}</a></td>
+                            <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.creator.get_full_name }}</a></td>
                             <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.assignee }}</a></td>
                             <td height="65"><a href="{% url 'tasks:view-task' task.id %}" role="button" class="views-link">{{ task.get_status_display }}</a></td>
                             <td class="supervisor-task-operations" height="65">
