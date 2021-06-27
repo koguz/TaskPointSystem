@@ -146,11 +146,12 @@ def calculate_time_diff_and_plot(course_id):
     for difficulty in range(1, 4):
         for priority in range(1, 4):
             task_list = Task.objects.filter(team__course__id=course_id, priority=priority, difficulty=difficulty, status=6)
-            for task in task_list:
-                time_diff_list = np.append(time_diff_list,
-                                           ((task.completed_on - task.created_on).total_seconds()) / 3600)
-            difficulty_and_priority = str(difficulty) + "_" + str(priority)
-            plot_gaussian(time_diff_list, difficulty_and_priority, course_id)
+            if len(task_list) > 0:
+                for task in task_list:
+                    time_diff_list = np.append(time_diff_list,
+                                               ((task.completed_on - task.created_on).total_seconds()) / 3600)
+                difficulty_and_priority = str(difficulty) + "_" + str(priority)
+                plot_gaussian(time_diff_list, difficulty_and_priority, course_id)
 
 
 def plot_gaussian(time_diff_list, difficulty_and_priority, course_id):
