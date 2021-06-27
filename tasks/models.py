@@ -371,7 +371,7 @@ class Task(models.Model):
             "assignee": "",
             "title": "",
             "description": "",
-            "due_date": "",
+            "due": "",
             "priority": "",
             "difficulty": "",
         }
