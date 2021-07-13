@@ -151,7 +151,8 @@ def calculate_time_diff_and_plot(course_id):
                     time_diff_list = np.append(time_diff_list,
                                                ((task.completed_on - task.created_on).total_seconds()) / 3600)
                 difficulty_and_priority = str(difficulty) + "_" + str(priority)
-                plot_gaussian(time_diff_list, difficulty_and_priority, course_id)
+                if len(time_diff_list) >= 2:
+                    plot_gaussian(time_diff_list, difficulty_and_priority, course_id)
 
 
 def plot_gaussian(time_diff_list, difficulty_and_priority, course_id):
@@ -185,11 +186,11 @@ def plot_gaussian(time_diff_list, difficulty_and_priority, course_id):
     else:
         title = "invalid difficulty and priority"
 
-    plt.title(title)
-    if not os.path.isdir('tasks/static/tasks/gaussian_plots/' + course_id):
-        os.mkdir('tasks/static/tasks/gaussian_plots/' + course_id)
-    plt.savefig('tasks/static/tasks/gaussian_plots/' + course_id + '/' + title + '_figure.png')
-    plt.close()
+        plt.title(title)
+        if not os.path.isdir('tasks/static/tasks/gaussian_plots/' + course_id):
+            os.mkdir('tasks/static/tasks/gaussian_plots/' + course_id)
+        plt.savefig('tasks/static/tasks/gaussian_plots/' + course_id + '/' + title + '_figure.png')
+        plt.close()
 
 
 def get_average_completion_time(task_list):

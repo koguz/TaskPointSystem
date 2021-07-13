@@ -879,16 +879,19 @@ def data_graph_inspect(request, difficulty_and_priority, course_id):
         difficulty = difficulty_and_priority_temp[0]
         priority = difficulty_and_priority_temp[1]
         task_list = Task.objects.filter(team__course__id=course_id, difficulty=difficulty, priority=priority, status=6)
-        average = get_average_completion_time(task_list)
-        max, min = get_max_min_completion_time(task_list)
-        entry = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first()
+        if len(task_list) > 0:
+            average = get_average_completion_time(task_list)
+            max, min = get_max_min_completion_time(task_list)
+            entry = GraphIntervals.objects.filter(difficulty=difficulty, priority=priority).first()
 
-        if entry is None:
-            entry = GraphIntervals(course_id=course_id, difficulty=difficulty, priority=priority)
-            entry.save()
+            if entry is None:
+                entry = GraphIntervals(course_id=course_id, difficulty=difficulty, priority=priority)
+                entry.save()
 
-        lower_bound = entry.lower_bound
-        upper_bound = entry.upper_bound
+            lower_bound = entry.lower_bound
+            upper_bound = entry.upper_bound
+        else:
+            return HttpResponseRedirect('/tasks/choose/')
     except ObjectDoesNotExist:
         return HttpResponseRedirect('/tasks/choose/')
     return render(
