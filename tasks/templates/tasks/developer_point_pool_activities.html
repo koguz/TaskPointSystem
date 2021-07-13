@@ -60,7 +60,7 @@
                 {% for vote in votes %}
                     <a style="text-decoration: none; color: #1A1A1A">
                         <li>
-                            <p class="task-date"><span class="bold-span">Due: </span>{{ vote.date }}</p>
+                            <p class="task-date"><span class="bold-span">Voted On: </span>{{ vote.created_on }}</p>
                             <div class="task-header">
                                 <h4>{{ task.title }}</h4>
                                 <p><span class="bold-span">Vote Type: </span>{{ vote.vote_type }}</p>
@@ -86,7 +86,7 @@
                 {% for comment in comments %}
                     <a style="text-decoration: none; color: #1A1A1A">
                         <li>
-                            <p class="task-date"><span class="bold-span">Due: </span>{{ comment.date }}</p>
+                            <p class="task-date"><span class="bold-span">Commented On: </span>{{ comment.created_on }}</p>
                             <div class="task-header">
                                 <h4>{{ task.title }}</h4>
                                 <p><span class="bold-span">Owner: </span>{{ comment.owner }}</p>
