@@ -1,0 +1,49 @@
+{% extends "tasks/base.html" %} {% load static %} {% block breadcrumbs %}
+
+<h1 class="text" style="font-weight: 400; font-size: 30px; margin-top: 10px">
+  Change Password
+</h1>
+
+{% endblock %} {% block main_content %}
+<style>
+  th {
+    vertical-align: top;
+  }
+  .text {
+    width: 250px;
+    height: 22px;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 22px;
+    text-align: start;
+    margin-bottom: 50px;
+    margin-left: 10px;
+    color: #656565;
+  }
+</style>
+<h3 class="text">Change your password</h3>
+<div style="margin-left: 30px">
+  <form action="{% url 'change_password' %}" method="post">
+    {% csrf_token %}
+    <table>
+      {{ form }}
+      <tr
+        ><td>&nbsp;</td
+        ><td
+          ><button
+            class="btn btn-primary"
+            style="float: right; background-color: #fe6b02; border-width: 0px"
+            type="submit"
+            >Save</button
+          ></td
+        ></tr
+      >
+    </table>
+  </form>
+</div>
+<script defer>
+    document.getElementById('password').className = 'selected'
+</script>
+
+{% endblock %}

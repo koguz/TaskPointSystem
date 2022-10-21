@@ -1,62 +1,183 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
-<head>
-    {% load static %}
-    {% load tags %}
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400&amp;subset=latin-ext" rel="stylesheet">
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
-    <link rel="stylesheet" href="{% static 'tasks/fontawesome/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'tasks/style.css' %}">
-    <title>TPS - {{ page_title }} </title>
-    <script>
-      function ensure(d) {
-        return confirm("Are you sure you want to " + d + "?")
-      }
-    </script>
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.6.0/font/bootstrap-icons.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'tasks/style.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css"
+    />
+    {% block customcss %} {% endblock %}
 
-<body>
-    <nav id="sidebar">
-        <ul>
-        {% if is_developer %}
-            <li id="brand-item"><a href="{% url 'tasks:profile' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
-            <hr>
-            <li><a href="{% url 'tasks:profile' %}"><i class="fas fa-user fa-2x"></i><span id="sidebar-user">{% developer_name request %}</span></a></li>
-            <li><a href="{% url 'tasks:notifications' %}"><i class="fas fa-bell fa-2x"></i><span id="sidebar-notifications">Notifications {% notification_count request %}</span></a></li>
-            <li><a href="{% url 'tasks:teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
-            <li><a href="{% url 'tasks:calendar' %}"><i class="fas fa-calendar-alt fa-2x"></i><span id="sidebar-calendar">Calendar</span></a></li>
-        {% else %}
-            <li id="brand-item"><a href="{% url 'tasks:supervisor-home' %}" class="brand-link"><img src="{% static 'tasks/tps_logo.png' %}" alt="TPS" id="tps-logo"></a></li>
-            <hr>
-            <li><a href="{% url 'tasks:supervisor-view-teams' %}"><i class="fas fa-user-friends fa-2x"></i><span id="sidebar-teams">Teams</span></a></li>
-            <li><a href="{% url 'tasks:data-analytics' %}"><i class="far fa-chart-bar fa-2x"></i><span id="sidebar-data-analytics">Data Analytics</span></a></li>
-            <li><a href="{% url 'tasks:point_pool' %}"><i class="fas fa-list-ol fa-2x"></i><span id="sidebar-point-pool">Point Pool</span></a></li>
-            <li><a href="{% url 'tasks:courses' %}"><i class="fas fa-book fa-2x"></i><span id="sidebar-courses">Courses</span></a></li>
-        {% endif %}
-            <li><a href="{% url 'tasks:leave' %}" id="bottom-sign-out"><i class="fas fa-sign-out-alt fa-2x"></i><span id="sidebar-sign-out">Sign Out</span></a></li>
-        </ul>
+    <title>TPS - {{ page_title }}</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <img
+            src="{% static 'tasks/TPS_bar_tr.png' %}"
+            class="d-inline-block align-top"
+            alt="TPS"
+            loading="lazy"
+            height="48"
+          />
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        {% block menubar %}
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="dropdown03"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                ><i class="bi bi-person-circle"></i> {{ user.get_full_name }}</a
+              >
+              <ul class="dropdown-menu" aria-labelledby="dropdown03">
+                <li
+                  ><a class="dropdown-item" href="{% url 'my_details' %}"
+                    ><i class="bi bi-key"></i> Profile</a
+                  ></li
+                >
+                <li
+                  ><a class="dropdown-item" href="{% url 'view_updates' %}"
+                    ><i class="bi bi-lightning"></i> Updates</a
+                  ></li
+                >
+                <li
+                  ><a
+                    class="dropdown-item"
+                    href="https://docs.google.com/document/d/e/2PACX-1vQGd-e63O3NKBAXof_Av5ogkue_dOxdhXxgYG53GzP2qHbBYVXBVR3CwOG3gSOA4CODAWNaSbsx3-ui/pub"
+                    ><i class="bi bi-question-square"></i> Help</a
+                  ></li
+                >
+                <li
+                  ><a class="dropdown-item" href="{% url 'logout' %}"
+                    ><i class="bi bi-box-arrow-right"></i> Logout</a
+                  ></li
+                >
+              </ul>
+            </li>
+            <!--<li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-list-check"></i> TPS</a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdown04">
+                      <li><a class="dropdown-item" href="#"><i class="bi bi-info-circle"></i> Help</a></li>
+                      <li><a class="dropdown-item" href="logout/"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                  </li>-->
+          </ul>
+        </div>
+
+        {% endblock %}
+      </div>
     </nav>
-    <div class="container main-screen">
-        <nav class="navbar navbar-expand-lg sidebar-toggle sticky">
-          <div class="container-fluid">
-            <button type="button" id="sidebar-collapse" class="btn btn-dark">
-              <i class="fas fa-bars"></i>
-            </button>
-          </div>
-        </nav>
-        {% block content %}{% endblock %}
+
+    <div class="container" style="padding-top: 10px">
+      <div class="row">
+        <div class="col-sm-12">{% block breadcrumbs %} {% endblock %}</div>
+      </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-    <script src="{% static 'tasks/scripts.js' %}"></script>
-    <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
+    <div class="container" style="padding-top: 10px">
+      <div class="row">
+        <div class="col-sm-12">{% block alert %} {% endblock %}</div>
+        <div class="col-sm-3">{% block left_content %} {% endblock %}</div>
+        <div class="col-sm-6">{% block main_content %} {% endblock %}</div>
+        <div class="col-sm-3">{% block right_content %} {% endblock %}</div>
+      </div>
+    </div>
 
-    {% block scriptcontent %}{% endblock %}
-</body>
+    <div class="container" style="padding-top: 10px">
+      <div class="row">
+        <div class="col-sm-6">{% block main_left_content %} {% endblock %}</div>
+        <div class="col-sm-6"
+          >{% block main_right_content %} {% endblock %}</div
+        >
+      </div>
+    </div>
+
+    <div class="container" style="padding-top: 10px">
+      <div class="row">
+        <div class="col-sm-3"
+          >{% block small_left_content %} {% endblock %}</div
+        >
+        <div class="col-sm-9"
+          >{% block large_main_content %} {% endblock %}</div
+        >
+      </div>
+    </div>
+
+    <div class="container" style="padding-top: 10px">
+      <div class="row">
+        <hr />
+        <div class="col-sm-12" style="text-align: center; font-size: 11pt"
+          >Kaya Oğuz</div
+        >
+        <div class="col-sm-12" style="text-align: center; font-size: 9pt"
+          >Arda Kestane - Emre Dülek - Umut Karakuyu</div
+        >
+        <div class="col-sm-12" style="text-align: center; font-size: 9pt"
+          >Task Point System, 2017-2022</div
+        >
+      </div>
+    </div>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"
+      integrity="sha256-xH4q8N0pEzrZMaRmd7gQVcTZiFei+HfRTBPJ1OGXC0k="
+      crossorigin="anonymous"
+    ></script>
+    {% block scriptblock %}
+    <script>
+      $(document).ready(function () {
+        $(".datepicker").datepicker({ dateFormat: "yy-mm-dd" });
+        $('[data-toggle="tooltip"]').tooltip();
+      });
+      $("input").addClass("form-control");
+      $("textarea").addClass("form-control");
+      $("select").addClass("form-select");
+    </script>
+    {% endblock %}
+  </body>
 </html>

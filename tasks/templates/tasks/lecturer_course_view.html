@@ -1,0 +1,63 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+
+{% block breadcrumbs %}
+<a href="/">Home</a> &gt; 
+{{ course }}
+{% endblock %}
+
+{% block small_left_content %}
+<h4>Milestones</h4>
+<a href="{% url 'create_milestone' course.id %}">Create new</a><br/>
+{% for ms in milestones %}
+{{ ms }} <br /> 
+[ <a href="{% url 'edit_milestone' ms.id %}">Edit</a> | <a href="{% url 'grade_milestone' ms.id %}">Grades</a> ]<br />
+{% endfor %}
+</ul>
+
+<hr />
+<h4>Teams</h4>
+<ul>
+{% for team in teams %}
+    <li><a href="{% url 'lecturer_view_team' team.id %}">{{ team }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}
+
+{% block large_main_content %}
+
+<h4>{{ course }}</h4>
+
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Team</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Title</th>
+            <th scope="col">Milestone</th>
+            <th scope="col">Status</th>
+            <th scope="col">Completion Time</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for task in tasks %}
+        <tr>
+            <td>{{task.team}}</td>
+            <td>{{task.owner}}</td>
+            <td><a href="{% url 'lecturer_view_task' task.pk %}">{{task}}</a></td>
+            <td>{{task.milestone}}</td>
+            <td>{{task.getStatus}}</td>
+            {% if task.completed %}
+                <td>{{task.completed|timeuntil:task.created}}</td>
+            {% else %}    
+                <td>-</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock%}

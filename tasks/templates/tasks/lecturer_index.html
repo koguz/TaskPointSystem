@@ -1,0 +1,12 @@
+{% extends "tasks/base.html" %} {% load static %} {% block left_content %} 
+{%include "tasks/lecturer_menu.html" %} {% endblock %} {% block main_content %}
+
+<h4>Hello {{ user_display_name }}!</h4>
+<p>Todo list</p>
+<ul>
+  <li>Check permissions - check if updating tasks are valid. </li>
+  <li>Logging</li>
+  <li>Let the team to change team properties</li>
+</ul>
+
+{% endblock%} 

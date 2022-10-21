@@ -1,0 +1,111 @@
+{% extends "tasks/profile.html" %} {% load static %} {% block main_content%}
+<style>
+  .text {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+    text-align: start;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    color: #656565;
+  }
+  .column {
+    float: left;
+    width: 50%;
+  }
+
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  .avatar {
+    vertical-align: middle;
+    height: 100px;
+    width: 100px;
+
+    border-radius: 50%;
+  }
+</style>
+<div>
+  <div style="margin-bottom: 30px"
+    ><h4>Course - Team Name: CE223 - Team-1</h4></div
+  >
+  <hr />
+
+  <div class="row" style="margin-bottom: 40px">
+    <div class="column"
+      ><img
+        class="avatar"
+        style="margin-right: 40px"
+        src="https://avatars.githubusercontent.com/u/85238789?v=4"
+        id="output"
+        width="100px"
+    /></div>
+    <div class="column"
+      ><div style="margin-bottom: 40px">
+        <p class="text" style="margin-top: 35px">Arda Kestane</p></div
+      ></div
+    >
+  </div>
+
+  <div class="row" style="margin-bottom: 70px">
+    <div class="column"
+      ><img
+        class="avatar"
+        style="margin-right: 40px"
+        src="https://i.ibb.co/xs9QPVk/IMG-0598.jpg"
+        id="output"
+        width="100px"
+    /></div>
+    <div class="column"
+      ><div style="margin-bottom: 40px">
+        <p class="text" style="margin-top: 35px">Emre Dülek</p></div
+      ></div
+    >
+  </div>
+
+  <hr />
+
+  <div>
+    <div style="margin-bottom: 30px"
+      ><h4 style="margin-top: 40px">Course - Team Name: CE216 - Team-8</h4></div
+    >
+
+    <div class="row" style="margin-bottom: 40px">
+      <div class="column"
+        ><img
+          class="avatar"
+          style="margin-right: 40px"
+          src="https://i.ibb.co/0hwTcjj/IMG-0599.jpg"
+          id="output"
+          width="100px"
+      /></div>
+      <div class="column"
+        ><div style="margin-bottom: 40px">
+          <p class="text" style="margin-top: 35px">Melih Can Aşık</p></div
+        ></div
+      >
+    </div>
+
+    <div class="row" style="margin-bottom: 70px">
+      <div class="column"
+        ><img
+          class="avatar"
+          style="margin-right: 40px"
+          src="https://he-s3.s3.amazonaws.com/media/avatars/kutsalbaran/resized/200/c0f8a7e79910446_10157837386046252_5495626150921109504_o.jpg"
+          id="output"
+          width="100px"
+      /></div>
+      <div class="column"
+        ><div style="margin-bottom: 40px">
+          <p class="text" style="margin-top: 35px">Kutsal Baran Özkurt</p></div
+        ></div
+      >
+    </div>
+
+    {%endblock%}
+  </div>
+</div>

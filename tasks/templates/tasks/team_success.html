@@ -1,0 +1,27 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+
+{% block left_content %}
+<a href="{% url 'lecturer_view' %}">Back to lecturer view</a>
+{% endblock %}
+
+{% block main_content %}
+
+<h4>Successfully created teams for...<br /> {{ course }} </h4>
+
+<table class="table">
+{% for key, value in t_d.items %}
+    <tr>
+        <td colspan="2"><b>{{ key }}</b></td>
+    </tr>
+    {% for dev in value %}
+    <tr>
+        <td>{{ dev.user.username }}</td>
+        <td> {{ dev.getName }}</td>
+    </tr>
+    {% endfor %}
+{% endfor %}
+</table>
+
+{% endblock%}

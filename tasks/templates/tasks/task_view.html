@@ -1,0 +1,221 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+
+{% block main_left_content %}
+<div class="card">
+    <div class="card-header"><i class="bi bi-list-task"></i> {{mastertask}}</div>
+    <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-person-check"></i> Assigned to {{mastertask.owner}}</h6>
+        <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-calendar-check"></i> Due {{ task.promised_date }}</h6>
+        <p class="card-text">{{task.description|linebreaksbr}}</p>
+        {% if not mytask %}
+        <hr>
+        <p>You can like 
+            <a href="{% url 'like_task' mastertask.pk 1 %}"><i class="bi bi-hand-thumbs-up{% if liked %}-fill{% endif %}"></i></a> 
+            or dislike 
+            <a href="{% url 'like_task' mastertask.pk 0 %}"><i class="bi bi-hand-thumbs-down{% if liked == False %}-fill{% endif %}"></i></a> 
+        this task and what has been done with it. Your response will be <b>private</b>, and can be updated anytime. </p>
+        {% endif %}
+        {% if mytask and mastertask.status == 2 %}
+            <hr>
+            <div class="alert alert-primary">
+            The task is now open. As the owner, you are expected to complete the task until due date. Once completed, come back
+            and mark it as completed. 
+            </div>
+            <form action="{% url 'complete_task' mastertask.pk %}" method="post">
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <td>Task is completed. It was </td>
+                        <td>
+                            <select name="difficulty">
+                                <option value="1">Easy</option>
+                                <option value="2" selected>Normal</option>
+                                <option value="3">Difficult</option>
+                            </select>
+                        </td>
+                        <td><input type="submit" class="btn btn-success" value="Save"></td>
+                    </tr>
+                </table>
+            </form>
+        {% endif %}
+        {% if mastertask.status == 1 and mytask %}
+            <hr>
+            <div class="alert alert-info">
+            You can <a href="{% url 'edit_task' mastertask.pk %}"><button class="btn btn-primary"><i class="bi bi-pencil-square"></i> Edit</button></a> your own tasks 
+            in the <b>{{ mastertask.getStatus }}</b> state. 
+            </div>
+        {% endif %}
+        {% if mytask and reopen %}
+            <hr>
+            <div class="alert alert-danger">
+            The task requires revision. Please check the comments to improve your work on this task. You can reject the requests or work on 
+            the task once again. In either case, use the comment section to Update <i class="bi bi-arrow-clockwise"></i> the task. This will 
+            clear the votes, and let your team to re-evaluate the task and vote again. 
+            </div>
+        {% endif  %}
+    </div>
+    <div class="card-footer text-muted">
+        <table width="100%" class="table">
+            <tr>
+                <td width="25%" rowspan="2" class="table-primary align-middle"><i class="bi bi-bar-chart-steps"></i> Task Status: </td>
+                <td width="18%" rowspan="2" class="{% if mastertask.status == 1 %} bg-warning {% else %} table-secondary {% endif %} align-middle">Proposed</td>
+                <td width="19%" rowspan="2" class="{% if mastertask.status == 2 %} bg-warning {% else %} table-secondary {% endif %}  align-middle">Open</td>
+                <td width="19%" rowspan="2" class="{% if mastertask.status == 3 %} bg-warning {% else %} table-secondary {% endif %}  align-middle">Completed</td>
+                <td width="19%" class="{% if mastertask.status == 4 %} bg-danger {% else %} table-secondary {% endif %} ">Rejected</td>
+            </tr>
+            <tr>
+                <td class="{% if mastertask.status == 5 %} bg-success {% else %} table-secondary {% endif %} ">Accepted</td>
+            </tr>
+        </table>
+
+        <table width="100%" class="table">
+            <tr>
+                <td width="25%" class="table-primary"><i class="bi bi-bar-chart-line-fill"></i> Priority</td>
+                <td width="25%" class="table-secondary">Low</td>
+                <td width="25%" class="table-secondary">Planned</td>
+                <td width="25%" class="table-secondary">Urgent</td>
+            </tr>
+            <tr>
+                <td class="table-primary">Points</td>
+                <td class="{% if task.priority == 1 %} bg-warning {% else %} table-secondary {% endif %}">1</td>
+                <td class="{% if task.priority == 2 %} bg-warning {% else %} table-secondary {% endif %}">2</td>
+                <td class="{% if task.priority == 3 %} bg-warning {% else %} table-secondary {% endif %}">3</td>
+            </tr>
+        </table>
+
+        {% if mastertask.status > 2 %}
+        <table width="100%" class="table">
+            <tr>
+                <td width="25%" class="table-primary"><i class="bi bi-clipboard-data"></i> Difficulty</td>
+                <td width="25%" class="table-secondary">Easy</td>
+                <td width="25%" class="table-secondary">Normal</td>
+                <td width="25%" class="table-secondary">Difficult</td>
+            </tr>
+            <tr>
+                <td class="table-primary">Points</td>
+                <td class="{% if mastertask.difficulty == 1 %} bg-warning {% else %} table-secondary {% endif %}">
+                    1
+                    {% if mastertask.status == 3 and mytask and mastertask.difficulty != 1 %}
+                    &nbsp;
+                    {% endif %}   
+                </td>
+                <td class="{% if mastertask.difficulty == 2 %} bg-warning {% else %} table-secondary {% endif %}">
+                    2
+                    {% if mastertask.status == 3 and mytask and mastertask.difficulty != 2 %}
+                    &nbsp;
+                    {% endif %}   
+                </td>
+                <td class="{% if mastertask.difficulty == 3 %} bg-warning {% else %} table-secondary {% endif %}">
+                    3
+                    {% if mastertask.status == 3 and mytask and mastertask.difficulty != 3 %}
+                    &nbsp;
+                    {% endif %}   
+                </td>
+            </tr>
+        </table>
+        <p><i class="bi bi-check2-square"></i> {{ task.priority }} x {{ mastertask.difficulty }} = {{ tp }} Points</p>
+        {% else %}
+         Points will be set once the task is completed. 
+         {% endif %}
+        <p></p><hr>
+        Version <i class="bi bi-git"></i> {{ task.version }}, Votes: <i class="bi bi-check-square"></i> {{ v_app }}, <i class="bi bi-x-square"></i> {{ v_den }}
+    </div>
+</div>
+
+<p>&nbsp;</p>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Task Status</th>
+      <th scope="col">Log Message</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% load tz %}
+
+  {% for log in logs %}
+    <tr>
+      <td>{{log.tarih|localtime}}</td>
+      <td>{{log.taskstatus}}</td>
+      <td>{{log.log}}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+
+<!--
+<p>&nbsp;</p>
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        <i class="bi bi-question-square"></i>&nbsp;Help
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <h5>Task Information</h5>
+        <p>
+            The task panel gives you detailed information about the task. The top part is self explatory. The bottom bar contains the 
+            following: 
+            <ul>
+                <li><i class="bi bi-bar-chart-steps"></i> The status of the task. This can be "Proposed", "Open", "Completed", "Rejected" and "Accepted". 
+                Depending on the status, you may have other options available. For example, you can edit the task during the "Proposed" state. </li>
+                <li><i class="bi bi-bar-chart-line-fill"></i> The second one is the priority. This can be "Low", "Planned" or "Urgent." Most of the time, 
+                it is "Planned". </li>
+                <li><i class="bi bi-clipboard-data"></i> The third one is the difficulty. This can be "Easy", "Normal" or "Difficult". 
+                <li><i class="bi bi-calendar-check"></i> Then comes the due date. </li>
+                <li>The versions are very important. When you edit the task during the "proposed" state, a new version is created. The previous 
+                versions are kept in the system. The votes are given to the current version. </li>
+            </ul>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>-->
+
+{% endblock%}
+
+{% block main_right_content %}
+<h4>Comments</h4>
+<form action="{% url 'view_task' mastertask.pk %}" method='post'>
+{% csrf_token %}
+<table width="100%">
+{{ form }}
+    <tr>
+        <td>&nbsp;</td>
+        <td>
+            {% if mytask and reopen %}
+            <button class="btn btn-success" type="submit" name="approve" value="Update"><i class="bi bi-arrow-clockwise"></i> Update</button>
+            {% endif %}
+            <button class="btn btn-primary" type="submit" name="approve" value="C"><i class="bi bi-chat-right"></i> Comment</button>
+            {% if voted == 0 and not mytask and mastertask.status < 4 and mastertask.status is not 2 %}
+                <button class="btn btn-success" type="submit" name="approve" value="Yes"><i class="bi bi-check-square"></i> Approve</button>
+                <button class="btn btn-danger" type="submit" name="approve" value="No"><i class="bi bi-x-square"></i> Request Revision</button>
+            {% endif %}
+            
+        </td>
+    </tr>
+</table>
+</form>
+
+<hr>
+{% for comment in comments %}
+    <div class="card" style="margin-bottom: 10px;">
+        <div class="card-header{% if comment.approved %} bg-success text-white{% elif comment.approved == False %} bg-danger text-white{% endif %}">
+            <i class="bi bi-chat-right"></i> {{ comment.owner.get_full_name }} 
+            {% if comment.approved %} approves.{% elif comment.approved == False %} requests changes.{% endif %}
+        </div>
+        <div class="card-body">
+            <p class="card-text">{{comment.body|linebreaksbr}}</p>
+            {% if comment.file_url %}
+                <a href="{{comment.file_url}}">{{comment.file_url}}</a>
+            {% endif %}
+        </div>
+        <div class="card-footer text-muted"><i class="bi bi-calendar"></i> {{comment.date}}</div>
+    </div>
+{% endfor %}
+{% endblock %}

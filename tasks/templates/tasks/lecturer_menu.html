@@ -1,0 +1,25 @@
+    <h5>Lecturer Menu</h5>
+    <h6>Select Course</h6>
+    <ul>
+        {% for course in courses %}
+        <li>
+            <a href="{% url 'lecturer_view_course' course.id %}">{{course}}</a>
+            <ul>
+                <li><a href="{% url 'create_team' course.id %}">Create Teams</a></li>
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+    <hr>
+    <h6>Course Menu</h6>
+    <ul>
+        <li><a href="{% url 'create_mastercourse' %}">Create New Master Course</a></li>
+        <li>Create a new semester for 
+            <ul>
+                {% for mcourse in mcourses %}
+                <li><a href="{{ mcourse.id }}">{{ mcourse }}</a></li>
+                {% endfor %}
+            </ul>
+        </li>
+
+    </ul>

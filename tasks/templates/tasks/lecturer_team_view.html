@@ -1,0 +1,69 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+
+{% block small_left_content %}
+<h4>Team Information</h4>
+<p><i class="bi bi-github"></i> <a href="{{ team.github }}">Visit Team Git Repository</a></p>
+<h5>Team Points</h5>
+<p>
+{% for key, value in team.get_milestone_list.items %}
+{{ key }}: {{ value }} Points<br />
+{% endfor %}
+</p>
+
+<h5>Developer Points</h5>
+<p>
+<ul>
+{% for dev in devs %}
+    <li>{{ dev }}
+        <ul>
+        <li>Overall Project: {{ dev.get_project_grade }} Points</li>
+        {% for k, v in dev.get_milestone_list.items %}
+            <li>{{ k }}: {{ v }} Points</li>
+        {% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+</ul>
+</p>
+
+{% endblock %}
+
+{% block large_main_content %}
+
+<h4>{{ team }}</h4>
+
+&lt;&lt; Back to  <a href="{% url 'lecturer_view_course' course.id %}">{{ course }}</a>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Team</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Title</th>
+            <th scope="col">Milestone</th>
+            <th scope="col">Status</th>
+            <th scope="col">Completion Time</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for task in tasks %}
+        <tr>
+            <td>{{task.team}}</td>
+            <td>{{task.owner}}</td>
+            <td><a href="{% url 'lecturer_view_task' task.pk %}">{{task}}</a></td>
+            <td>{{task.milestone}}</td>
+            <td>{{task.getStatus}}</td>
+            {% if task.completed %}
+                <td>{{task.completed|timeuntil:task.created}}</td>
+            {% else %}    
+                <td>-</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock%}

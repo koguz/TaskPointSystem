@@ -1,0 +1,135 @@
+{% extends "tasks/profile.html" %} {% load static %} {% block main_content %}
+<style>
+  .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(51, 47, 47);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: white;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+    .grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+
+  }
+  .grid-item {
+    font-size: 20px;
+    text-align: center;
+  }
+    .text {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+    text-align: start;
+    margin-bottom: 20px;
+    margin-left: 10px;
+
+    
+    color: #656565;
+
+  }
+  .submit{
+    width: 100px; height: 35px; border-radius: 8px; border-width: 2px; border-color: grey;
+  }
+</style>
+
+<div style="margin-top: 10px">
+  <div class="grid-container">
+    <p class="grid-item">Email:</p>
+    <div class="grid-item">
+      <form id="myform" method="post">
+        {% csrf_token %}
+        <input style="width: 250px;" name="email_input" type="email" value="{{user.email}}" ></input>
+      </form>
+    </div> 
+
+    <div class="grid-item">
+    <input class="submit" type="submit" form="myform" value="Update"/>
+    </div>
+
+    <label class="switch grid-item">
+      <input type="checkbox">
+      <span class="slider round"></span>
+    </label>
+
+    <p class="grid-item">Discord:</p>
+    <div class="grid-item">
+      <form id="myform" method="post">
+        {% csrf_token %}
+        <input style="width: 250px;" name="email_input" type="email" value="ardakestane#8756" ></input>
+      </form>
+    </div> 
+
+    <div class="grid-item">
+    <input class="submit" type="submit" form="myform" value="Update"/>
+    </div>
+
+    <label class="switch grid-item">
+      <input type="checkbox">
+      <span class="slider round"></span>
+    </label>
+  </div> 
+</div>
+
+
+<script defer>
+ 
+    document.getElementById('notifications').className = 'selected'
+  
+</script>
+{%endblock%}

@@ -1,53 +1,40 @@
-{% extends "tasks/login_base.html" %}
+{% extends "tasks/base.html" %} {% load static %} {% block customcss %}
 
-{% load static %}
+<style type="text/css">
+  input[type="text"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 
-{% block content %}
+  input[type="password"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+</style>
 
-    <div class="row">
-        <div class="col-sm-4"></div>
-        <div class="col-sm-4 login-logo-container">
-            <div class="tps-logo">
-                <p><img src="{% static 'tasks/tps_logo_login.png' %}" alt="TPS Logo" /></p>
-            </div>
-        </div>
+{% endblock %} {% block menubar %} {% endblock %} {% block main_content %}
+
+<div class="form">
+  <h3 style="padding-bottom: 20px">TPS Login</h3>
+  <form action="{% url 'login' %}" method="post">
+    {% csrf_token %}
+    <div class="form-floating">
+      <input type="text" class="form-control" name="universityid" />
+      <label for="floatingInput">University ID</label>
+    </div>
+    <div class="form-floating">
+      <input type="password" class="form-control" name="tpspass" />
+      <label for="floatingPassword">TPS Password</label>
     </div>
 
-    <div class="row login-page-padding">
-        <div class="col-sm-4">
-            <a href="{% url 'tasks:password_reset'%}"></a>
-        </div>
-        <div class="col-sm-4">
-            <form action="{% url 'tasks:login' %}" method="post">
-                {% csrf_token %}
-                <div class="form-group login-input-field">
-                    <label for="oasis">Login:</label>
-                    <input type="text" class="form-control" name="oasis" id="oasis">
-                </div>
-                <div class="form-group" >
-                    <label for="pwd">Password:</label>
-                    <input type="password" class="form-control" name="pass" id="pwd">
-                </div>
-                <button type="submit" class="btn btn-primary">Login</button>
-            </form>
-            <a href="{% url 'tasks:password_reset' %}">Reset Password</a>
-        </div>
-    </div>
+    <button class="w-100 btn btn-lg btn-primary" type="submit">Login</button>
+  </form>
+</div>
 
-    <div class="row login-page-padding">
-        <div class="col-sm-3"></div>
-        <div class="col-sm-7 version-text">
-            <h3>Task Point System (v0.3.20190926)</h3>
-
-            <p>This is the web application for the (TPS) used for
-            better execution of team projects.</p>
-
-            <p>Please contact Kaya Oguz (kaya.oguz (a) ieu.edu.tr) if you are
-            experiencing problems logging in.</p>
-
-            <p style="color: red;"> {{ login_error }}</p>
-        </div>
-    </div>
-
+<div style="padding-top: 20px; color: red">
+  <p>{{ login_error }}</p>
+</div>
 
 {% endblock %}

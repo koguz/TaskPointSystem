@@ -1,349 +1,64 @@
-{% extends "tasks/base.html" %}
-{% load static %}
-{% block content %}
-    {% load tags %}
-    {% load webpush_notifications %}
-    {% webpush_header %}
-    <div class="row">
-        <div class="col-sm-6">
-            <div class="profile-card">
-                <img src="{{ developer_photo_url }}" alt="Profile Picture">
-                <div class="profile-info">
-                    <h1>{{ developer.get_name }}</h1>
-                    {% if developer.id %}
-                        <p>{{ developer.id }}</p>
-                    {% else %}
-                        <p>201612061612</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6">
-            <div class="float-right profile-card-buttons">
-                <a href="{% url 'tasks:teams' %}" class="btn btn-primary" role="button">Create Task</a>
-                <a href="{% url 'tasks:account-settings' %}" class="btn" role="button">Account Settings</a>
-                {% webpush_button %}
-            </div>
-        </div>
-    </div>
-    <hr>
-    <div class="row">
-        {% include "tasks/search_bar.html" with placeholder="Search from courses, assignees, titles, and status" first_task_list=user_active_tasks second_task_list=user_attention_tasks search_fields="course, assignee, title, status" %}
-        <div class="col-sm-6 user-feed">
-            {% if user_active_tasks %}
-                <h3>Your Active Tasks</h3>
-                <ul>
-                    {% for task in user_active_tasks %}
-                        {% if forloop.counter0 < 5 %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
-                                <li>
-                                    <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
-                                    <div class="task-header">
-                                        <h4>{{ task.title }}</h4>
-                                        <p><span class="bold-span">Course: </span>{{ task.team.course }}</p>
-                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
-                                    </div>
-                                    <hr class="content-separator">
-                                    <div class="task-content">
-                                        <p class="content-text">{{ task.description }}</p>
-                                    </div>
-                                </li>
-                            </a>
-                        {% else %}
-                            <div class="active-tasks-extras">
-                                <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
-                                    <li>
-                                        <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
-                                        <div class="task-header">
-                                            <h4>{{ task.title }}</h4>
-                                            <p><span class="bold-span">Course: </span>{{ task.team.course }}</p>
-                                            <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
-                                        </div>
-                                        <hr class="content-separator">
-                                        <div class="task-content">
-                                            <p class="content-text">{{ task.description }}</p>
-                                        </div>
-                                    </li>
-                                </a>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-                <div>
-                    {% if user_active_tasks.count > 5 %}
-                        <button class="btn btn-link see-all-button" id="active-see-all">See all</button>
-                    {% endif %}
-                </div>
-            {% else %}
-                <p>You don't have any active tasks.</p>
-            {% endif %}
-        </div>
-        <div class="col-sm-6 user-feed">
-            {% if user_attention_tasks %}
-                <h3>Tasks Require Attention</h3>
-                <ul>
-                    {% for task in user_attention_tasks %}
-                        {% if forloop.counter0 < 5 %}
-                            <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
-                                <li>
-                                    <div class="task-date">
-                                        <p><span class="bold-span">Due: </span>{{ task.due }}</p>
-                                        <p class="mg-t-minus-5"><span class="bold-span">Assignee: </span>{{ task.assignee }}</p>
-                                    </div>
-                                    <div class="task-header">
-                                        <h4>{{ task.title }}</h4>
-                                        <p><span class="bold-span">Course: </span>{{ task.team.course }}</p>
-                                        <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
-                                    </div>
-                                    <hr class="content-separator">
-                                    <div class="task-content">
-                                        <p class="content-text">{{ task.description }}</p>
-                                    </div>
-                                </li>
-                            </a>
-                        {% else %}
-                            <div class="attention-tasks-extras">
-                                <a href="{% url 'tasks:view-task' task.id %}" role="button" style="text-decoration: none; color: #1A1A1A" id="{{ task.id }}">
-                                    <li>
-                                        <p class="task-date"><span class="bold-span">Due: </span>{{ task.due }}</p>
-                                        <div class="task-header">
-                                            <h4>{{ task.title }}</h4>
-                                            <p><span class="bold-span">Course: </span>{{ task.team.course }}</p>
-                                            <p><span class="bold-span">Status: </span>{{ task.get_status_display }}</p>
-                                        </div>
-                                        <hr class="content-separator">
-                                        <div class="task-content">
-                                            <p class="content-text">{{ task.description }}</p>
-                                        </div>
-                                    </li>
-                                </a>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-                <div>
-                    {% if user_attention_tasks.count > 5 %}
-                        <button class="btn btn-link see-all-button" id="attention-see-all">See all</button>
-                    {% endif %}
-                </div>
-            {% else %}
-                <p>No task requires your attention.</p>
-            {% endif %}
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-3"></div>
-        <div class="col-sm-6 user-calendar mg-t-10">
-            <div id='wrap'>
-                <div id='calendar'></div>
-                <div style='clear:both'></div>
-            </div>
-        </div>
-        <div class="col-sm-3"></div>
-    </div>
-{% endblock %}
-{% block scriptcontent %}
-    <link href='{% static 'tasks/fullcalendar/css/fullcalendar.css' %}' rel='stylesheet' />
-    <link href='{% static 'tasks/fullcalendar/css/fullcalendar.print.css' %}' rel='stylesheet' media='print' />
-    <script src='{% static 'tasks/fullcalendar/js/jquery-1.10.2.js' %}' type="text/javascript"></script>
-    <script src='{% static 'tasks/fullcalendar/js/jquery-ui.custom.min.js' %}' type="text/javascript"></script>
-    <script src='{% static 'tasks/fullcalendar/js/fullcalendar.js' %}' type="text/javascript"></script>
-    <script>
-        const profileCardButtons$ = $('.profile-card-buttons');
-        const webpushSubButton$ = $('#webpush-subscribe-button');
-        const attentionTasksExtras$ = $('.attention-tasks-extras');
-        const activeTasksExtras$ = $('.active-tasks-extras');
+{% extends "tasks/base.html" %} {% load static %} {% block breadcrumbs %}
 
-        $('#attention-see-all').on('click', function () {
-            if (attentionTasksExtras$.css('display') === 'none') {
-                $(this).text('See less');
-            } else {
-                $(this).text('See all');
-            }
+<h1 class="text" style="font-weight: 400; font-size: 30px; margin-top: 10px">
+  Settings
+</h1>
 
-            attentionTasksExtras$.slideToggle(200);
-        });
+{% endblock %} {% block left_content %}
+<style>
+  .menus {
+    margin-bottom: 20px;
+    font-weight: 800;
+    text-decoration: none;
+    color: gray;
+  }
+  .selected {
+    margin-bottom: 20px;
+    font-weight: 800;
+    text-decoration: none;
+    color: black;
+  }
+  a:link {
+    color: black;
+  }
+  /* mouse over link */
+  a:hover {
+    color: orange;
+  }
 
-        $('#active-see-all').on('click', function () {
-            if (activeTasksExtras$.css('display') === 'none') {
-                $(this).text('See less');
-            } else {
-                $(this).text('See all');
-            }
+  /* selected link */
+  a:active {
+    color: black;
+  }
 
-            activeTasksExtras$.slideToggle(200);
-        });
+  .avatar {
+    vertical-align: middle;
+    width: 125px;
+    height: 125px;
+    border-radius: 50%;
+  }
+</style>
+<div>
+  <img class="avatar" src="{{dev.photoURL}}" id="output" width="100px" />
+  <hr />
+  <div style="margin-bottom: 10px">
+    <a
+      id="my_details"
+      class="menus"
+      href="{% url 'my_details' %}"
+      onClick="changeClass('my_details')"
+      >My Details</a
+    >
+  </div>
+  <div style="margin-bottom: 10px">
+    <a id="password" class="menus" href="{% url 'change_password' %}"
+      >Password</a
+    >
+  </div>
 
-        webpushSubButton$.addClass('btn');
-        webpushSubButton$.addClass('btn-danger');
+  <div style="margin-bottom: 10px">
+    <a id="email_option" class="menus" href="{% url 'email' %}">Email</a>
+  </div>
+</div>
 
-        $(window).on('resize', function () {
-            if (window.innerWidth < 576) {
-                profileCardButtons$.removeClass('float-right');
-            } else {
-                profileCardButtons$.addClass('float-right');
-            }
-        });
-
-        $(function () {
-            if (window.innerWidth < 576) {
-                profileCardButtons$.removeClass('float-right');
-            }
-
-            attentionTasksExtras$.hide();
-            activeTasksExtras$.hide();
-        });
-    </script>
-    <script>
-        $(function() {
-            var date = new Date();
-            var d = date.getDate();
-            var m = date.getMonth();
-            var y = date.getFullYear();
-
-            /*  className colors
-
-            className: default(transparent), important(red), chill(pink), success(green), info(blue)
-
-            */
-
-            /* initialize the external events
-            -----------------------------------------------------------------*/
-
-            $('#external-events div.external-event').each(function() {
-
-                // create an Event Object (http://arshaw.com/fullcalendar/docs/event_data/Event_Object/)
-                // it doesn't need to have a start or end
-                var eventObject = {
-                    title: $.trim($(this).text()) // use the element's text as the event title
-                };
-
-                // store the Event Object in the DOM element so we can get to it later
-                $(this).data('eventObject', eventObject);
-
-                // make the event draggable using jQuery UI
-                $(this).draggable({
-                    zIndex: 999,
-                    revert: true,      // will cause the event to go back to its
-                    revertDuration: 0  //  original position after the drag
-                });
-
-            });
-
-            /* initialize the calendar
-            -----------------------------------------------------------------*/
-            var calendar =  $('#calendar').fullCalendar({
-                header: {
-                    left: 'title',
-                    center: 'agendaDay,agendaWeek,month',
-                    right: 'prev,next today',
-                },
-                editable: false,
-                firstDay: 1, // 1(Monday) this can be changed to 0(Sunday) for the USA system
-                selectable: false,
-                defaultView: 'month',
-                axisFormat: 'HH:mm',
-                columnFormat: {
-                    month: 'ddd', // Mon
-                    week: 'ddd d', // Mon 7
-                    day: 'dddd M/d', // Monday 9/7
-                    agendaDay: 'dddd d',
-                },
-                titleFormat: {
-                    month: 'MMM yyyy', // September 2009
-                    week: "MMM yyyy", // September 2009
-                    day: 'MMM yyyy', // Tuesday, Sep 8, 2009
-                },
-                allDaySlot: false,
-                selectHelper: false,
-                select: function(start, end, allDay) {
-                    var title = prompt('Event Title:');
-                    if (title) {
-                        calendar.fullCalendar('renderEvent',
-                            {
-                                title: title,
-                                start: start,
-                                end: end,
-                                allDay: allDay
-                            },
-                            true // make the event "stick"
-                        );
-                    }
-                    calendar.fullCalendar('unselect');
-                },
-                droppable: false, // this allows things to be dropped onto the calendar !!!
-                drop: function(date, allDay) { // this function is called when something is dropped
-
-                    // retrieve the dropped element's stored Event Object
-                    var originalEventObject = $(this).data('eventObject');
-
-                    // we need to copy it, so that multiple events don't have a reference to the same object
-                    var copiedEventObject = $.extend({}, originalEventObject);
-
-                    // assign it the date that was reported
-                    copiedEventObject.start = date;
-                    copiedEventObject.allDay = allDay;
-
-                    // render the event on the calendar
-                    // the last `true` argument determines if the event "sticks" (http://arshaw.com/fullcalendar/docs/event_rendering/renderEvent/)
-                    $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
-
-                    // is the "remove after drop" checkbox checked?
-                    if ($('#drop-remove').is(':checked')) {
-                        // if so, remove the element from the "Draggable Events" list
-                        $(this).remove();
-                    }
-                },
-
-                events: [],
-                timeFormat: '',
-            });
-
-            let taskMonth;
-            let taskYear;
-            let taskDay;
-            let taskColor;
-
-            {% for task in user_all_tasks %}
-                taskDay = Number({{ task.due.day }});
-                taskMonth = Number({{ task.due.month }}) - 1;
-                taskYear = Number({{ task.due.year }});
-
-                switch ({{ task.status }}) {
-                    case 1:
-                        taskColor = 'important';
-                        break;
-                    case 2:
-                        taskColor = 'important';
-                        break;
-                    case 3:
-                        taskColor = 'important';
-                        break;
-                    case 4:
-                        taskColor = 'info';
-                        break;
-                    case 5:
-                        taskColor = 'default';
-                        break;
-                    case 6:
-                        taskColor = 'success';
-                        break;
-                    default:
-                        taskColor = 'important';
-                }
-
-                calendar.fullCalendar('renderEvent',
-                    {
-                        title: '{{ task.title }} - Last Day',
-                        start: new Date(taskYear, taskMonth, taskDay),
-                        end: new Date(taskYear, taskMonth, taskDay, 23, 59),
-                        allDay: false,
-                        url: "{% url 'tasks:view-task' task.id %}",
-                        className: taskColor,
-                    },
-                    true,
-                );
-            {% endfor %}
-        });
-    </script>
 {% endblock %}

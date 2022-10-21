@@ -1,0 +1,75 @@
+{% extends "tasks/base.html" %} {% load static %} {% block left_content %}
+<h4>Help!</h4>
+Help text here... {% endblock %} {% block main_content %}
+
+<h4
+  >Create Teams for...<br />
+  {{ course }} </h4
+>
+
+<form action="{% url 'create_team' course.pk %}" method="post">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <td>Team size</td>
+      <td>:</td>
+      <td><input type="number" size="4" value="4" name="team_size" /></td>
+    </tr>
+    <tr>
+      <td valign="top">Student List</td>
+      <td valign="top">:</td>
+      <td><textarea cols="40" rows="10" name="stdlist"></textarea></td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+      <td
+        ><input
+          name="auto"
+          type="submit"
+          class="btn btn-primary"
+          value="Generate Random Teams"
+      /></td>
+    </tr>
+  </table>
+</form>
+
+{% endblock%} {% block right_content %}
+
+<h4>Manuel Team Creation</h4>
+<br />
+
+<form action="{% url 'create_team' course.pk %}" method="post">
+  {% csrf_token %}
+  <table>
+    <td>
+      <textarea
+        style="font-size: 12px"
+        cols="60"
+        rows="16"
+        name="stdlist"
+      ></textarea>
+    </td>
+    <tr>
+      <td
+        ><input
+          name="manuel"
+          type="submit"
+          class="btn btn-primary"
+          value="Generate Manuel Teams"
+      /></td>
+    </tr>
+  </table>
+</form>
+<br /><br />
+
+<table>
+  {% for key, value in t_d.items %} {% for dev in value %}
+  <tr>
+    <td>{{ dev.getName }}</td>
+    <td>&ensp;&ensp;&ensp;&ensp;</td>
+    <td>{{ key }}</td>
+  </tr>
+  {% endfor %} {% endfor %}
+</table>
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+
+
+{% block left_content %}
+<a href="{% url 'lecturer_view' %}">Back to lecturer view</a>
+{% endblock %}
+
+{% block main_content %}
+<h4>Create Master Course</h4>
+<form action="{% url 'create_mastercourse' %}" method="post">
+    {% csrf_token %}
+    <table>
+        {{ form }}
+        {{ form_details }}
+        <tr><td>&nbsp;</td><td><button class="btn btn-primary" type="submit">Submit</button></td></tr>
+    </table>
+    
+</form>
+
+{% endblock%}
