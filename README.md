@@ -2,19 +2,15 @@
 
 Task Point System (TPS) is a project management process, developed as a web application, and is currently running at http://setps.ieu.edu.tr. 
 
-The idea is based on the paper "Implementing large projects in software engineering courses" by David Coppit [1]. TPS uses the concept of “tasks,” atomic pieces of work that can be handled by a single developer.
+The idea is based on the paper "Implementing large projects in software engineering courses" by David Coppit [1]. TPS uses the concept of "tasks," atomic pieces of work that can be handled by a single developer. The purpose of the TPS is to provide a system that encourages equal contribution for every student and to let the students have a more realistic approach of a course project [2]. 
 
-The purpose of the TPS is to provide a system that encourages equal contribution for every student. With the support of the supervisors, the students will have a more realistic approach of a course project [2]. 
+## History
 
-TPS has been in use since the Spring 2016/2017 semester. It was used as a process via online services such as Trello and Asana in the "SE315 Software Project Management" course in Izmir University of Economics, and the results have been presented at a national conference [3]. The following semester, it was implemented as a standalone web application. Since then, it has been an integral part of the "SE302 Principles of Software Engineering" course and other courses such as "CE216 Fundamental Topics in Programming."
+TPS has been in use since the 2016-2017 Spring semester. It was used as a process on online services such as Trello and Asana in the "SE315 Software Project Management" course in Izmir University of Economics, and the results have been presented at a national conference [3]. The following semester, it was implemented as a standalone web application using Django. Since then, it has been an integral part of the "SE302 Principles of Software Engineering" course and other courses such as "CE216 Fundamental Topics in Programming."
 
-The web application uses Django and is developed by Kaya Oğuz (http://homes.ieu.edu.tr/koguz) with several other contributors. Please visit the Wiki page for more information. 
+The web application is developed and maintained by Kaya Oğuz (http://homes.ieu.edu.tr/koguz) with several other contributors. Please visit the Wiki page for more information. 
 
-[1]        D. Coppit, "Implementing large projects in software engineering courses," Computer Science Education, vol. 16, no. 1, pp. 53–73, Mar. 2006.
-
-[2]        D. Oguz and K. Oguz, "Perspectives on the Gap Between the Software Industry and the Software Engineering Education," IEEE Access, vol. 7, pp. 117527–117543, 2019.
-
-[3]        K. Oguz and S. Gül, "Managing and evaluating team projects in software engineering education," in CEUR Workshop Proceedings, 2017, vol. 1980, pp. 184–195.
-
-
-
+## References 
+1. D. Coppit, "Implementing large projects in software engineering courses," Computer Science Education, vol. 16, no. 1, pp. 53–73, Mar. 2006.
+2. D. Oguz and K. Oguz, "Perspectives on the Gap Between the Software Industry and the Software Engineering Education," IEEE Access, vol. 7, pp. 117527–117543, 2019.
+3. K. Oguz and S. Gül, "Managing and evaluating team projects in software engineering education," in CEUR Workshop Proceedings, 2017, vol. 1980, pp. 184–195.
