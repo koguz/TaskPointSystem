@@ -11,7 +11,9 @@ TPS has been in use since the Spring 2016/2017 semester. It was used as a proces
 The web application uses Django and is developed by Kaya Oğuz (http://homes.ieu.edu.tr/koguz) with several other contributors. Please visit the Wiki page for more information. 
 
 [1]        D. Coppit, "Implementing large projects in software engineering courses," Computer Science Education, vol. 16, no. 1, pp. 53–73, Mar. 2006.
+
 [2]        D. Oguz and K. Oguz, "Perspectives on the Gap Between the Software Industry and the Software Engineering Education," IEEE Access, vol. 7, pp. 117527–117543, 2019.
+
 [3]        K. Oguz and S. Gül, "Managing and evaluating team projects in software engineering education," in CEUR Workshop Proceedings, 2017, vol. 1980, pp. 184–195.
 
 
