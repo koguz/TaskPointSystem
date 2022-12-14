@@ -48,9 +48,19 @@
             <td>{{task.owner}}</td>
             <td><a href="{% url 'lecturer_view_task' task.pk %}">{{task}}</a></td>
             <td>{{task.milestone}}</td>
-            <td>{{task.getStatus}}</td>
+            <td class="{% if task.status == 1 %}
+                    table-warning 
+                {% elif task.status == 2 %}
+                    table-primary
+                {% elif task.status == 3 %}
+                    table-info
+                {% elif task.status == 4 %}
+                    table-danger
+                {% elif task.status == 5 %}
+                    table-success
+                {%endif%}">{{task.getStatus}}</td>
             {% if task.completed %}
-                <td>{{task.completed|timeuntil:task.created}}</td>
+                <td>{{task.completed|timeuntil:task.opened}}</td>
             {% else %}    
                 <td>-</td>
             {% endif %}

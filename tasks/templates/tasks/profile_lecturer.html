@@ -9,41 +9,33 @@
   th {
     vertical-align: top;
   }
-  .text {
-    width: 250px;
-    height: 22px;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 24px;
-    line-height: 22px;
-    text-align: start;
-    margin-bottom: 50px;
-    margin-left: 10px;
-    color: #656565;
-  }
 </style>
-<h3 class="text">Change your password</h3>
+<h3 style="font-weight: 600; font-size: 22px; font-style: italic">
+  CHANGE YOUR PASSWORD
+</h3>
+<hr />
 <div style="margin-left: 30px">
   <form action="{% url 'change_password' %}" method="post">
     {% csrf_token %}
     <table>
       {{ form }}
-      <tr
-        ><td>&nbsp;</td
-        ><td
-          ><button
+      <tr>
+        <td>&nbsp;</td>
+        <td>
+          <button
             class="btn btn-primary"
             style="float: right; background-color: #fe6b02; border-width: 0px"
             type="submit"
-            >Save</button
-          ></td
-        ></tr
-      >
+          >
+            Save
+          </button>
+        </td>
+      </tr>
     </table>
   </form>
 </div>
 <script defer>
-    document.getElementById('password').className = 'selected'
+  document.getElementById("password").className = "selected";
 </script>
 
 {% endblock %}

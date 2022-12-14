@@ -73,6 +73,13 @@ def team_view(request, team_id):
         milestone = t.course.get_current_milestone()
         mt = MasterTask.objects.all().filter(
             team=t).order_by('pk').reverse()[:10]
+        developers = dict()
+    
+        for d in devs :
+            developers[d] = list()
+            developers[d].append(d.get_project_grade(team_id))
+            developers[d].append(d.get_milestone_list(t.pk))
+        
         context = {
             'page_title': 'Team Home',
             'tasks': mt,
@@ -80,8 +87,7 @@ def team_view(request, team_id):
             'devs': devs,
             'milestone': milestone,
             'teams': teams,
-            'project_grade': d.get_project_grade(t.pk),
-            'milestone_lists': d.get_milestone_list(t.pk)
+            'developers': developers,
         }
         return render(request, 'tasks/index.html', context)
     else:
@@ -133,9 +139,10 @@ def edit_task(request, task_id):
 
             plain_message = strip_tags(html_message)
             from_email = 'no-reply@tps.info.tr'
-
-            send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
+            
             saveLog(mt, "Task is edited by " + str(d) + ".")
+            send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
+            
 
             return redirect('view_task', task_id)
         else: 
@@ -193,9 +200,11 @@ def create_task(request, team_id):
 
             plain_message = strip_tags(html_message)
             from_email = 'no-reply@tps.info.tr'
-
-            send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
+            
             saveLog(mastertask, "Task is created by " + str(d) + ".")
+            send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
+            
+            
             return redirect('team_view', team_id)
         else:
             context={'page_title': 'Create New Task', 'form': form, 'milestone': milestone}
@@ -262,8 +271,9 @@ def complete_task(request, task_id):
         plain_message = strip_tags(html_message)
         from_email = 'no-reply@tps.info.tr'
 
-        send_mail(subject, plain_message, from_email, receivers, html_message=html_message)       
         saveLog(mt, "Task is completed by " + str(d) + ".")
+        send_mail(subject, plain_message, from_email, receivers, html_message=html_message)       
+        
         
         context = {
             'team': tm
@@ -382,9 +392,10 @@ def view_task(request, task_id):
 
                         plain_message = strip_tags(html_message)
                         from_email = 'no-reply@tps.info.tr'
-
-                        send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
                         saveLog(mt, "Task received an approve vote by "+ str(d) + ".")
+                        comment.save()
+                        send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+                        
                     elif request.POST['approve'] == "No":
                         comment.approved = False
                         vote = Vote()
@@ -408,10 +419,11 @@ def view_task(request, task_id):
 
                         plain_message = strip_tags(html_message)
                         from_email = 'no-reply@tps.info.tr'
-
-                        send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+                        
                         saveLog(mt, "Task received a revision request by "+ str(d) + ".")
-                comment.save()
+                        comment.save()
+                        send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+                        
                 return redirect('view_task', task_id)
     
         form = CommentForm()
@@ -442,8 +454,9 @@ def view_task(request, task_id):
             plain_message = strip_tags(html_message)
             from_email = 'no-reply@tps.info.tr'
 
-            send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
             saveLog(mt, "All approved. Task is now in open state.")
+            send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+            
         elif mt.status == 3 and v_app > (len(mt.team.developer_set.all()) - 1) / 2:
             mt.status = 5
             mt.save()
@@ -456,9 +469,10 @@ def view_task(request, task_id):
 
             plain_message = strip_tags(html_message)
             from_email = 'no-reply@tps.info.tr'
-
-            send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+            
             saveLog(mt, "All approved. Task is now accepted!")
+            send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+            
         elif mt.status == 3 and v_den >= (len(mt.team.developer_set.all()) - 1) / 2:
             reopen = True 
             
@@ -794,13 +808,21 @@ def lecturer_course_view(request, course_id):
 def lecturer_team_view(request, team_id):
     team = Team.objects.get(pk=team_id)
     devs = team.developer_set.all()
+    developers = dict()
+    
+    for d in devs :
+            developers[d] = list()
+            developers[d].append(d.get_project_grade(team_id))
+            developers[d].append(d.get_milestone_list(team.pk))
+        
     tasks = team.mastertask_set.all().order_by('pk').reverse()
     context = {
         'page_title': 'Lecturer Team View',
         'team': team,
         'course': team.course, 
         'devs': devs, 
-        'tasks': tasks 
+        'tasks': tasks,
+        'developers' : developers 
     }
 
     return render(request, 'tasks/lecturer_team_view.html', context)

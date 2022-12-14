@@ -15,11 +15,11 @@
 <h5>Developer Points</h5>
 <p>
 <ul>
-{% for dev in devs %}
+{% for dev, value in developers.items %}
     <li>{{ dev }}
         <ul>
-        <li>Overall Project: {{ dev.get_project_grade }} Points</li>
-        {% for k, v in dev.get_milestone_list.items %}
+        <li>Overall Project: {{ value.0 }} Points</li>
+        {% for k, v in value.1.items %}
             <li>{{ k }}: {{ v }} Points</li>
         {% endfor %}
         </ul>
@@ -54,9 +54,19 @@
             <td>{{task.owner}}</td>
             <td><a href="{% url 'lecturer_view_task' task.pk %}">{{task}}</a></td>
             <td>{{task.milestone}}</td>
-            <td>{{task.getStatus}}</td>
+            <td class="{% if task.status == 1 %}
+                    table-warning 
+                {% elif task.status == 2 %}
+                    table-primary
+                {% elif task.status == 3 %}
+                    table-info
+                {% elif task.status == 4 %}
+                    table-danger
+                {% elif task.status == 5 %}
+                    table-success
+                {%endif%}">{{task.getStatus}}</td>
             {% if task.completed %}
-                <td>{{task.completed|timeuntil:task.created}}</td>
+                <td>{{task.completed|timeuntil:task.opened}}</td>
             {% else %}    
                 <td>-</td>
             {% endif %}
