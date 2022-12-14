@@ -138,7 +138,7 @@ def edit_task(request, task_id):
             {'title': 'A task has been edited.', 'contentList': contentList, 'url': url, 'background_color': '#003399'})
 
             plain_message = strip_tags(html_message)
-            from_email = 'no-reply@tps.info.tr'
+            from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mt, "Task is edited by " + str(d) + ".")
             send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
@@ -199,7 +199,7 @@ def create_task(request, team_id):
             {'title':'A task has been created!', 'contentList':contentList, 'url': url, 'background_color': '#003399'})
 
             plain_message = strip_tags(html_message)
-            from_email = 'no-reply@tps.info.tr'
+            from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mastertask, "Task is created by " + str(d) + ".")
             send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
@@ -269,7 +269,7 @@ def complete_task(request, task_id):
         {'title':'A task has been completed!', 'contentList': contentList, 'url':url, 'background_color': '#003399'})
 
         plain_message = strip_tags(html_message)
-        from_email = 'no-reply@tps.info.tr'
+        from_email = 'tps@izmirekonomi.edu.tr'
 
         saveLog(mt, "Task is completed by " + str(d) + ".")
         send_mail(subject, plain_message, from_email, receivers, html_message=html_message)       
@@ -391,7 +391,7 @@ def view_task(request, task_id):
                         {'title': 'A task has received an approve vote!', 'contentList': contentList, 'url': url, 'background_color': '#5cb85c'})
 
                         plain_message = strip_tags(html_message)
-                        from_email = 'no-reply@tps.info.tr'
+                        from_email = 'tps@izmirekonomi.edu.tr'
                         saveLog(mt, "Task received an approve vote by "+ str(d) + ".")
                         comment.save()
                         send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
@@ -418,7 +418,7 @@ def view_task(request, task_id):
                         {'title':'A task has received a revision request.', 'contentList': contentList, 'url':url, 'background_color': '#ff2400'})
 
                         plain_message = strip_tags(html_message)
-                        from_email = 'no-reply@tps.info.tr'
+                        from_email = 'tps@izmirekonomi.edu.tr'
                         
                         saveLog(mt, "Task received a revision request by "+ str(d) + ".")
                         comment.save()
@@ -452,7 +452,7 @@ def view_task(request, task_id):
             {'title':'Your task is now in open state!','contentList': contentList, 'url':url, 'background_color': '#003399'})
 
             plain_message = strip_tags(html_message)
-            from_email = 'no-reply@tps.info.tr'
+            from_email = 'tps@izmirekonomi.edu.tr'
 
             saveLog(mt, "All approved. Task is now in open state.")
             send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
@@ -468,7 +468,7 @@ def view_task(request, task_id):
             {'title':'Your task is accepted!', 'contentList': ['Your task called ' + t.title + ' is now accepted.'],'url':url, 'background_color': '#003399' })
 
             plain_message = strip_tags(html_message)
-            from_email = 'no-reply@tps.info.tr'
+            from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mt, "All approved. Task is now accepted!")
             send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
