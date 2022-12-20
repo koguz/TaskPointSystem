@@ -423,7 +423,7 @@ def view_task(request, task_id):
                         saveLog(mt, "Task received a revision request by "+ str(d) + ".")
                         comment.save()
                         send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
-                        
+                comment.save()        
                 return redirect('view_task', task_id)
     
         form = CommentForm()
