@@ -26,8 +26,12 @@ class MasterCourse(models.Model):
     code = models.CharField("Course Code", max_length=8)
     name = models.CharField("Course Name", max_length=256)
 
+    @property
+    def compact_code(self):
+        return "".join((self.code or "").split())
+
     def __str__(self):
-        return self.code + " - " + self.name 
+        return self.compact_code + " - " + self.name 
  
 class Course(models.Model):
     masterCourse = models.ForeignKey(MasterCourse, on_delete=CASCADE)
@@ -239,5 +243,4 @@ class TeamMilestoneGrade(models.Model):
     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     grade = models.PositiveSmallIntegerField("Grade", default=0)
-
 

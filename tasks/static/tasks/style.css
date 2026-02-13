@@ -490,6 +490,42 @@ a:hover {
   background: #f8faff;
 }
 
+.tps-course-link {
+  display: block;
+  color: #23365c;
+  text-decoration: none;
+}
+
+.tps-course-link:hover {
+  color: #16397a;
+  text-decoration: none;
+}
+
+.tps-course-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-weight: 500;
+}
+
+.tps-course-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.86rem;
+  letter-spacing: 0.01em;
+  color: #2d4f8f;
+  background: #e9f0fc;
+  border: 1px solid #cfddf5;
+  border-radius: 6px;
+  padding: 0.08rem 0.36rem;
+}
+
+.tps-course-meta {
+  display: block;
+  margin-top: 0.22rem;
+  font-size: 0.82rem;
+  color: #68799d;
+}
+
 .tps-form-grid {
   display: grid;
   gap: var(--tps-space-3);

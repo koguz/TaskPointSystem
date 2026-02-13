@@ -4,7 +4,7 @@
 {% block breadcrumbs %}
 <div class="tps-view-head">
   <p class="tps-view-kicker">Student Workspace</p>
-  <h1 class="tps-view-title">{{ team.course.masterCourse.code }} / {{ team }}</h1>
+  <h1 class="tps-view-title">{{ team.course.masterCourse.compact_code }} / {{ team }}</h1>
   <p class="tps-view-subtitle">Track tasks, team performance, and current milestone progress</p>
 </div>
 {% endblock %}
@@ -28,11 +28,11 @@
     <select class="form-select mb-3" onchange="window.location.href=this.value">
       {% for t in teams %}
         {% if t.pk == team.pk and t.course.get_current_milestone is not None %}
-        <option selected value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.code }} / {{ t }}</option>
+        <option selected value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.compact_code }} / {{ t }}</option>
         {% elif t.course.get_current_milestone is not None %}
-        <option value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.code }} / {{ t }}</option>
+        <option value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.compact_code }} / {{ t }}</option>
         {% else %}
-        <option value="{% url 'team_view' t.pk %}" disabled>{{ t.course.masterCourse.code }} / {{ t }} (No active milestone)</option>
+        <option value="{% url 'team_view' t.pk %}" disabled>{{ t.course.masterCourse.compact_code }} / {{ t }} (No active milestone)</option>
         {% endif %}
       {% endfor %}
     </select>

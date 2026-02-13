@@ -6,7 +6,15 @@
     <h3 class="h6 mb-2">Courses</h3>
     <ul class="tps-list-clean mb-3">
       {% for course in courses %}
-      <li><a href="{% url 'lecturer_view_course' course.id %}">{{ course }}</a></li>
+      <li>
+        <a href="{% url 'lecturer_view_course' course.id %}" class="tps-course-link">
+          <span class="tps-course-title">
+            <span class="tps-course-code">{{ course.masterCourse.compact_code }}</span>
+            <span>{{ course.masterCourse.name }}</span>
+          </span>
+          <span class="tps-course-meta">{{ course.semester }}</span>
+        </a>
+      </li>
       {% empty %}
       <li class="small text-muted">No assigned courses.</li>
       {% endfor %}

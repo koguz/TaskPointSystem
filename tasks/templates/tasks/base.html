@@ -52,23 +52,6 @@
 
           {% block menubar %}
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            {% if user.is_authenticated %}
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 tps-primary-nav">
-              {% if perms.tasks.add_team %}
-              <li class="nav-item">
-                <a class="nav-link {% if '/lecturer/' in request.path or '/courses/' in request.path or '/team/create/' in request.path %}active{% endif %}" href="{% url 'lecturer_view' %}">Lecturer Dashboard</a>
-              </li>
-              {% else %}
-              <li class="nav-item">
-                <a class="nav-link {% if request.path == '/' or '/team/' in request.path or '/tasks/' in request.path %}active{% endif %}" href="{% url 'index' %}">Team Dashboard</a>
-              </li>
-              {% endif %}
-              <li class="nav-item">
-                <a class="nav-link {% if '/updates/' in request.path %}active{% endif %}" href="{% url 'view_updates' %}">About</a>
-              </li>
-            </ul>
-            {% endif %}
-
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
               {% if user.is_authenticated %}
               <li class="nav-item dropdown">

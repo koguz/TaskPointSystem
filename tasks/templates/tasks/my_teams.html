@@ -12,7 +12,7 @@
     <div class="border rounded p-3 mb-3 bg-light">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
-          <div class="fw-bold">{{ team.course.masterCourse.code }} / {{ team.name }}</div>
+          <div class="fw-bold">{{ team.course.masterCourse.compact_code }} / {{ team.name }}</div>
           <div class="small text-muted">{{ team.course.semester }}</div>
         </div>
         <a href="{% url 'team_view' team.pk %}" class="btn btn-sm btn-outline-primary">Open Team</a>
