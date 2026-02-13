@@ -38,6 +38,19 @@
                         <td><input type="submit" class="btn btn-success" value="Save"></td>
                     </tr>
                 </table>
+                <div class="mt-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="used_ai" id="usedAiCheck" onchange="document.getElementById('aiUsageOptions').style.display = this.checked ? 'block' : 'none';">
+                        <label class="form-check-label" for="usedAiCheck">I used generative AI for this task</label>
+                    </div>
+                    <div id="aiUsageOptions" style="display:none; margin-top:8px; margin-left:24px;">
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="ai_usage" value="Code generation" id="aiCode"><label class="form-check-label" for="aiCode">Code generation</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="ai_usage" value="Debugging/troubleshooting" id="aiDebug"><label class="form-check-label" for="aiDebug">Debugging/troubleshooting</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="ai_usage" value="Writing tests" id="aiTests"><label class="form-check-label" for="aiTests">Writing tests</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="ai_usage" value="Documentation" id="aiDocs"><label class="form-check-label" for="aiDocs">Documentation</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="ai_usage" value="Research/learning" id="aiResearch"><label class="form-check-label" for="aiResearch">Research/learning</label></div>
+                    </div>
+                </div>
             </form>
         {% endif %}
         {% if mastertask.status == 1 and mytask %}
@@ -116,8 +129,16 @@
             </tr>
         </table>
         <p><i class="bi bi-check2-square"></i> {{ task.priority }} x {{ mastertask.difficulty }} = {{ tp }} Points</p>
+        {% if mastertask.used_ai %}
+        <table width="100%" class="table">
+            <tr>
+                <td width="25%" class="table-primary"><i class="bi bi-robot"></i> Generative AI</td>
+                <td class="table-secondary">{{ mastertask.ai_usage }}</td>
+            </tr>
+        </table>
+        {% endif %}
         {% else %}
-         Points will be set once the task is completed. 
+         Points will be set once the task is completed.
          {% endif %}
         <p></p><hr>
         Version <i class="bi bi-git"></i> {{ task.version }}, Votes: <i class="bi bi-check-square"></i> {{ v_app }}, <i class="bi bi-x-square"></i> {{ v_den }}

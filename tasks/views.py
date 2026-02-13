@@ -227,8 +227,10 @@ def complete_task(request, task_id):
     if request.method == 'POST':
         mt:MasterTask = get_object_or_404(MasterTask, pk=task_id)
         t:Task = Task.objects.all().filter(masterTask=mt).order_by('pk').reverse()[0]
-        mt.status = 3 
+        mt.status = 3
         mt.difficulty = int(request.POST["difficulty"])
+        mt.used_ai = 'used_ai' in request.POST
+        mt.ai_usage = ','.join(request.POST.getlist('ai_usage')) if mt.used_ai else ''
         mt.completed = datetime.now()
         mt.save()
 
@@ -251,11 +253,12 @@ def complete_task(request, task_id):
         subject = 'TPS:Notification || A task has been completed'
 
         contentList = [
-            'Creator: ' + str(mt.owner), 
+            'Creator: ' + str(mt.owner),
             'Title: ' + t.title,
             'Description: ' + t.description,
             'Priortiy: ' + t.getPriority(),
             'Difficulty: ' + difficulty,
+            'Used Generative AI: ' + ('Yes (' + mt.ai_usage + ')' if mt.used_ai else 'No'),
             'Due date: '+ str(t.promised_date)
         ]
 

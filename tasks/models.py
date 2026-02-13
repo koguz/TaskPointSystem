@@ -166,6 +166,8 @@ class MasterTask(models.Model):
     completed = models.DateTimeField("Completion Date", null=True)
     difficulty = models.PositiveSmallIntegerField("Difficulty", choices=DIFFICULTY, default=2)
     status = models.PositiveSmallIntegerField("Status", choices=STATUS, default=1)
+    used_ai = models.BooleanField("Used Generative AI", default=False)
+    ai_usage = models.CharField("AI Usage Details", max_length=256, blank=True, default='')
 
     def __str__(self):
         # this query gives me the last task title associated with this master task 
