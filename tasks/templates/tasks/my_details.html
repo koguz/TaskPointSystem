@@ -25,7 +25,6 @@
     <h2 class="tps-section-title">Choose Profile Avatar</h2>
   </div>
   <div class="tps-section-body">
-    <p class="small text-muted mb-3">Custom avatar URLs are disabled. Select one of the preset avatars.</p>
     <form action="{% url 'my_details' %}" method="post" class="tps-form-grid">
       {% csrf_token %}
       <div class="avatar-picker-grid">

@@ -104,7 +104,7 @@
       </nav>
     </header>
 
-    <main class="container py-4">
+    <main class="container py-4 tps-layout-shell layout-{% block layout_mode %}single{% endblock %}">
       <div class="row tps-breadcrumb-row">
         <div class="col-12">
           {% block breadcrumbs %}{% endblock %}
@@ -113,18 +113,18 @@
 
       {% block alert %}{% endblock %}
 
-      <div class="row tps-layout-row">
-        <aside class="col-12 col-xl-3">{% block left_content %}{% endblock %}</aside>
-        <section class="col-12 col-xl-6">{% block main_content %}{% endblock %}</section>
-        <aside class="col-12 col-xl-3">{% block right_content %}{% endblock %}</aside>
+      <div class="row tps-layout-row tps-layout-row-main">
+        <aside class="col-12 col-xl-3 tps-col-left">{% block left_content %}{% endblock %}</aside>
+        <section class="col-12 col-xl-6 tps-col-main">{% block main_content %}{% endblock %}</section>
+        <aside class="col-12 col-xl-3 tps-col-right">{% block right_content %}{% endblock %}</aside>
       </div>
 
-      <div class="row tps-layout-row">
+      <div class="row tps-layout-row tps-layout-row-split">
         <section class="col-12 col-xl-6">{% block main_left_content %}{% endblock %}</section>
         <section class="col-12 col-xl-6">{% block main_right_content %}{% endblock %}</section>
       </div>
 
-      <div class="row tps-layout-row">
+      <div class="row tps-layout-row tps-layout-row-wide">
         <aside class="col-12 col-xl-3">{% block small_left_content %}{% endblock %}</aside>
         <section class="col-12 col-xl-9">{% block large_main_content %}{% endblock %}</section>
       </div>
