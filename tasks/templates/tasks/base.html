@@ -80,12 +80,17 @@
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
-                  <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                  <img
+                    src="{{ navbar_avatar_url }}"
+                    alt="{{ user.get_full_name|default:user.username }}"
+                    class="tps-nav-avatar"
+                  />
+                  <span>{{ user.get_full_name|default:user.username }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end tps-user-menu" aria-labelledby="userNavDropdown">
                   <li>
                     <a class="dropdown-item" href="{% url 'my_details' %}">
-                      <i class="bi bi-person-vcard"></i> Profile
+                      <i class="bi bi-person-circle"></i> Profile
                     </a>
                   </li>
                   <li>

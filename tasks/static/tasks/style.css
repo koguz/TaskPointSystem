@@ -131,6 +131,16 @@ a:hover {
   font-size: 0.92rem;
 }
 
+.tps-nav-avatar {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 0;
+  background: transparent;
+  flex-shrink: 0;
+}
+
 .tps-user-toggle:hover {
   color: #1f3767;
   background: #eaf0fa;
