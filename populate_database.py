@@ -2,107 +2,136 @@ import os, django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tps.settings")
 django.setup()
 from tasks.models import *
-from django.contrib.auth.models import User
-from datetime import date, timedelta, datetime
-
+from django.contrib.auth.models import User, Permission
+from datetime import date, timedelta
+from django.utils import timezone
 
 # Worth noting that the create operations of different models should be done in this order
 # due to the foreign key references between some models, which also explains why the scope is shared.
 
-supers = []
-supers.append(User.objects.create_superuser('super1', password='super1password', email=''))
-for super in supers:
-    super.save()
+# --- Superuser ---
+admin = User.objects.create_superuser('admin', password='adminpassword', email='admin@tps.local')
 
+# --- Lecturer user + Lecturer model ---
+lec_user = User.objects.create_user(username='lecturer1', password='lecturer1password',
+                                    first_name='John', last_name='Smith', email='lecturer1@tps.local')
+lecturer = Lecturer(user=lec_user)
+lecturer.save()
+for codename in ['add_developer', 'add_mastercourse', 'add_team', 'add_milestone']:
+    lec_user.user_permissions.add(Permission.objects.get(codename=codename))
+
+# --- Developer users ---
 dev_users = []
-dev_users.append(User.objects.create_user(username='dev1', password='dev1password'))
-dev_users.append(User.objects.create_user(username='dev2', password='dev2password'))
-dev_users.append(User.objects.create_user(username='dev3', password='dev3password'))
-dev_users.append(User.objects.create_user(username='dev4', password='dev4password'))
-dev_users.append(User.objects.create_user(username='dev5', password='dev5password'))
-dev_users.append(User.objects.create_user(username='dev6', password='dev6password'))
-for user in dev_users:
-    user.save()
+dev_names = [
+    ('Alice', 'Brown'),
+    ('Bob', 'Davis'),
+    ('Carol', 'Evans'),
+    ('Dave', 'Garcia'),
+    ('Eve', 'Harris'),
+    ('Frank', 'Johnson'),
+]
+for i, (first, last) in enumerate(dev_names, start=1):
+    user = User.objects.create_user(username=f'dev{i}', password=f'dev{i}password',
+                                    first_name=first, last_name=last)
+    dev_users.append(user)
 
+# --- Master Courses ---
+mc_se = MasterCourse(code='SE 302', name='Software Engineering')
+mc_se.save()
+mc_ce = MasterCourse(code='CE 350', name='Computer Engineering Project')
+mc_ce.save()
 
-courses = []
-courses.append(Course(course='SE 302',section=1,year = 2020, term=2, number_of_students=40, team_weight=60, ind_weight=40))
-courses.append(Course(course='CE 350',section=1,year = 2020, term=2, number_of_students=40, team_weight=60, ind_weight=40))
-for course in courses:
-    course.create_course_name()
-    course.save()
+# --- Courses ---
+course_se = Course(masterCourse=mc_se, lecturer=lecturer, semester='2024-2025 Spring',
+                   group_weight=60, individual_weight=40)
+course_se.save()
+course_ce = Course(masterCourse=mc_ce, lecturer=lecturer, semester='2024-2025 Spring',
+                   group_weight=50, individual_weight=50)
+course_ce.save()
+
+# --- Milestones ---
+four_weeks_from_today = date.today() + timedelta(weeks=4)
+eight_weeks_from_today = date.today() + timedelta(weeks=8)
+twelve_weeks_from_today = date.today() + timedelta(weeks=12)
 
 milestones = []
-four_weeks = timedelta(weeks=4)
-eight_weeks = timedelta(weeks=8)
-four_weeks_from_now = datetime.now() + four_weeks
-four_weeks_from_today = four_weeks_from_now.date()
-eight_weeks_from_now = datetime.now() + eight_weeks
-eight_weeks_from_today = eight_weeks_from_now.date()
-milestones.append(Milestone(course=courses[0], name='Milestone1-SE 302', description='Milestone1-SE 302 Description', due = four_weeks_from_today ))
-milestones.append(Milestone(course=courses[0], name='Milestone2-SE 302', description='Milestone2-SE 302 Description', due = eight_weeks_from_today ))
-milestones.append(Milestone(course=courses[0], name='Milestone3-SE 302', description='Milestone3-SE 302 Description', due = eight_weeks_from_today ))
-milestones.append(Milestone(course=courses[1], name='Milestone1-CE 350', description='Milestone1-CE 350 Description', due = four_weeks_from_today ))
-milestones.append(Milestone(course=courses[1], name='Milestone2-CE 350', description='Milestone2-CE 350 Description', due = eight_weeks_from_today ))
-for milestone in milestones:
-    milestone.save()
+milestones.append(Milestone(course=course_se, name='Requirements', description='Requirements analysis and SRS document', weight=30, due=four_weeks_from_today))
+milestones.append(Milestone(course=course_se, name='Design', description='System design and architecture', weight=30, due=eight_weeks_from_today))
+milestones.append(Milestone(course=course_se, name='Implementation', description='Coding and testing', weight=40, due=twelve_weeks_from_today))
+milestones.append(Milestone(course=course_ce, name='Proposal', description='Project proposal and feasibility study', weight=40, due=four_weeks_from_today))
+milestones.append(Milestone(course=course_ce, name='Final Delivery', description='Final project delivery and demo', weight=60, due=twelve_weeks_from_today))
+for m in milestones:
+    m.save()
 
-teams = []
-teams.append(Team(course=courses[0], name='Team1-SE 3-2', github='fillertext'))
-teams.append(Team(course=courses[0], name='Team2-SE 3-2', github='fillertext'))
-teams.append(Team(course=courses[1], name='Team1-SE 3-2', github='fillertext'))
-for team in teams:
-    team.save()
+# --- Teams ---
+team1 = Team(course=course_se, name='Alpha Team', github='https://github.com/alpha-team', supervisor=lecturer)
+team1.save()
+team2 = Team(course=course_se, name='Beta Team', github='https://github.com/beta-team', supervisor=lecturer)
+team2.save()
+team3 = Team(course=course_ce, name='Gamma Team', github='https://github.com/gamma-team', supervisor=lecturer)
+team3.save()
 
+# --- Developers ---
 developers = []
-developers.append(Developer(id='100', user=dev_users[0]))
-developers.append(Developer(id='101', user=dev_users[1]))
-developers.append(Developer(id='102', user=dev_users[2]))
-developers.append(Developer(id='103', user=dev_users[3]))
-developers.append(Developer(id='104', user=dev_users[4]))
-developers.append(Developer(id='105', user=dev_users[5]))
-for developer in developers:
-    developer.save()
+for user in dev_users:
+    dev = Developer(user=user)
+    dev.save()
+    developers.append(dev)
 
-dev_team_relations = []
-dev_team_relations.append(DeveloperTeam(developer=developers[0], team=teams[0]))
-dev_team_relations.append(DeveloperTeam(developer=developers[1], team=teams[0]))
-dev_team_relations.append(DeveloperTeam(developer=developers[2], team=teams[1]))
-dev_team_relations.append(DeveloperTeam(developer=developers[3], team=teams[1]))
-dev_team_relations.append(DeveloperTeam(developer=developers[4], team=teams[1]))
-dev_team_relations.append(DeveloperTeam(developer=developers[5], team=teams[2]))
-for dev_team_relation in dev_team_relations:
-    dev_team_relation.save()
+# Assign developers to teams (M2M)
+# Team Alpha: dev1 (Alice), dev2 (Bob)
+developers[0].team.add(team1)
+developers[1].team.add(team1)
+# Team Beta: dev3 (Carol), dev4 (Dave), dev5 (Eve)
+developers[2].team.add(team2)
+developers[3].team.add(team2)
+developers[4].team.add(team2)
+# Team Gamma: dev6 (Frank) + dev1 (Alice is in two teams)
+developers[5].team.add(team3)
+developers[0].team.add(team3)
 
+# --- MasterTasks + Tasks ---
+two_weeks_from_today = date.today() + timedelta(weeks=2)
+three_weeks_from_today = date.today() + timedelta(weeks=3)
 
-two_weeks = timedelta(weeks=2)
-two_weeks_from_now = datetime.now() + two_weeks
-two_weeks_from_today = two_weeks_from_now.date()
-tasks = []
-tasks.append(Task(
-    milestone=milestones[0],
-    assignee=developers[0],
-    team=teams[0],
-    title='Task0 brief name',
-    description='Task0 description',
-    due=two_weeks_from_today
-                 ))
-tasks.append(Task(
-    milestone=milestones[0],
-    assignee=developers[1],
-    team=teams[0],
-    title='Task1 brief name',
-    description='Task1 description',
-    due=two_weeks_from_today
-                 ))
-tasks.append(Task(
-    milestone=milestones[0],
-    assignee=developers[0],
-    team=teams[0],
-    title='Task2 brief name',
-    description='Task2 description',
-    due=two_weeks_from_today
-                 ))
+# Task 1: Alice's task in Alpha Team
+mt1 = MasterTask(milestone=milestones[0], owner=developers[0], team=team1, difficulty=2, status=2,
+                 opened=timezone.now())
+mt1.save()
+Task(masterTask=mt1, title='Write use case diagrams', description='Create UML use case diagrams for the main system features',
+     promised_date=two_weeks_from_today, priority=2, version=1).save()
 
-for task in tasks:
-    task.save()
+# Task 2: Bob's task in Alpha Team
+mt2 = MasterTask(milestone=milestones[0], owner=developers[1], team=team1, difficulty=1, status=2,
+                 opened=timezone.now())
+mt2.save()
+Task(masterTask=mt2, title='Gather requirements from stakeholders', description='Interview stakeholders and document functional requirements',
+     promised_date=two_weeks_from_today, priority=3, version=1).save()
+
+# Task 3: Another task for Alice in Alpha Team
+mt3 = MasterTask(milestone=milestones[0], owner=developers[0], team=team1, difficulty=3, status=1,
+                 opened=timezone.now())
+mt3.save()
+Task(masterTask=mt3, title='Draft SRS document', description='Write the Software Requirements Specification document',
+     promised_date=three_weeks_from_today, priority=2, version=1).save()
+
+# Task 4: Carol's task in Beta Team
+mt4 = MasterTask(milestone=milestones[0], owner=developers[2], team=team2, difficulty=2, status=2,
+                 opened=timezone.now())
+mt4.save()
+Task(masterTask=mt4, title='Setup project repository', description='Initialize git repo, add README and CI pipeline',
+     promised_date=two_weeks_from_today, priority=2, version=1).save()
+
+# Task 5: Frank's task in Gamma Team
+mt5 = MasterTask(milestone=milestones[3], owner=developers[5], team=team3, difficulty=2, status=1,
+                 opened=timezone.now())
+mt5.save()
+Task(masterTask=mt5, title='Write project proposal', description='Draft the project proposal document with scope and timeline',
+     promised_date=three_weeks_from_today, priority=2, version=1).save()
+
+print("Database populated successfully!")
+print()
+print("Accounts created:")
+print("  Admin:     admin / adminpassword")
+print("  Lecturer:  lecturer1 / lecturer1password")
+print("  Students:  dev1..dev6 / dev<N>password")
