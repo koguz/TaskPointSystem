@@ -1,42 +1,37 @@
-{% extends "tasks/profile.html" %} {% load static %} {% block main_content %}
-<style>
-  .column {
-    float: left;
-    width: 50%;
-    margin-top: 10px;
-  }
+{% extends "tasks/profile.html" %}
+{% load static %}
 
-  /* Clear floats after the columns */
-  .row:after {
-    display: table;
-    clear: both;
-  }
-  .line {
-    margin-bottom: 15px;
-    font-weight: 500;
-    font-size: 18px;
-  }
-</style>
-
-<div>
-  <h4 style="font-weight: 600; font-size: 22px; font-style: italic;">INFORMATION </h4><hr/>
-    <div class="row">
-      <div class="column line"><span style="font-weight: bold;">Name:</span> {{ user.first_name }} </div>
-    </div>
-    <div class="row">
-      <div class="column line"><span style="font-weight: bold;">Surname:</span> {{ user.last_name }} </div>
-    </div>
-    <div class="row">
-      <div class="column line"><span style="font-weight: bold;">School ID:</span> {{ user.username}} </div>
-    </div>
-
-    <div class="line" style="margin-top: 10px;"><span style="font-weight: bold;">E-mail:</span> {{ user.email }}</div>
-
-    
+{% block main_content %}
+<div class="card">
+  <div class="card-header">
+    <h2 class="h5 mb-0">My Details</h2>
   </div>
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Name</dt>
+      <dd class="col-sm-8">{{ user.first_name }}</dd>
+      <dt class="col-sm-4">Surname</dt>
+      <dd class="col-sm-8">{{ user.last_name }}</dd>
+      <dt class="col-sm-4">School ID</dt>
+      <dd class="col-sm-8">{{ user.username }}</dd>
+      <dt class="col-sm-4">Email</dt>
+      <dd class="col-sm-8">{{ user.email|default:'-' }}</dd>
+    </dl>
   </div>
+</div>
 
-<script defer>
-    document.getElementById('my_details').className = 'selected'
-</script>
-{%endblock %}
+<div class="card mt-3">
+  <div class="card-header">
+    <h2 class="h5 mb-0">Profile Photo URL</h2>
+  </div>
+  <div class="card-body">
+    <form action="{% url 'my_details' %}" method="post" class="tps-form-grid">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

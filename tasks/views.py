@@ -542,7 +542,7 @@ def tpslogout(request):
 
 @login_required
 def profile (request):
-    return render(request, 'tasks/profile.html', {'page_title': 'Profile'})
+    return redirect('my_details')
 
 
 @login_required
@@ -551,17 +551,14 @@ def my_details (request):
     try:
         d: Developer = Developer.objects.get(user=u)
         if request.method == 'POST':
-            form = PhotoURLChangeForm(request.POST)
+            form = PhotoURLChangeForm(request.POST, instance=d)
             if form.is_valid():
-                dnew = form.save(commit=False)
-                dnew.pk = d.pk
-                dnew.user = d.user
-                dnew.save()
+                dnew = form.save()
                 return render(request, 'tasks/my_details.html', {'page_title': 'My Details', 'dev': dnew, 'form': form })
             else:
                 return render(request, 'tasks/my_details.html', {'page_title': 'My Details', 'dev': d, 'form': form })    
         else:
-            form = PhotoURLChangeForm(instance = u, initial={"photoURL": d.photoURL}) 
+            form = PhotoURLChangeForm(instance=d)
             return render(request, 'tasks/my_details.html', {'page_title': 'My Details', 'dev': d, 'form': form })
     except ObjectDoesNotExist:
         if request.method == 'POST':
@@ -572,15 +569,25 @@ def my_details (request):
                 return render(request, 'tasks/password_success.html', {
                     'page_title': 'Password changed.'
                 })
+            return render(request, 'tasks/profile_lecturer.html', {
+                'page_title': 'Account',
+                'form': form
+            })
         else:
             form = PasswordChangeForm(request.user)
-            return render(request, 'tasks/profile_lecturer.html', {'form': form})        
+            return render(request, 'tasks/profile_lecturer.html', {
+                'page_title': 'Account',
+                'form': form
+            })
 
     
 @login_required
 def change_password(request):
-    u = request.user
-    d: Developer = Developer.objects.get(user=u)
+    try:
+        d: Developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        d = None
+
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, data=request.POST)
         if form.is_valid():
@@ -606,31 +613,68 @@ def change_password(request):
 
 @login_required
 def my_teams (request):
-    return render(request, 'tasks/my_teams.html', {'page_title': 'My Details' })
+    try:
+        d: Developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return redirect('my_details')
+
+    teams = d.team.all().order_by('pk')
+    team_members = dict()
+    for team in teams:
+        team_members[team] = team.developer_set.all()
+
+    return render(request, 'tasks/my_teams.html', {
+        'page_title': 'My Teams',
+        'dev': d,
+        'teams': teams,
+        'team_members': team_members
+    })
  
 @login_required
 def my_email (request):
     u = request.user
-    d: Developer = Developer.objects.get(user=u)
+    try:
+        d: Developer = Developer.objects.get(user=u)
+    except ObjectDoesNotExist:
+        return redirect('my_details')
+
     if request.method == 'POST':
-        form = EmailChangeForm(request.POST)
+        form = EmailChangeForm(request.POST, instance=u)
         if form.is_valid():
-            unew = form.save(commit=False)
-            unew.pk = u.pk
-            unew.first_name = u.first_name
-            unew.last_name = u.last_name
-            unew.username = u.username
-            unew.password = u.password
-            unew.save()
-            return render(request, 'tasks/my_email.html', { 'user': u, 'form': form, 'dev': d })
+            form.save()
+            return render(request, 'tasks/my_email.html', {
+                'page_title': 'Email',
+                'user': u,
+                'form': form,
+                'dev': d
+            })
+        return render(request, 'tasks/my_email.html', {
+            'page_title': 'Email',
+            'user': u,
+            'form': form,
+            'dev': d
+        })
     else:
         form = EmailChangeForm(instance = u)
-        return render(request, 'tasks/my_email.html', {'user': u, 'form': form, 'dev': d})
+        return render(request, 'tasks/my_email.html', {
+            'page_title': 'Email',
+            'user': u,
+            'form': form,
+            'dev': d
+        })
 
 
 @login_required
 def my_notifications (request):
-    return render(request, 'tasks/my_notifications.html', {'page_title': 'My Details' })
+    try:
+        d: Developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return redirect('my_details')
+
+    return render(request, 'tasks/my_notifications.html', {
+        'page_title': 'Notifications',
+        'dev': d
+    })
 
 @login_required
 @permission_required('tasks.add_mastercourse')
@@ -838,7 +882,7 @@ def lecturer_create_milestone(request, course_id):
             milestone.course = course 
             milestone.save() 
             return redirect('lecturer_view_course', course_id)
-    form = MilestoneForm
+    form = MilestoneForm()
     context = {
         'page_title': 'Create New Milestone',
         'course': course, 

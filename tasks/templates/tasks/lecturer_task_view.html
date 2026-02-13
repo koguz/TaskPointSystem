@@ -1,84 +1,116 @@
 {% extends "tasks/base.html" %}
-{% load static %}
-
+{% load static tz %}
 
 {% block breadcrumbs %}
-<a href="/">Home</a> &gt; 
-<a href="{% url 'lecturer_view_course' course.id %}">{{ course }}</a> &gt;
-Task: {{mastertask}}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">Lecturer Workspace</p>
+  <h1 class="tps-view-title">{{ mastertask }}</h1>
+  <p class="tps-view-subtitle">Inspect details, discussion, and activity log for this task</p>
+</div>
 {% endblock %}
 
 {% block main_left_content %}
-<div class="card">
-    <div class="card-header"><i class="bi bi-list-task"></i> {{mastertask}}</div>
-    <div class="card-body">
-        <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-person-check"></i> Assigned to {{mastertask.owner}}</h6>
-        <h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-calendar-check"></i> Due {{ task.promised_date }}</h6>
-        <p class="card-text">{{task.description|linebreaksbr}}</p>
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title"><i class="bi bi-list-task"></i> Task Summary</h2>
+    <span class="badge {% if mastertask.status == 1 %}bg-warning text-dark{% elif mastertask.status == 2 %}bg-primary{% elif mastertask.status == 3 %}bg-info text-dark{% elif mastertask.status == 4 %}bg-danger{% else %}bg-success{% endif %}">
+      {{ mastertask.getStatus }}
+    </span>
+  </div>
+  <div class="tps-section-body">
+    <p class="mb-2 text-muted"><i class="bi bi-person-check"></i> Assigned to {{ mastertask.owner }}</p>
+    <p class="mb-3 text-muted"><i class="bi bi-calendar-check"></i> Due {{ task.promised_date }}</p>
+    <div class="mb-3">{{ task.description|linebreaksbr }}</div>
+
+    <div class="tps-mini-grid">
+      <div class="tps-mini-card">
+        <p class="tps-mini-label">Priority</p>
+        <p class="tps-mini-value">{{ task.getPriority }}</p>
+      </div>
+      <div class="tps-mini-card">
+        <p class="tps-mini-label">Points</p>
+        <p class="tps-mini-value">{{ tp }}</p>
+      </div>
+      <div class="tps-mini-card">
+        <p class="tps-mini-label">Difficulty</p>
+        <p class="tps-mini-value">{{ mastertask.getDifficulty }}</p>
+      </div>
+      <div class="tps-mini-card">
+        <p class="tps-mini-label">Version / Votes</p>
+        <p class="tps-mini-value">v{{ task.version }} · {{ v_app }} / {{ v_den }}</p>
+      </div>
+      {% if mastertask.used_ai %}
+      <div class="tps-mini-card" style="grid-column: 1 / -1">
+        <p class="tps-mini-label"><i class="bi bi-robot"></i> Generative AI Usage</p>
+        <p class="tps-mini-value">{{ mastertask.ai_usage }}</p>
+      </div>
+      {% endif %}
     </div>
-    <div class="card-footer text-muted">
-    Status: {{ mastertask.getStatus }}, Priority: {{ task.getPriority }},
-    Difficulty: {{ mastertask.getDifficulty }}, Points: {{ tp }}
-    <hr>
-    Version <i class="bi bi-git"></i> {{ task.version }}, Votes: <i class="bi bi-check-square"></i> {{ v_app }}, <i class="bi bi-x-square"></i> {{ v_den }}
+  </div>
+</section>
+
+<section class="tps-section mb-0">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Task History</h2>
+  </div>
+  <div class="tps-section-body">
+    <div class="tps-stack">
+      {% for log in logs %}
+      <div class="tps-note-item">
+        <span class="tps-note-label">{{ log.tarih|localtime }}</span>
+        <p class="tps-note-value mb-1">{{ log.taskstatus }}</p>
+        <div class="small">{{ log.log }}</div>
+      </div>
+      {% empty %}
+      <div class="text-muted">No log entries.</div>
+      {% endfor %}
     </div>
-</div>
-
-<p>&nbsp;</p>
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Date</th>
-      <th scope="col">Task Status</th>
-      <th scope="col">Log Message</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% load tz %}
-
-  {% for log in logs %}
-    <tr>
-      <td>{{log.tarih|localtime}}</td>
-      <td>{{log.taskstatus}}</td>
-      <td>{{log.log}}</td>
-    </tr>
-{% endfor %}
-  </tbody>
-</table>
-
+  </div>
+</section>
 {% endblock %}
 
 {% block main_right_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Add Comment</h2>
+  </div>
+  <div class="tps-section-body">
+    <form action="{% url 'lecturer_view_task' mastertask.pk %}" method="post" class="tps-form-grid">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit" name="approve" value="C">
+          <i class="bi bi-chat-right"></i> Comment
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
 
-<h4>Comments</h4>
-<form action="{% url 'lecturer_view_task' mastertask.pk %}" method='post'>
-{% csrf_token %}
-<table width="100%">
-{{ form }}
-    <tr>
-        <td>&nbsp;</td>
-        <td>
-            <button class="btn btn-primary" type="submit" name="approve" value="C"><i class="bi bi-chat-right"></i> Comment</button>
-        </td>
-    </tr>
-</table>
-</form>
-
-<hr>
-{% for comment in comments %}
-    <div class="card" style="margin-bottom: 10px;">
-        <div class="card-header{% if comment.approved %} bg-success text-white{% elif comment.approved == False %} bg-danger text-white{% endif %}">
-            <i class="bi bi-chat-right"></i> {{ comment.owner.get_full_name }} 
-            {% if comment.approved %} approves.{% elif comment.approved == False %} requests changes.{% endif %}
+<section class="tps-section mb-0">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Discussion</h2>
+    <span class="text-muted small">{{ comments|length }} entries</span>
+  </div>
+  <div class="tps-section-body">
+    <div class="tps-stack">
+      {% for comment in comments %}
+      <article class="tps-comment {% if comment.approved %}approve{% elif comment.approved == False %}revise{% endif %}">
+        <div class="tps-comment-head">
+          <p class="tps-comment-author"><i class="bi bi-chat-right"></i> {{ comment.owner.get_full_name }}</p>
+          <span class="tps-comment-time">{{ comment.date }}</span>
         </div>
-        <div class="card-body">
-            <p class="card-text">{{comment.body|linebreaksbr}}</p>
-            {% if comment.file_url %}
-                <a href="{{comment.file_url}}">{{comment.file_url}}</a>
-            {% endif %}
+        <p class="tps-comment-text">{{ comment.body|linebreaksbr }}</p>
+        {% if comment.file_url %}
+        <div class="small mt-2">
+          <a href="{{ comment.file_url }}" target="_blank" rel="noopener noreferrer">Attachment link</a>
         </div>
-        <div class="card-footer text-muted"><i class="bi bi-calendar"></i> {{comment.date}}</div>
+        {% endif %}
+      </article>
+      {% empty %}
+      <div class="empty-state">No comments yet.</div>
+      {% endfor %}
     </div>
-{% endfor %}
-
-{% endblock%}
+  </div>
+</section>
+{% endblock %}

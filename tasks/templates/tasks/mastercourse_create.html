@@ -1,21 +1,39 @@
 {% extends "tasks/base.html" %}
 {% load static %}
 
+{% block breadcrumbs %}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">Lecturer Workspace</p>
+  <h1 class="tps-view-title">Create Master Course</h1>
+  <p class="tps-view-subtitle">Set up a new course and initial semester configuration</p>
+</div>
+{% endblock %}
 
 {% block left_content %}
-<a href="{% url 'lecturer_view' %}">Back to lecturer view</a>
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Navigation</h2>
+  </div>
+  <div class="tps-section-body">
+    <a href="{% url 'lecturer_view' %}" class="btn btn-outline-secondary btn-sm">Back to Lecturer Dashboard</a>
+  </div>
+</section>
 {% endblock %}
 
 {% block main_content %}
-<h4>Create Master Course</h4>
-<form action="{% url 'create_mastercourse' %}" method="post">
-    {% csrf_token %}
-    <table>
-        {{ form }}
-        {{ form_details }}
-        <tr><td>&nbsp;</td><td><button class="btn btn-primary" type="submit">Submit</button></td></tr>
-    </table>
-    
-</form>
-
-{% endblock%}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Course Setup</h2>
+  </div>
+  <div class="tps-section-body">
+    <form action="{% url 'create_mastercourse' %}" method="post" class="tps-form-grid">
+      {% csrf_token %}
+      {{ form.as_p }}
+      {{ form_details.as_p }}
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Create Course</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

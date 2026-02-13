@@ -1,4 +1,5 @@
-{% load static %}<!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -16,136 +17,156 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="{% static 'tasks/style.css' %}" />
     <link
       rel="stylesheet"
       href="https://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css"
     />
-    {% block customcss %} {% endblock %}
-
-    <title>TPS - {{ page_title }}</title>
+    <link rel="stylesheet" href="{% static 'tasks/style.css' %}" />
+    {% block customcss %}{% endblock %}
+    <title>TPS - {{ page_title|default:"Dashboard" }}</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container">
-        <a class="navbar-brand" href="/">
-          <img
-            src="{% static 'tasks/TPS_bar_tr.png' %}"
-            class="d-inline-block align-top"
-            alt="TPS"
-            loading="lazy"
-            height="48"
-          />
-        </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        {% block menubar %}
+    <header class="tps-shell sticky-top">
+      <nav class="navbar navbar-expand-lg tps-navbar">
+        <div class="container py-2">
+          <a class="navbar-brand tps-brand" href="{% url 'index' %}">
+            <span class="tps-brand-mark"><i class="bi bi-kanban"></i></span>
+            <span class="tps-brand-title">Task Point System</span>
+          </a>
+          {% if user.is_authenticated %}
+          <button
+            class="navbar-toggler tps-navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          {% endif %}
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="dropdown03"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                ><i class="bi bi-person-circle"></i> {{ user.get_full_name }}</a
-              >
-              <ul class="dropdown-menu" aria-labelledby="dropdown03">
-                <li
-                  ><a class="dropdown-item" href="{% url 'my_details' %}"
-                    ><i class="bi bi-key"></i> Profile</a
-                  ></li
+          {% block menubar %}
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 tps-primary-nav">
+              {% if perms.tasks.add_team %}
+              <li class="nav-item">
+                <a class="nav-link {% if '/lecturer/' in request.path or '/courses/' in request.path or '/team/create/' in request.path %}active{% endif %}" href="{% url 'lecturer_view' %}">Lecturer Dashboard</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link {% if request.path == '/' or '/team/' in request.path or '/tasks/' in request.path %}active{% endif %}" href="{% url 'index' %}">Team Dashboard</a>
+              </li>
+              {% endif %}
+              <li class="nav-item">
+                <a class="nav-link {% if '/updates/' in request.path %}active{% endif %}" href="{% url 'view_updates' %}">About</a>
+              </li>
+            </ul>
+            {% endif %}
+
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+              {% if user.is_authenticated %}
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle tps-user-toggle"
+                  href="#"
+                  id="userNavDropdown"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
                 >
-                <li
-                  ><a class="dropdown-item" href="{% url 'view_updates' %}"
-                    ><i class="bi bi-lightning"></i> About</a
-                  ></li
-                >
-                <li
-                  ><a
-                    class="dropdown-item"
-                    href="https://docs.google.com/document/d/e/2PACX-1vQGd-e63O3NKBAXof_Av5ogkue_dOxdhXxgYG53GzP2qHbBYVXBVR3CwOG3gSOA4CODAWNaSbsx3-ui/pub"
-                    ><i class="bi bi-question-square"></i> Help</a
-                  ></li
-                >
-                <li
-                  ><a class="dropdown-item" href="{% url 'logout' %}"
-                    ><i class="bi bi-box-arrow-right"></i> Logout</a
-                  ></li
-                >
-              </ul>
-            </li>
-            <!--<li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-list-check"></i> TPS</a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdown04">
-                      <li><a class="dropdown-item" href="#"><i class="bi bi-info-circle"></i> Help</a></li>
-                      <li><a class="dropdown-item" href="logout/"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-                    </ul>
-                  </li>-->
-          </ul>
+                  <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end tps-user-menu" aria-labelledby="userNavDropdown">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'my_details' %}">
+                      <i class="bi bi-person-vcard"></i> Profile
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'change_password' %}">
+                      <i class="bi bi-key"></i> Password
+                    </a>
+                  </li>
+                  {% if not perms.tasks.add_team %}
+                  <li>
+                    <a class="dropdown-item" href="{% url 'email' %}">
+                      <i class="bi bi-envelope"></i> Email
+                    </a>
+                  </li>
+                  {% endif %}
+                  <li><hr class="dropdown-divider" /></li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'logout' %}">
+                      <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+          {% endblock %}
         </div>
+      </nav>
+    </header>
 
-        {% endblock %}
+    <main class="container py-4">
+      <div class="row tps-breadcrumb-row">
+        <div class="col-12">
+          {% block breadcrumbs %}{% endblock %}
+        </div>
       </div>
-    </nav>
 
-    <div class="container" style="padding-top: 10px">
-      <div class="row">
-        <div class="col-sm-12">{% block breadcrumbs %} {% endblock %}</div>
-      </div>
-    </div>
+      {% block alert %}{% endblock %}
 
-    <div class="container" style="padding-top: 10px">
-      <div class="row">
-        <div class="col-sm-12">{% block alert %} {% endblock %}</div>
-        <div class="col-sm-3">{% block left_content %} {% endblock %}</div>
-        <div class="col-sm-6">{% block main_content %} {% endblock %}</div>
-        <div class="col-sm-3">{% block right_content %} {% endblock %}</div>
+      <div class="row tps-layout-row">
+        <aside class="col-12 col-xl-3">{% block left_content %}{% endblock %}</aside>
+        <section class="col-12 col-xl-6">{% block main_content %}{% endblock %}</section>
+        <aside class="col-12 col-xl-3">{% block right_content %}{% endblock %}</aside>
       </div>
-    </div>
 
-    <div class="container" style="padding-top: 10px">
-      <div class="row">
-        <div class="col-sm-6">{% block main_left_content %} {% endblock %}</div>
-        <div class="col-sm-6"
-          >{% block main_right_content %} {% endblock %}</div
-        >
+      <div class="row tps-layout-row">
+        <section class="col-12 col-xl-6">{% block main_left_content %}{% endblock %}</section>
+        <section class="col-12 col-xl-6">{% block main_right_content %}{% endblock %}</section>
       </div>
-    </div>
 
-    <div class="container" style="padding-top: 10px">
-      <div class="row">
-        <div class="col-sm-3"
-          >{% block small_left_content %} {% endblock %}</div
-        >
-        <div class="col-sm-9"
-          >{% block large_main_content %} {% endblock %}</div
-        >
+      <div class="row tps-layout-row">
+        <aside class="col-12 col-xl-3">{% block small_left_content %}{% endblock %}</aside>
+        <section class="col-12 col-xl-9">{% block large_main_content %}{% endblock %}</section>
       </div>
-    </div>
+    </main>
 
-    <div class="container" style="padding-top: 10px">
-      <div class="row">
-        <hr />
-        <div class="col-sm-12" style="text-align: center; font-size: 9pt">Task Point System, 2017-2022</div
-        >
+    <footer class="tps-footer mt-5">
+      <div class="container py-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+          <div class="tps-footer-left">
+            <span class="tps-footer-title">Task Point System</span>
+            <span class="tps-footer-muted">2017-2026</span>
+          </div>
+          <div class="tps-footer-links">
+            {% if user.is_authenticated %}
+              {% if perms.tasks.add_team %}
+              <a href="{% url 'lecturer_view' %}">Dashboard</a>
+              {% else %}
+              <a href="{% url 'index' %}">Dashboard</a>
+              <a href="{% url 'my_details' %}">Profile</a>
+              {% endif %}
+              <a href="{% url 'view_updates' %}">About</a>
+              <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+              <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+          </div>
+        </div>
       </div>
-    </div>
-    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    </footer>
+
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
@@ -161,15 +182,19 @@
       integrity="sha256-xH4q8N0pEzrZMaRmd7gQVcTZiFei+HfRTBPJ1OGXC0k="
       crossorigin="anonymous"
     ></script>
+
     {% block scriptblock %}
     <script>
-      $(document).ready(function () {
+      $(function () {
         $(".datepicker").datepicker({ dateFormat: "yy-mm-dd" });
-        $('[data-toggle="tooltip"]').tooltip();
+        $('[data-bs-toggle="tooltip"], [data-toggle="tooltip"]').tooltip();
+
+        $(
+          'input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):not([type="file"])'
+        ).addClass("form-control");
+        $("textarea").addClass("form-control");
+        $("select").addClass("form-select");
       });
-      $("input").addClass("form-control");
-      $("textarea").addClass("form-control");
-      $("select").addClass("form-select");
     </script>
     {% endblock %}
   </body>

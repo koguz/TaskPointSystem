@@ -1,27 +1,41 @@
 {% extends "tasks/base.html" %}
 {% load static %}
 
+{% block breadcrumbs %}
+<h1 class="h3 page-title">Team Creation Results</h1>
+{% endblock %}
 
 {% block left_content %}
-<a href="{% url 'lecturer_view' %}">Back to lecturer view</a>
+<div class="tps-help">
+  <a href="{% url 'lecturer_view' %}" class="btn btn-outline-secondary btn-sm">Back to Lecturer Dashboard</a>
+</div>
 {% endblock %}
 
 {% block main_content %}
-
-<h4>Successfully created teams for...<br /> {{ course }} </h4>
-
-<table class="table">
-{% for key, value in t_d.items %}
-    <tr>
-        <td colspan="2"><b>{{ key }}</b></td>
-    </tr>
-    {% for dev in value %}
-    <tr>
-        <td>{{ dev.user.username }}</td>
-        <td> {{ dev.getName }}</td>
-    </tr>
-    {% endfor %}
-{% endfor %}
-</table>
-
-{% endblock%}
+<div class="card">
+  <div class="card-header">
+    <h2 class="h5 mb-0">Successfully Created Teams</h2>
+  </div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <tbody>
+        {% for key, value in t_d.items %}
+        <tr>
+          <th colspan="2" class="table-light">{{ key }}</th>
+        </tr>
+          {% for dev in value %}
+          <tr>
+            <td>{{ dev.user.username }}</td>
+            <td>{{ dev.getName }}</td>
+          </tr>
+          {% endfor %}
+        {% empty %}
+        <tr>
+          <td colspan="2" class="text-center text-muted py-4">No teams were created.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

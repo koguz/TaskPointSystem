@@ -219,3 +219,5 @@ venv.bak/
 .idea/
 db.sqlite3
 *.sqlite3
+
+migrations/

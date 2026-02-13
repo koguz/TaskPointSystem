@@ -1,12 +1,30 @@
-{% extends "tasks/base.html" %} {% load static %} {% block left_content %} 
-{%include "tasks/lecturer_menu.html" %} {% endblock %} {% block main_content %}
+{% extends "tasks/base.html" %}
+{% load static %}
 
-<h4>Hello {{ user_display_name }}!</h4>
-<p>Todo list</p>
-<ul>
-  <li>Check permissions - check if updating tasks are valid. </li>
-  <li>Logging</li>
-  <li>Let the team to change team properties</li>
-</ul>
+{% block breadcrumbs %}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">Lecturer Workspace</p>
+  <h1 class="tps-view-title">Lecturer Dashboard</h1>
+  <p class="tps-view-subtitle">Manage courses, teams, milestones, and project progress</p>
+</div>
+{% endblock %}
 
-{% endblock%} 
+{% block left_content %}
+{% include "tasks/lecturer_menu.html" %}
+{% endblock %}
+
+{% block main_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Welcome {{ user.get_full_name|default:user.username }}</h2>
+  </div>
+  <div class="tps-section-body">
+    <p class="mb-2">Use the menu on the left to navigate courses and inspect team/task progress.</p>
+    <ul class="mb-0 ps-3">
+      <li>Create courses and semesters from <strong>Create Master Course</strong>.</li>
+      <li>Open a course to review milestones, teams, and tasks in one place.</li>
+      <li>Open any task to review comments and status history.</li>
+    </ul>
+  </div>
+</section>
+{% endblock %}

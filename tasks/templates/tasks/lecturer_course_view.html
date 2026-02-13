@@ -1,73 +1,95 @@
 {% extends "tasks/base.html" %}
 {% load static %}
 
-
 {% block breadcrumbs %}
-<a href="/">Home</a> &gt; 
-{{ course }}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">Lecturer Workspace</p>
+  <h1 class="tps-view-title">{{ course }}</h1>
+  <p class="tps-view-subtitle">Milestones, teams, and all task activity for this course</p>
+</div>
 {% endblock %}
 
 {% block small_left_content %}
-<h4>Milestones</h4>
-<a href="{% url 'create_milestone' course.id %}">Create new</a><br/>
-{% for ms in milestones %}
-{{ ms }} <br /> 
-[ <a href="{% url 'edit_milestone' ms.id %}">Edit</a> | <a href="{% url 'grade_milestone' ms.id %}">Grades</a> ]<br />
-{% endfor %}
-</ul>
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Milestones</h2>
+    <a href="{% url 'create_milestone' course.id %}" class="btn btn-sm btn-outline-primary">Create</a>
+  </div>
+  <div class="tps-section-body">
+    <ul class="tps-list-clean">
+      {% for ms in milestones %}
+      <li>
+        <div class="fw-bold">{{ ms }}</div>
+        <div class="small mt-1">
+          <a href="{% url 'edit_milestone' ms.id %}">Edit</a>
+          <span class="mx-1">|</span>
+          <a href="{% url 'grade_milestone' ms.id %}">Grades</a>
+        </div>
+      </li>
+      {% empty %}
+      <li class="text-muted">No milestones.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
 
-<hr />
-<h4>Teams</h4>
-<ul>
-{% for team in teams %}
-    <li><a href="{% url 'lecturer_view_team' team.id %}">{{ team }}</a></li>
-{% endfor %}
-</ul>
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Teams</h2>
+  </div>
+  <div class="tps-section-body">
+    <ul class="tps-list-clean">
+      {% for team in teams %}
+      <li><a href="{% url 'lecturer_view_team' team.id %}">{{ team }}</a></li>
+      {% empty %}
+      <li class="text-muted">No teams.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
 {% endblock %}
 
 {% block large_main_content %}
-
-<h4>{{ course }}</h4>
-
-
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Course Tasks</h2>
+    <span class="text-muted small">{{ tasks|length }} items</span>
+  </div>
+  <div class="p-0">
+    <div class="table-responsive table-responsive-md-stack">
+      <table class="table tps-table-clean table-hover align-middle">
+        <thead>
+          <tr>
             <th scope="col">Team</th>
             <th scope="col">Owner</th>
             <th scope="col">Title</th>
             <th scope="col">Milestone</th>
             <th scope="col">Status</th>
-            <th scope="col">Completion Time</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for task in tasks %}
-        <tr>
-            <td>{{task.team}}</td>
-            <td>{{task.owner}}</td>
-            <td><a href="{% url 'lecturer_view_task' task.pk %}">{{task}}</a></td>
-            <td>{{task.milestone}}</td>
-            <td class="{% if task.status == 1 %}
-                    table-warning 
-                {% elif task.status == 2 %}
-                    table-primary
-                {% elif task.status == 3 %}
-                    table-info
-                {% elif task.status == 4 %}
-                    table-danger
-                {% elif task.status == 5 %}
-                    table-success
-                {%endif%}">{{task.getStatus}}</td>
-            {% if task.completed %}
-                <td>{{task.completed|timeuntil:task.opened}}</td>
-            {% else %}    
-                <td>-</td>
-            {% endif %}
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-
-
-{% endblock%}
+            <th scope="col">Completion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+          <tr>
+            <td>{{ task.team }}</td>
+            <td>{{ task.owner }}</td>
+            <td><a href="{% url 'lecturer_view_task' task.pk %}">{{ task }}</a></td>
+            <td>{{ task.milestone }}</td>
+            <td>
+              <span class="badge {% if task.status == 1 %}bg-warning text-dark{% elif task.status == 2 %}bg-primary{% elif task.status == 3 %}bg-info text-dark{% elif task.status == 4 %}bg-danger{% else %}bg-success{% endif %}">
+                {{ task.getStatus }}
+              </span>
+            </td>
+            <td>{% if task.completed %}{{ task.completed|timeuntil:task.opened }}{% else %}-{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No tasks available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

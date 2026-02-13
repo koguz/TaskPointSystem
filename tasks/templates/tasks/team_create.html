@@ -1,75 +1,92 @@
-{% extends "tasks/base.html" %} {% load static %} {% block left_content %}
-<h4>Help!</h4>
-Help text here... {% endblock %} {% block main_content %}
+{% extends "tasks/base.html" %}
+{% load static %}
 
-<h4
-  >Create Teams for...<br />
-  {{ course }} </h4
->
+{% block breadcrumbs %}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">Lecturer Workspace</p>
+  <h1 class="tps-view-title">Create Teams</h1>
+  <p class="tps-view-subtitle">{{ course }}</p>
+</div>
+{% endblock %}
 
-<form action="{% url 'create_team' course.pk %}" method="post">
-  {% csrf_token %}
-  <table>
-    <tr>
-      <td>Team size</td>
-      <td>:</td>
-      <td><input type="number" size="4" value="4" name="team_size" /></td>
-    </tr>
-    <tr>
-      <td valign="top">Student List</td>
-      <td valign="top">:</td>
-      <td><textarea cols="40" rows="10" name="stdlist"></textarea></td>
-    </tr>
-    <tr>
-      <td colspan="2">&nbsp;</td>
-      <td
-        ><input
-          name="auto"
-          type="submit"
-          class="btn btn-primary"
-          value="Generate Random Teams"
-      /></td>
-    </tr>
-  </table>
-</form>
+{% block left_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Input Format</h2>
+  </div>
+  <div class="tps-section-body small">
+    <p>Paste student rows exactly as copied from your source list (tab-separated fields).</p>
+    <p class="mb-0">Use random generation for automatic chunking by team size, or manual mode to append one team at a time.</p>
+  </div>
+</section>
 
-{% endblock%} {% block right_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Current Assignments</h2>
+  </div>
+  <div class="tps-section-body">
+    <div class="table-responsive">
+      <table class="table tps-table-clean table-sm mb-0">
+        <tbody>
+          {% for key, value in t_d.items %}
+            {% for dev in value %}
+            <tr>
+              <td>{{ dev.getName }}</td>
+              <td class="text-muted">{{ key }}</td>
+            </tr>
+            {% endfor %}
+          {% empty %}
+          <tr>
+            <td class="text-muted">No assignments yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
 
-<h4>Manual Team Creation</h4>
-<br />
+{% block main_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Generate Random Teams</h2>
+  </div>
+  <div class="tps-section-body">
+    <form action="{% url 'create_team' course.pk %}" method="post" class="tps-form-grid">
+      {% csrf_token %}
+      <div>
+        <label for="team-size" class="form-label">Team Size</label>
+        <input id="team-size" type="number" min="1" name="team_size" value="4" class="form-control" />
+      </div>
+      <div>
+        <label for="stdlist-auto" class="form-label">Student List</label>
+        <textarea id="stdlist-auto" rows="14" name="stdlist" class="form-control" placeholder="Paste student list here..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button name="auto" type="submit" class="btn btn-primary">Generate Random Teams</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
 
-<form action="{% url 'create_team' course.pk %}" method="post">
-  {% csrf_token %}
-  <table>
-    <td>
-      <textarea
-        style="font-size: 12px"
-        cols="60"
-        rows="16"
-        name="stdlist"
-      ></textarea>
-    </td>
-    <tr>
-      <td
-        ><input
-          name="manuel"
-          type="submit"
-          class="btn btn-primary"
-          value="Generate Teams Manually"
-      /></td>
-    </tr>
-  </table>
-</form>
-<br /><br />
-
-<table>
-  {% for key, value in t_d.items %} {% for dev in value %}
-  <tr>
-    <td>{{ dev.getName }}</td>
-    <td>&ensp;&ensp;&ensp;&ensp;</td>
-    <td>{{ key }}</td>
-  </tr>
-  {% endfor %} {% endfor %}
-</table>
-
+{% block right_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Manual Team Creation</h2>
+  </div>
+  <div class="tps-section-body">
+    <form action="{% url 'create_team' course.pk %}" method="post" class="tps-form-grid">
+      {% csrf_token %}
+      <div>
+        <label for="stdlist-manual" class="form-label">Student List</label>
+        <textarea id="stdlist-manual" rows="14" name="stdlist" class="form-control" placeholder="Paste one team's members..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button name="manuel" type="submit" class="btn btn-outline-primary">Generate Teams Manually</button>
+      </div>
+    </form>
+  </div>
+</section>
 {% endblock %}
