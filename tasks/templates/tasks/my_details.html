@@ -20,18 +20,34 @@
   </div>
 </div>
 
-<div class="card mt-3">
-  <div class="card-header">
-    <h2 class="h5 mb-0">Profile Photo URL</h2>
+<section class="tps-section mt-3">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Choose Profile Avatar</h2>
   </div>
-  <div class="card-body">
+  <div class="tps-section-body">
+    <p class="small text-muted mb-3">Custom avatar URLs are disabled. Select one of the preset avatars.</p>
     <form action="{% url 'my_details' %}" method="post" class="tps-form-grid">
       {% csrf_token %}
-      {{ form.as_p }}
+      <div class="avatar-picker-grid">
+        {% for avatar in avatar_options %}
+        <label class="avatar-picker-option">
+          <input
+            type="radio"
+            name="avatar_choice"
+            value="{{ avatar.url }}"
+            {% if avatar.url == dev.photoURL %}checked{% endif %}
+          />
+          <span class="avatar-picker-card">
+            <img src="{{ avatar.url }}" alt="{{ avatar.label }}" class="avatar-picker-image" />
+            <span class="avatar-picker-label">{{ avatar.label }}</span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
       <div class="form-actions">
-        <button class="btn btn-primary" type="submit">Save</button>
+        <button class="btn btn-primary" type="submit">Save Avatar</button>
       </div>
     </form>
   </div>
-</div>
+</section>
 {% endblock %}

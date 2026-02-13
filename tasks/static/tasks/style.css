@@ -521,6 +521,60 @@ a:hover {
   object-fit: cover;
 }
 
+.avatar-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: var(--tps-space-2);
+}
+
+.avatar-picker-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.avatar-picker-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.avatar-picker-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid #dce4f2;
+  border-radius: 10px;
+  padding: 0.55rem;
+  background: #f9fbff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.avatar-picker-option:hover .avatar-picker-card {
+  border-color: #b8c9eb;
+  box-shadow: 0 6px 16px rgba(20, 40, 80, 0.08);
+  transform: translateY(-1px);
+}
+
+.avatar-picker-option input:checked + .avatar-picker-card {
+  border-color: #2f5eb1;
+  box-shadow: 0 0 0 3px rgba(50, 95, 177, 0.16);
+  background: #eef4ff;
+}
+
+.avatar-picker-image {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.avatar-picker-label {
+  font-size: 0.78rem;
+  color: #4b5f88;
+  font-weight: 500;
+}
+
 @media (max-width: 1199.98px) {
   .table-responsive-md-stack {
     overflow-x: auto;

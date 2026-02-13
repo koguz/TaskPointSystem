@@ -9,7 +9,7 @@
 {% block left_content %}
 <div class="tps-sidebar">
   <div class="text-center mb-3">
-    <img src="{% if dev %}{{ dev.photoURL }}{% else %}https://cdn0.iconfinder.com/data/icons/social-media-network-4/48/male_avatar-512.png{% endif %}" alt="Avatar" class="avatar-lg" />
+    <img src="{% if dev %}{{ dev.photoURL }}{% else %}{% static 'tasks/avatars/penguin.svg' %}{% endif %}" alt="Avatar" class="avatar-lg" />
     <div class="fw-bold mt-2">{{ user.get_full_name|default:user.username }}</div>
     <div class="small text-muted">{{ user.username }}</div>
   </div>

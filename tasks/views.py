@@ -8,11 +8,12 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.utils.html import strip_tags
 
 
 from tasks.models import *
-from .forms import CommentForm, CourseForm, MasterCourseForm, MilestoneForm, PhotoURLChangeForm, TaskForm, TeamFormStd, EmailChangeForm
+from .forms import CommentForm, CourseForm, MasterCourseForm, MilestoneForm, TaskForm, TeamFormStd, EmailChangeForm
 
 
 # Create your views here.
@@ -24,6 +25,60 @@ def saveLog(mt: MasterTask, message, gizli: bool = False):
     l.log = message
     l.gizli = gizli
     l.save()
+
+
+AVATAR_PRESETS = [
+    ("penguin", "Penguin"),
+    ("flower", "Flower"),
+    ("butterfly", "Butterfly"),
+    ("cat", "Cat"),
+    ("dog", "Dog"),
+    ("fox", "Fox"),
+    ("panda", "Panda"),
+    ("owl", "Owl"),
+    ("turtle", "Turtle"),
+    ("bee", "Bee"),
+    ("dolphin", "Dolphin"),
+    ("whale", "Whale"),
+    ("rabbit", "Rabbit"),
+    ("frog", "Frog"),
+    ("ladybug", "Ladybug"),
+    ("snail", "Snail"),
+    ("mushroom", "Mushroom"),
+    ("cactus", "Cactus"),
+    ("sunflower", "Sunflower"),
+    ("rose", "Rose"),
+    ("maple", "Maple"),
+    ("rainbow", "Rainbow"),
+    ("moon", "Moon"),
+    ("star", "Star"),
+]
+
+
+def _avatar_options():
+    return [
+        {
+            "label": label,
+            "url": static(f"tasks/avatars/{slug}.svg"),
+        }
+        for slug, label in AVATAR_PRESETS
+    ]
+
+
+def _avatar_url_set():
+    return {static(f"tasks/avatars/{slug}.svg") for slug, _ in AVATAR_PRESETS}
+
+
+def _default_avatar_url():
+    return static(f"tasks/avatars/{AVATAR_PRESETS[0][0]}.svg")
+
+
+def _sanitize_developer_avatar(dev: Developer):
+    allowed_urls = _avatar_url_set()
+    if dev.photoURL not in allowed_urls:
+        dev.photoURL = _default_avatar_url()
+        dev.save(update_fields=["photoURL"])
+    return dev
 
 @login_required
 def index(request):
@@ -550,16 +605,26 @@ def my_details (request):
     u = request.user
     try:
         d: Developer = Developer.objects.get(user=u)
+        d = _sanitize_developer_avatar(d)
+        avatar_options = _avatar_options()
+        allowed_avatar_urls = _avatar_url_set()
         if request.method == 'POST':
-            form = PhotoURLChangeForm(request.POST, instance=d)
-            if form.is_valid():
-                dnew = form.save()
-                return render(request, 'tasks/my_details.html', {'page_title': 'My Details', 'dev': dnew, 'form': form })
-            else:
-                return render(request, 'tasks/my_details.html', {'page_title': 'My Details', 'dev': d, 'form': form })    
+            selected_avatar = request.POST.get('avatar_choice', '').strip()
+            if selected_avatar in allowed_avatar_urls:
+                d.photoURL = selected_avatar
+                d.save(update_fields=['photoURL'])
+
+            return render(request, 'tasks/my_details.html', {
+                'page_title': 'My Details',
+                'dev': d,
+                'avatar_options': avatar_options
+            })
         else:
-            form = PhotoURLChangeForm(instance=d)
-            return render(request, 'tasks/my_details.html', {'page_title': 'My Details', 'dev': d, 'form': form })
+            return render(request, 'tasks/my_details.html', {
+                'page_title': 'My Details',
+                'dev': d,
+                'avatar_options': avatar_options
+            })
     except ObjectDoesNotExist:
         if request.method == 'POST':
             form = PasswordChangeForm(request.user, data=request.POST)
@@ -585,6 +650,7 @@ def my_details (request):
 def change_password(request):
     try:
         d: Developer = Developer.objects.get(user=request.user)
+        d = _sanitize_developer_avatar(d)
     except ObjectDoesNotExist:
         d = None
 
@@ -615,13 +681,20 @@ def change_password(request):
 def my_teams (request):
     try:
         d: Developer = Developer.objects.get(user=request.user)
+        d = _sanitize_developer_avatar(d)
     except ObjectDoesNotExist:
         return redirect('my_details')
 
     teams = d.team.all().order_by('pk')
+    allowed_avatar_urls = _avatar_url_set()
+    default_avatar_url = _default_avatar_url()
     team_members = dict()
     for team in teams:
-        team_members[team] = team.developer_set.all()
+        members = list(team.developer_set.all())
+        for member in members:
+            if member.photoURL not in allowed_avatar_urls:
+                member.photoURL = default_avatar_url
+        team_members[team] = members
 
     return render(request, 'tasks/my_teams.html', {
         'page_title': 'My Teams',
@@ -635,6 +708,7 @@ def my_email (request):
     u = request.user
     try:
         d: Developer = Developer.objects.get(user=u)
+        d = _sanitize_developer_avatar(d)
     except ObjectDoesNotExist:
         return redirect('my_details')
 
@@ -668,6 +742,7 @@ def my_email (request):
 def my_notifications (request):
     try:
         d: Developer = Developer.objects.get(user=request.user)
+        d = _sanitize_developer_avatar(d)
     except ObjectDoesNotExist:
         return redirect('my_details')
 
@@ -731,6 +806,7 @@ def create_team(request, course_id):
                 us.save()
                 d = Developer()
                 d.user = us 
+                d.photoURL = _default_avatar_url()
                 d.save()
             
             u:User = User(User.objects.get(username = uniId))
