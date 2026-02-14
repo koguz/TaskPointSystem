@@ -107,6 +107,7 @@ def index(request):
             return redirect('logout')
 
 
+@login_required
 def update_view(request):
     return render(request, 'tasks/updates.html')
 
@@ -212,6 +213,8 @@ def edit_task(request, task_id):
 def create_task(request, team_id):
     d = Developer.objects.get(user=request.user)
     t:Team = Team.objects.get(pk=team_id)
+    if t not in d.team.all():
+        return redirect('team_view', d.team.all()[0].pk)
     milestone = t.course.get_current_milestone() #Milestone.objects.all().filter(course=t.course).order_by('due')[0]
     if request.method == 'POST':
         form = TaskForm(request.POST)
@@ -341,7 +344,8 @@ def complete_task(request, task_id):
 def edit_team(request, team_id):
     d:Developer = Developer.objects.get(user=request.user)
     t:Team = Team.objects.get(pk=team_id)
-    print(t.name, t.github)
+    if t not in d.team.all():
+        return redirect('team_view', d.team.all()[0].pk)
     if request.method == 'POST':
         form = TeamFormStd(request.POST)
         if form.is_valid():
@@ -400,11 +404,18 @@ def like_task(request,task_id, liked):
 
 
 
-@login_required 
+@login_required
 def view_task(request, task_id):
     mt:MasterTask = get_object_or_404(MasterTask, pk=task_id)
     t:Task = Task.objects.all().filter(masterTask=mt).order_by('pk').reverse()[0]
-    d:Developer = Developer.objects.get(user=request.user)
+    try:
+        d:Developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        try:
+            Lecturer.objects.get(user=request.user)
+            return redirect('lecturer_view_task', task_id)
+        except ObjectDoesNotExist:
+            return redirect('logout')
 
     if mt.team in d.team.all():
         tm = mt.team
