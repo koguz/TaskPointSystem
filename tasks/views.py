@@ -120,6 +120,108 @@ def _has_revision_request(mastertask: MasterTask, task: Task):
         vote=False
     ).exists()
 
+
+def _build_team_points_breakdown(team: Team, current_user=None):
+    milestones = list(team.course.milestone_set.all().order_by("due", "pk"))
+    developers = list(
+        team.developer_set.select_related("user").order_by(
+            "user__first_name", "user__last_name", "user__username"
+        )
+    )
+    developer_count = len(developers)
+
+    accepted_points_lookup = {}
+    accepted_tasks = MasterTask.objects.filter(
+        team=team,
+        status=5,
+        milestone__in=milestones
+    )
+    for mastertask in accepted_tasks:
+        key = (mastertask.owner_id, mastertask.milestone_id)
+        accepted_points_lookup[key] = accepted_points_lookup.get(key, 0) + mastertask.get_points()
+
+    milestone_rows = []
+    overall_planned_points = 0
+    overall_accepted_points = 0
+    team_weighted_score = 0.0
+    for milestone in milestones:
+        total_points = team.get_all_milestone_points(milestone)
+        accepted_points = team.get_all_accepted_points(milestone)
+        team_score = round((accepted_points / total_points) * 100) if total_points > 0 else 0
+        weighted_team_score = team_score * (milestone.weight / 100)
+
+        overall_planned_points += total_points
+        overall_accepted_points += accepted_points
+        team_weighted_score += weighted_team_score
+        milestone_rows.append({
+            "milestone": milestone,
+            "total_points": total_points,
+            "accepted_points": accepted_points,
+            "team_score": team_score,
+            "weighted_team_score": weighted_team_score,
+        })
+
+    overall_team_score = round((overall_accepted_points / overall_planned_points) * 100) if overall_planned_points > 0 else 0
+    team_component = team_weighted_score * (team.course.group_weight / 100)
+
+    developer_rows = []
+    developers_summary = {}
+    for developer in developers:
+        milestone_scores = []
+        milestone_score_map = {}
+        individual_weighted_score = 0.0
+
+        for milestone_row in milestone_rows:
+            milestone = milestone_row["milestone"]
+            planned_points_per_developer = (
+                milestone_row["total_points"] / developer_count
+                if developer_count > 0 else 0
+            )
+            accepted_points = accepted_points_lookup.get((developer.pk, milestone.pk), 0)
+
+            if planned_points_per_developer > 0:
+                developer_score = round((accepted_points / planned_points_per_developer) * 100)
+                if developer_score > 100:
+                    developer_score = 100
+            else:
+                developer_score = 0
+
+            weighted_individual_score = developer_score * (milestone.weight / 100)
+            individual_weighted_score += weighted_individual_score
+            milestone_scores.append({
+                "milestone": milestone,
+                "accepted_points": accepted_points,
+                "planned_points_per_developer": planned_points_per_developer,
+                "score": developer_score,
+                "weighted_score": weighted_individual_score,
+            })
+            milestone_score_map[milestone.name] = developer_score
+
+        individual_component = individual_weighted_score * (team.course.individual_weight / 100)
+        project_score = round(team_component + individual_component)
+        row = {
+            "developer": developer,
+            "milestone_scores": milestone_scores,
+            "individual_component": individual_component,
+            "project_score": project_score,
+            "is_current_user": bool(current_user and developer.user_id == current_user.id),
+        }
+        developer_rows.append(row)
+        developers_summary[developer] = [project_score, milestone_score_map]
+
+    return {
+        "milestones": milestones,
+        "developers": developers,
+        "milestone_rows": milestone_rows,
+        "developer_rows": developer_rows,
+        "developers_summary": developers_summary,
+        "overall_planned_points": overall_planned_points,
+        "overall_accepted_points": overall_accepted_points,
+        "overall_team_score": overall_team_score,
+        "team_weighted_score": team_weighted_score,
+        "team_component": team_component,
+    }
+
 @login_required
 def index(request):
     from datetime import date
@@ -178,17 +280,12 @@ def team_view(request, team_id):
     if active_teams.exists() and not t.course.active:
         return redirect('team_view', active_teams.first().pk)
 
-    devs = Developer.objects.filter(team=t)
+    points_data = _build_team_points_breakdown(t, current_user=request.user)
+    devs = points_data["developers"]
     milestone = t.course.get_current_milestone()
     task_qs = MasterTask.objects.filter(team=t).order_by("-pk")
     task_paginator = Paginator(task_qs, 10)
     tasks_page = task_paginator.get_page(request.GET.get("page"))
-    developers = dict()
-
-    for dev in devs:
-        developers[dev] = list()
-        developers[dev].append(dev.get_project_grade(team_id))
-        developers[dev].append(dev.get_milestone_list(t.pk))
 
     context = {
         'page_title': 'Team Home',
@@ -197,9 +294,39 @@ def team_view(request, team_id):
         'devs': devs,
         'milestone': milestone,
         'teams': teams_for_selector,
-        'developers': developers,
+        'developers': points_data["developers_summary"],
     }
     return render(request, 'tasks/index.html', context)
+
+
+@login_required
+def team_points_detail(request, team_id):
+    try:
+        d: Developer = Developer.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        try:
+            Lecturer.objects.get(user=request.user)
+            return redirect('lecturer_view')
+        except ObjectDoesNotExist:
+            return redirect('logout')
+    t = get_object_or_404(
+        Team.objects.select_related("course", "course__masterCourse"),
+        pk=team_id
+    )
+    if not _developer_teams_queryset(d).filter(pk=t.pk).exists():
+        fallback_team = _developer_default_team(d)
+        if fallback_team is not None:
+            return redirect('team_points_detail', fallback_team.pk)
+        return redirect('my_details')
+
+    points_data = _build_team_points_breakdown(t, current_user=request.user)
+    context = {
+        'page_title': 'Team Points Breakdown',
+        'team': t,
+        'is_lecturer_view': False,
+        **points_data,
+    }
+    return render(request, 'tasks/team_points_detail.html', context)
 
 
 @login_required
@@ -1046,13 +1173,8 @@ def lecturer_course_view(request, course_id):
 @permission_required('tasks.add_team')
 def lecturer_team_view(request, team_id):
     team = Team.objects.get(pk=team_id)
-    devs = team.developer_set.all()
-    developers = dict()
-    
-    for d in devs :
-            developers[d] = list()
-            developers[d].append(d.get_project_grade(team_id))
-            developers[d].append(d.get_milestone_list(team.pk))
+    points_data = _build_team_points_breakdown(team, current_user=request.user)
+    devs = points_data["developers"]
         
     tasks = team.mastertask_set.all().order_by('pk').reverse()
     context = {
@@ -1061,10 +1183,32 @@ def lecturer_team_view(request, team_id):
         'course': team.course, 
         'devs': devs, 
         'tasks': tasks,
-        'developers' : developers 
+        'developers' : points_data["developers_summary"]
     }
 
     return render(request, 'tasks/lecturer_team_view.html', context)
+
+
+@login_required
+@permission_required('tasks.add_team')
+def lecturer_team_points_detail(request, team_id):
+    team = get_object_or_404(
+        Team.objects.select_related("course", "course__masterCourse"),
+        pk=team_id
+    )
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if team.course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
+
+    points_data = _build_team_points_breakdown(team, current_user=request.user)
+    context = {
+        'page_title': 'Team Points Breakdown',
+        'team': team,
+        'course': team.course,
+        'is_lecturer_view': True,
+        **points_data
+    }
+    return render(request, 'tasks/team_points_detail.html', context)
 
 
 @login_required 

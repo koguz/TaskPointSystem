@@ -1,0 +1,133 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+{% block layout_mode %}single{% endblock %}
+
+{% block breadcrumbs %}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">{% if is_lecturer_view %}Lecturer Workspace{% else %}Developer Workspace{% endif %}</p>
+  <h1 class="tps-view-title">{{ team.course.masterCourse.compact_code }} / {{ team }} · Points Breakdown</h1>
+  <p class="tps-view-subtitle">Milestone-by-milestone score calculations for the full team</p>
+</div>
+{% endblock %}
+
+{% block main_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Scoring Formula</h2>
+    {% if is_lecturer_view %}
+    <a href="{% url 'lecturer_view_team' team.pk %}" class="btn btn-sm btn-outline-secondary">Back to Team</a>
+    {% else %}
+    <a href="{% url 'team_view' team.pk %}" class="btn btn-sm btn-outline-secondary">Back to Team</a>
+    {% endif %}
+  </div>
+  <div class="tps-section-body">
+    <ul class="tps-note-list mb-3">
+      <li class="tps-note-item">
+        <span class="tps-note-label">Team Score</span>
+        <p class="tps-note-value">Accepted Team Points / Planned Team Points × 100</p>
+      </li>
+      <li class="tps-note-item">
+        <span class="tps-note-label">Developer Score</span>
+        <p class="tps-note-value">Developer Accepted Points / (Planned Team Points ÷ Developer Count) × 100 (capped at 100)</p>
+      </li>
+      <li class="tps-note-item">
+        <span class="tps-note-label">Project Score</span>
+        <p class="tps-note-value">(Weighted Team Score × {{ team.course.group_weight }}%) + (Weighted Developer Score × {{ team.course.individual_weight }}%)</p>
+      </li>
+    </ul>
+    <div class="tps-mini-grid">
+      <div class="tps-mini-card">
+        <p class="tps-mini-label">Overall Team Points</p>
+        <p class="tps-mini-value">{{ overall_accepted_points }} / {{ overall_planned_points }} ({{ overall_team_score }}%)</p>
+      </div>
+      <div class="tps-mini-card">
+        <p class="tps-mini-label">Weighted Team Score</p>
+        <p class="tps-mini-value">{{ team_weighted_score|floatformat:2 }}% (Group component: {{ team_component|floatformat:2 }})</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Milestone Breakdown</h2>
+    <span class="text-muted small">{{ milestones|length }} milestones</span>
+  </div>
+  <div class="p-0">
+    <div class="table-responsive table-responsive-md-stack">
+      <table class="table tps-table-clean table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Milestone</th>
+            <th scope="col">Due</th>
+            <th scope="col">Weight</th>
+            <th scope="col">Accepted / Planned</th>
+            <th scope="col">Team Score</th>
+            <th scope="col">Weighted Team Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in milestone_rows %}
+          <tr>
+            <td>{{ row.milestone.name }}</td>
+            <td>{{ row.milestone.due }}</td>
+            <td>{{ row.milestone.weight }}%</td>
+            <td>{{ row.accepted_points }} / {{ row.total_points }}</td>
+            <td>{{ row.team_score }}%</td>
+            <td>{{ row.weighted_team_score|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No milestones defined for this course.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Developer Scores</h2>
+    <span class="text-muted small">{{ developers|length }} developers</span>
+  </div>
+  <div class="p-0">
+    <div class="table-responsive table-responsive-md-stack">
+      <table class="table tps-table-clean table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Developer</th>
+            {% for milestone in milestones %}
+            <th scope="col">{{ milestone.name }} ({{ milestone.weight }}%)</th>
+            {% endfor %}
+            <th scope="col">Team Component</th>
+            <th scope="col">Individual Component</th>
+            <th scope="col">Project Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in developer_rows %}
+          <tr{% if row.is_current_user %} class="table-primary"{% endif %}>
+            <td>{{ row.developer }}</td>
+            {% for score in row.milestone_scores %}
+            <td>
+              <div>{{ score.score }}%</div>
+              <div class="small text-muted">{{ score.accepted_points }} pts</div>
+            </td>
+            {% endfor %}
+            <td>{{ team_component|floatformat:2 }}</td>
+            <td>{{ row.individual_component|floatformat:2 }}</td>
+            <td><span class="badge bg-primary">{{ row.project_score }}</span></td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{{ milestones|length|add:4 }}" class="text-center text-muted py-4">No developers in this team.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

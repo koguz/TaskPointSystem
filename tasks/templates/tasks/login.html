@@ -2,13 +2,65 @@
 {% load static %}
 
 {% block menubar %}{% endblock %}
+{% block layout_mode %}three{% endblock %}
+
+{% block left_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Project Links</h2>
+  </div>
+  <div class="tps-section-body">
+    <ul class="tps-list-clean">
+      <li> Get the source code and contribute to TPS on
+        <a href="https://github.com/koguz/TaskPointSystem" target="_blank" rel="noopener noreferrer">
+          TPS on GitHub
+        </a>
+      </li>
+      <li>
+        TPS developed by <a href="https://koguz.github.io" target="_blank" rel="noopener noreferrer">
+          Kaya Oğuz</a> and <a href="https://github.com/koguz/TaskPointSystem/wiki/Contributions" target="_blank" rel="noopener noreferrer">contributors</a>. 
+      </li>
+    </ul>
+  </div>
+</section>
+{% endblock %}
 
 {% block main_content %}
-<div class="card">
-  <div class="card-header text-center">
-    <h2 class="h5 mb-0">TPS Login</h2>
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">About TPS</h2>
   </div>
-  <div class="card-body">
+  <div class="tps-section-body">
+    <p class="mb-2">
+      Task Point System (TPS) helps developer teams create, review, complete, and evaluate project tasks through each milestone.
+    </p>
+    <p class="mb-0 text-muted small">
+      Developers can propose tasks, collect team votes, submit completion evidence, and track score impact across milestones.
+    </p>
+  </div>
+</section>
+
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Login Support</h2>
+  </div>
+  <div class="tps-section-body">
+    <p class="mb-2">If you cannot log in, first contact your course lecturer.</p>
+    <ul class="mb-0 small text-muted">
+      <li>Share your university ID and course code.</li>
+      <li>Describe the exact error message you see on login.</li>
+      <li>Ask your lecturer to verify your TPS account/team assignment.</li>
+    </ul>
+  </div>
+</section>
+{% endblock %}
+
+{% block right_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">TPS Login</h2>
+  </div>
+  <div class="tps-section-body">
     <form action="{% url 'login' %}" method="post" class="tps-form-grid">
       {% csrf_token %}
       <div class="form-floating">
@@ -27,5 +79,5 @@
     <div class="alert alert-danger mt-3 mb-0">{{ login_error }}</div>
     {% endif %}
   </div>
-</div>
+</section>
 {% endblock %}

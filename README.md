@@ -1,6 +1,6 @@
 # Task Point System
 
-Task Point System (TPS) is a project management process, developed as a web application, and is currently running at http://setps.ieu.edu.tr. 
+Task Point System (TPS) is a project management process, developed as a web application, and is currently running at https://tps.info.tr/. 
 
 The idea is based on the paper "Implementing large projects in software engineering courses" by David Coppit [1]. TPS uses the concept of "tasks," atomic pieces of work that can be handled by a single developer. The purpose of the TPS is to provide a system that encourages equal contribution for every student and to let the students have a more realistic approach of a course project [2]. 
 
@@ -10,7 +10,7 @@ TPS has been in use since the 2016-2017 Spring semester. It was used as a proces
 
 ## Development
 
-TPS is implemented in Django. The views make use of Bootstrap and jQuery to provide a better user experience. It is developed and maintained by Kaya Oğuz (http://homes.ieu.edu.tr/koguz) with several other contributors. Please visit the Wiki page for more information. 
+TPS is implemented in Django. The views make use of Bootstrap and jQuery to provide a better user experience. It is developed and maintained by Kaya Oğuz (http://koguz.github.io) with several other contributors. Please visit the Wiki page for more information. 
 
 ## References 
 1. D. Coppit, "Implementing large projects in software engineering courses," Computer Science Education, vol. 16, no. 1, pp. 53–73, Mar. 2006.
