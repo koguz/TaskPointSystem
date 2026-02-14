@@ -44,6 +44,30 @@
 {% endblock %}
 
 {% block left_content %}
+
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Developer Points</h2>
+  </div>
+  <div class="tps-section-body">
+    <div class="tps-stack">
+      {% for dev, value in developers.items %}
+      <div class="tps-note-item">
+        <span class="tps-note-label">{{ dev }}</span>
+        <p class="tps-note-value mb-1">Overall Project: {{ value.0 }} points</p>
+        <div class="small text-muted">
+          {% for k, v in value.1.items %}
+          <div>{{ k }}: {{ v }} points</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-muted small">No developer data.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
 <section class="tps-section">
   <div class="tps-section-header">
     <h2 class="tps-section-title">Current Milestone</h2>
@@ -89,28 +113,7 @@
   </div>
 </section>
 
-<section class="tps-section">
-  <div class="tps-section-header">
-    <h2 class="tps-section-title">Developer Points</h2>
-  </div>
-  <div class="tps-section-body">
-    <div class="tps-stack">
-      {% for dev, value in developers.items %}
-      <div class="tps-note-item">
-        <span class="tps-note-label">{{ dev }}</span>
-        <p class="tps-note-value mb-1">Overall Project: {{ value.0 }} points</p>
-        <div class="small text-muted">
-          {% for k, v in value.1.items %}
-          <div>{{ k }}: {{ v }} points</div>
-          {% endfor %}
-        </div>
-      </div>
-      {% empty %}
-      <div class="text-muted small">No developer data.</div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
+
 {% endblock %}
 
 {% block main_content %}
@@ -129,6 +132,7 @@
             <th scope="col">Owner</th>
             <th scope="col">Title</th>
             <th scope="col">Milestone</th>
+            <th scope="col">Due Date</th>
             <th scope="col">Status</th>
           </tr>
         </thead>
@@ -138,6 +142,7 @@
             <td>{{ mtask.owner }}</td>
             <td><a href="{% url 'view_task' mtask.pk %}">{{ mtask }}</a></td>
             <td>{{ mtask.milestone }}</td>
+            <td>{{ mtask.get_task.promised_date }}</td>
             <td>
               <span class="badge {% if mtask.status == 1 %}bg-warning text-dark{% elif mtask.status == 2 %}bg-primary{% elif mtask.status == 3 %}bg-info text-dark{% elif mtask.status == 4 %}bg-danger{% else %}bg-success{% endif %}">
                 {{ mtask.getStatus }}
@@ -146,7 +151,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center text-muted py-4">No tasks yet for this team.</td>
+            <td colspan="5" class="text-center text-muted py-4">No tasks yet for this team.</td>
           </tr>
           {% endfor %}
         </tbody>

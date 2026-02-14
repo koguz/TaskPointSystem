@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.forms import PasswordChangeForm
@@ -26,6 +27,20 @@ def saveLog(mt: MasterTask, message, gizli: bool = False):
     l.log = message
     l.gizli = gizli
     l.save()
+
+
+def _send_notification_email(subject, plain_message, from_email, recipient_list, html_message=None):
+    if not getattr(settings, "EMAIL_NOTIFICATIONS_ENABLED", False):
+        return 0
+    if not recipient_list:
+        return 0
+    return send_mail(
+        subject,
+        plain_message,
+        from_email,
+        recipient_list,
+        html_message=html_message
+    )
 
 
 AVATAR_PRESETS = [
@@ -224,7 +239,7 @@ def edit_task(request, task_id):
             from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mt, "Task is edited by " + str(d) + ".")
-            send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
+            _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)
             
 
             return redirect('view_task', task_id)
@@ -300,7 +315,7 @@ def create_task(request, team_id):
             from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mastertask, "Task is created by " + str(d) + ".")
-            send_mail(subject, plain_message, from_email, receivers, html_message=html_message)
+            _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)
             
             
             return redirect('team_view', team_id)
@@ -378,7 +393,7 @@ def complete_task(request, task_id):
         from_email = 'tps@izmirekonomi.edu.tr'
 
         saveLog(mt, "Task is completed by " + str(d) + ".")
-        send_mail(subject, plain_message, from_email, receivers, html_message=html_message)       
+        _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)       
         
         
         context = {
@@ -511,7 +526,7 @@ def view_task(request, task_id):
                         from_email = 'tps@izmirekonomi.edu.tr'
                         saveLog(mt, "Task received an approve vote by "+ str(d) + ".")
                         comment.save()
-                        send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+                        _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
                         
                     elif request.POST['approve'] == "No":
                         comment.approved = False
@@ -539,7 +554,7 @@ def view_task(request, task_id):
                         
                         saveLog(mt, "Task received a revision request by "+ str(d) + ".")
                         comment.save()
-                        send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+                        _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
                 comment.save()        
                 return redirect('view_task', task_id)
     
@@ -572,7 +587,7 @@ def view_task(request, task_id):
             from_email = 'tps@izmirekonomi.edu.tr'
 
             saveLog(mt, "All approved. Task is now in open state.")
-            send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+            _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
             
         elif mt.status == 3 and v_app > (len(mt.team.developer_set.all()) - 1) / 2:
             mt.status = 5
@@ -588,7 +603,7 @@ def view_task(request, task_id):
             from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mt, "All approved. Task is now accepted!")
-            send_mail(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+            _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
             
         elif mt.status == 3 and v_den >= (len(mt.team.developer_set.all()) - 1) / 2:
             reopen = True 
