@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -126,9 +127,9 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-EMAIL_HOST = 'rd-merlin.panel-giris.com'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'no-reply@tps.info.tr'
-EMAIL_HOST_PASSWORD = 'fGPhcCy&OS)w?;Gp'
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
