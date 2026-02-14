@@ -223,6 +223,7 @@ class Comment(models.Model):
     body = models.TextField("Comment")
     file_url = models.URLField("URL", max_length=512, blank=True, null=True)
     approved = models.BooleanField("Approved", blank=True, null=True)
+    is_completion_update = models.BooleanField("Completion Update", default=False)
     date = models.DateTimeField("Date", auto_now_add=True)
 
     def __str__(self):

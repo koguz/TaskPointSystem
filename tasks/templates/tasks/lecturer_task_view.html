@@ -96,9 +96,14 @@
   <div class="tps-section-body">
     <div class="tps-stack">
       {% for comment in comments %}
-      <article class="tps-comment {% if comment.approved %}approve{% elif comment.approved == False %}revise{% endif %}">
+      <article class="tps-comment {% if comment.is_completion_update %}completion{% elif comment.approved %}approve{% elif comment.approved == False %}revise{% endif %}">
         <div class="tps-comment-head">
-          <p class="tps-comment-author"><i class="bi bi-chat-right"></i> {{ comment.owner.get_full_name }}</p>
+          <p class="tps-comment-author">
+            <i class="bi bi-chat-right"></i> {{ comment.owner.get_full_name }}
+            {% if comment.is_completion_update %}
+            <span class="badge bg-success ms-2">Completion Update</span>
+            {% endif %}
+          </p>
           <span class="tps-comment-time">{{ comment.date }}</span>
         </div>
         <p class="tps-comment-text">{{ comment.body|linebreaksbr }}</p>

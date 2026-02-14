@@ -4,8 +4,12 @@
 
 {% block breadcrumbs %}
 <div class="tps-view-head">
-  <p class="tps-view-kicker">Student Workspace</p>
-  <h1 class="tps-view-title">{{ mastertask }}</h1>
+  <p class="tps-view-kicker">Developer Workspace</p>
+  <h1 class="tps-view-title">
+    <a href="{% url 'team_view' mastertask.team.pk %}" class="tps-view-title-link">{{ mastertask.team }}</a>
+    <span class="tps-view-title-sep">&gt;</span>
+    <span>{{ mastertask }}</span>
+  </h1>
   <p class="tps-view-subtitle">Review task progress, vote, and collaborate with your team</p>
 </div>
 {% endblock %}
@@ -41,23 +45,53 @@
     </div>
     {% endif %}
 
-    {% if mytask and reopen %}
-    <div class="alert alert-warning py-2 mb-3">
-      Revision requested. Update the task from the comments panel to trigger a new vote cycle.
+    {% if mytask and revision_requested and mastertask.status == 1 %}
+    <div class="alert alert-warning py-2 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <span><strong>Revision requested.</strong> Edit the task and save a new version so teammates can vote again.</span>
+      <a href="{% url 'edit_task' mastertask.pk %}" class="btn btn-sm btn-warning">
+        <i class="bi bi-pencil-square"></i> Edit Task
+      </a>
     </div>
     {% endif %}
 
-    {% if mytask and mastertask.status == 2 %}
+    {% if mytask %}
+    {% if mastertask.status == 2 or mastertask.status == 3 and revision_requested %}
+    {% if mastertask.status == 2 %}
     <div class="alert alert-primary py-2">Task is open. Submit completion details below.</div>
+    {% else %}
+    <div class="alert alert-warning py-2">Changes are requested for this completed task. Submit a completion update below to start a new voting round.</div>
+    {% endif %}
     <form action="{% url 'complete_task' mastertask.pk %}" method="post" class="tps-form-grid">
       {% csrf_token %}
       <div>
         <label for="difficulty" class="form-label">Difficulty</label>
         <select id="difficulty" name="difficulty" class="form-select">
-          <option value="1">Easy</option>
-          <option value="2" selected>Normal</option>
-          <option value="3">Difficult</option>
+          <option value="1" {% if mastertask.difficulty == 1 %}selected{% endif %}>Easy</option>
+          <option value="2" {% if mastertask.difficulty == 2 %}selected{% endif %}>Normal</option>
+          <option value="3" {% if mastertask.difficulty == 3 %}selected{% endif %}>Difficult</option>
         </select>
+      </div>
+      <div>
+        <label for="completionSummary" class="form-label">Completion Summary</label>
+        <textarea
+          id="completionSummary"
+          name="completion_summary"
+          class="form-control"
+          rows="4"
+          placeholder="Explain what you completed, what changed, and what teammates should review."
+          required
+        ></textarea>
+      </div>
+      <div>
+        <label for="completionFileUrl" class="form-label">Git Commit or File URL</label>
+        <input
+          id="completionFileUrl"
+          type="url"
+          name="completion_file_url"
+          class="form-control"
+          placeholder="https://github.com/..."
+          required
+        />
       </div>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="used_ai" id="tvUsedAi" />
@@ -71,9 +105,13 @@
         <div class="form-check"><input class="form-check-input" type="checkbox" name="ai_usage" value="Research/learning" id="aiResearch" /><label class="form-check-label" for="aiResearch">Research/learning</label></div>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle"></i> Mark Completed</button>
+        <button type="submit" class="btn btn-success">
+          <i class="bi bi-check2-circle"></i>
+          {% if mastertask.status == 2 %}Mark Completed{% else %}Submit Completion Update{% endif %}
+        </button>
       </div>
     </form>
+    {% endif %}
     {% endif %}
 
     <div class="tps-mini-grid mt-3">
@@ -110,7 +148,7 @@
   <div class="tps-section-body">
     <div class="tps-stack">
       {% for log in logs %}
-      <div class="tps-note-item">
+      <div class="tps-note-item{% if 'revision request' in log.log|lower %} tps-note-item-revision{% endif %}">
         <span class="tps-note-label">{{ log.tarih|localtime }}</span>
         <p class="tps-note-value mb-1">{{ log.taskstatus }}</p>
         <div class="small">{{ log.log }}</div>
@@ -133,12 +171,6 @@
       {% csrf_token %}
       {{ form.as_p }}
       <div class="form-actions">
-        {% if mytask and reopen %}
-        <button class="btn btn-success" type="submit" name="approve" value="Update">
-          <i class="bi bi-arrow-clockwise"></i> Update Task
-        </button>
-        {% endif %}
-
         <button class="btn btn-primary" type="submit" name="approve" value="C">
           <i class="bi bi-chat-right"></i> Comment
         </button>
@@ -164,9 +196,14 @@
   <div class="tps-section-body">
     <div class="tps-stack">
       {% for comment in comments %}
-      <article class="tps-comment {% if comment.approved %}approve{% elif comment.approved == False %}revise{% endif %}">
+      <article class="tps-comment {% if comment.is_completion_update %}completion{% elif comment.approved %}approve{% elif comment.approved == False %}revise{% endif %}">
         <div class="tps-comment-head">
-          <p class="tps-comment-author"><i class="bi bi-chat-right"></i> {{ comment.owner.get_full_name }}</p>
+          <p class="tps-comment-author">
+            <i class="bi bi-chat-right"></i> {{ comment.owner.get_full_name }}
+            {% if comment.is_completion_update %}
+            <span class="badge bg-success ms-2">Completion Update</span>
+            {% endif %}
+          </p>
           <span class="tps-comment-time">{{ comment.date }}</span>
         </div>
         <p class="tps-comment-text">{{ comment.body|linebreaksbr }}</p>

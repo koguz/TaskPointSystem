@@ -110,6 +110,16 @@ def _developer_default_team(dev: Developer):
         return team
     return _developer_teams_queryset(dev).first()
 
+
+def _has_revision_request(mastertask: MasterTask, task: Task):
+    if mastertask.status not in (1, 3):
+        return False
+    return Vote.objects.filter(
+        task=task,
+        status=mastertask.status,
+        vote=False
+    ).exists()
+
 @login_required
 def index(request):
     from datetime import date
@@ -346,63 +356,92 @@ def complete_task(request, task_id):
     tm = mt.team
     if mt.owner != d:
         return redirect('team_view', tm.pk)
-    if request.method == 'POST':
-        mt:MasterTask = get_object_or_404(MasterTask, pk=task_id)
-        t:Task = Task.objects.all().filter(masterTask=mt).order_by('pk').reverse()[0]
-        mt.status = 3
-        mt.difficulty = int(request.POST["difficulty"])
-        mt.used_ai = 'used_ai' in request.POST
-        mt.ai_usage = ','.join(request.POST.getlist('ai_usage')) if mt.used_ai else ''
-        mt.completed = datetime.now()
-        mt.save()
-
-        difficulty = str
-        if mt.difficulty == 1:
-            difficulty = 'Easy'
-        elif mt.difficulty == 2:
-            difficulty = 'Normal'
-        elif mt.difficulty == 3:
-            difficulty = 'Difficult'
-
-        devs = Developer.objects.all().filter(team=tm)
-
-        receivers = []
-
-        for developer in devs:
-            if developer != d:
-                receivers.append(developer.user.email)
- 
-        subject = 'TPS:Notification || A task has been completed'
-
-        contentList = [
-            'Creator: ' + str(mt.owner),
-            'Title: ' + t.title,
-            'Description: ' + t.description,
-            'Priortiy: ' + t.getPriority(),
-            'Difficulty: ' + difficulty,
-            'Used Generative AI: ' + ('Yes (' + mt.ai_usage + ')' if mt.used_ai else 'No'),
-            'Due date: '+ str(t.promised_date)
-        ]
-
-        url = request._current_scheme_host + "/tasks/" + str(t.masterTask_id)
-
-        html_message = render_to_string('tasks/email_template.html',
-        {'title':'A task has been completed!', 'contentList': contentList, 'url':url, 'background_color': '#003399'})
-
-        plain_message = strip_tags(html_message)
-        from_email = 'tps@izmirekonomi.edu.tr'
-
-        saveLog(mt, "Task is completed by " + str(d) + ".")
-        _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)       
-        
-        
-        context = {
-            'team': tm
-        }
-        
-        return redirect('view_task', task_id)
-    else: 
+    if request.method != 'POST':
         return redirect('team_view', tm.pk)
+
+    if mt.status not in (2, 3):
+        return redirect('view_task', task_id)
+
+    completion_update_mode = mt.status == 3
+    if completion_update_mode and not _has_revision_request(mt, t):
+        return redirect('view_task', task_id)
+
+    completion_summary = request.POST.get("completion_summary", "").strip()
+    completion_file_url = request.POST.get("completion_file_url", "").strip()
+    if not completion_summary or not completion_file_url:
+        return redirect('view_task', task_id)
+
+    try:
+        difficulty_value = int(request.POST.get("difficulty", mt.difficulty))
+    except (TypeError, ValueError):
+        difficulty_value = mt.difficulty
+    if difficulty_value not in [1, 2, 3]:
+        difficulty_value = mt.difficulty
+
+    mt.status = 3
+    mt.difficulty = difficulty_value
+    mt.used_ai = 'used_ai' in request.POST
+    mt.ai_usage = ','.join(request.POST.getlist('ai_usage')) if mt.used_ai else ''
+    mt.completed = datetime.now()
+    mt.save()
+
+    completion_comment = Comment(
+        owner=request.user,
+        mastertask=mt,
+        task=t,
+        body=completion_summary,
+        file_url=completion_file_url,
+        is_completion_update=True
+    )
+    completion_comment.save()
+
+    if completion_update_mode:
+        Vote.objects.filter(task=t, status=3).delete()
+        saveLog(mt, "Completion update submitted by " + str(d) + ". Completed-state votes are reset.")
+    else:
+        saveLog(mt, "Task is completed by " + str(d) + ".")
+
+    difficulty = str
+    if mt.difficulty == 1:
+        difficulty = 'Easy'
+    elif mt.difficulty == 2:
+        difficulty = 'Normal'
+    elif mt.difficulty == 3:
+        difficulty = 'Difficult'
+
+    devs = Developer.objects.all().filter(team=tm)
+    receivers = []
+    for developer in devs:
+        if developer != d:
+            receivers.append(developer.user.email)
+
+    if completion_update_mode:
+        subject = 'TPS:Notification || A completion update has been submitted'
+        title = 'A completion update has been submitted!'
+    else:
+        subject = 'TPS:Notification || A task has been completed'
+        title = 'A task has been completed!'
+
+    contentList = [
+        'Creator: ' + str(mt.owner),
+        'Title: ' + t.title,
+        'Description: ' + t.description,
+        'Priortiy: ' + t.getPriority(),
+        'Difficulty: ' + difficulty,
+        'Used Generative AI: ' + ('Yes (' + mt.ai_usage + ')' if mt.used_ai else 'No'),
+        'Completion Summary: ' + completion_summary,
+        'Git Commit or File URL: ' + completion_file_url,
+        'Due date: '+ str(t.promised_date)
+    ]
+
+    url = request._current_scheme_host + "/tasks/" + str(t.masterTask_id)
+    html_message = render_to_string('tasks/email_template.html',
+    {'title': title, 'contentList': contentList, 'url':url, 'background_color': '#003399'})
+    plain_message = strip_tags(html_message)
+    from_email = 'tps@izmirekonomi.edu.tr'
+    _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)
+
+    return redirect('view_task', task_id)
 
 @login_required 
 def edit_team(request, team_id):
@@ -496,9 +535,6 @@ def view_task(request, task_id):
                 comment.owner = request.user
                 comment.mastertask = mt 
                 comment.task = t 
-                if mt.owner == d and mt.status == 3 and request.POST['approve'] == "Update":
-                    Vote.objects.all().filter(task=t).filter(status=mt.status).delete() 
-                    saveLog(mt, "Task is updated by"+ str(d) + ".")
                 if len(Vote.objects.all().filter(task=t).filter(status=mt.status).filter(owner=d)) == 0:
                     if request.POST['approve'] == "Yes":
                         comment.approved = True 
@@ -607,6 +643,8 @@ def view_task(request, task_id):
             
         elif mt.status == 3 and v_den >= (len(mt.team.developer_set.all()) - 1) / 2:
             reopen = True 
+
+        revision_requested = _has_revision_request(mt, t)
             
         try:
             liked = Like.objects.get(owner = d, mastertask = mt).liked
@@ -626,6 +664,7 @@ def view_task(request, task_id):
             'v_app': v_app,
             'v_den': v_den,
             'reopen': reopen, 
+            'revision_requested': revision_requested,
             'liked': liked, 
             'comments': comments,
             'logs' : logs

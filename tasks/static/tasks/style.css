@@ -357,6 +357,20 @@ a:hover {
   line-height: 1.25;
 }
 
+.tps-view-title-link {
+  color: #1f3767;
+  text-decoration: none;
+}
+
+.tps-view-title-link:hover {
+  text-decoration: underline;
+}
+
+.tps-view-title-sep {
+  color: #6f7f9e;
+  margin: 0 0.35rem;
+}
+
 .tps-view-subtitle {
   margin: 0;
   color: #7484a4;
@@ -421,6 +435,19 @@ a:hover {
   border-radius: 10px;
   padding: var(--tps-space-2) var(--tps-space-3);
   background: #f8faff;
+}
+
+.tps-note-item-revision {
+  border-color: #f3c6cc;
+  background: #fff2f4;
+}
+
+.tps-note-item-revision .tps-note-label {
+  color: #a34f5d;
+}
+
+.tps-note-item-revision .tps-note-value {
+  color: #7f2535;
 }
 
 .tps-note-label {
@@ -505,6 +532,11 @@ a:hover {
 .tps-comment.revise {
   border-left-color: #cf4040;
   background: #fff5f5;
+}
+
+.tps-comment.completion {
+  border-left-color: #2f9b68;
+  background: #f0fff6;
 }
 
 .tps-comment-head {
