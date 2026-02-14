@@ -47,7 +47,8 @@ class Course(models.Model):
 
     def get_current_milestone(self):
         import datetime 
-        return self.milestone_set.all().order_by('due').exclude(due__lte=datetime.date.today())[0]
+        milestones = self.milestone_set.all().order_by('due').exclude(due__lte=datetime.date.today())
+        return milestones.first()
 
 class Milestone(models.Model):
     course = models.ForeignKey(Course, on_delete=CASCADE)
@@ -243,4 +244,3 @@ class TeamMilestoneGrade(models.Model):
     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     grade = models.PositiveSmallIntegerField("Grade", default=0)
-

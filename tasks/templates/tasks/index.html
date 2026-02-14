@@ -1,6 +1,6 @@
 {% extends "tasks/base.html" %}
 {% load static %}
-{% block layout_mode %}three{% endblock %}
+{% block layout_mode %}sidebar{% endblock %}
 
 {% block breadcrumbs %}
 <div class="tps-view-head">
@@ -8,6 +8,29 @@
   <h1 class="tps-view-title">{{ team.course.masterCourse.compact_code }} / {{ team }}</h1>
   <p class="tps-view-subtitle">Track tasks, team performance, and current milestone progress</p>
 </div>
+
+<section class="tps-section mt-3">
+  <div class="tps-section-body">
+    <div class="tps-team-toolbar">
+      <select class="form-select tps-team-select" onchange="window.location.href=this.value">
+        {% for t in teams %}
+          {% if t.pk == team.pk %}
+          <option selected value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.compact_code }} / {{ t }}</option>
+          {% else %}
+          <option value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.compact_code }} / {{ t }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+
+      <a class="btn btn-outline-secondary" href="{% url 'edit_team' team.pk %}">
+        <i class="bi bi-pencil-square"></i> Edit Team
+      </a>
+      <a class="btn btn-outline-secondary" href="{{ team.github }}" target="_blank" rel="noopener noreferrer">
+        <i class="bi bi-github"></i> Team Repository
+      </a>
+    </div>
+  </div>
+</section>
 {% endblock %}
 
 {% block alert %}
@@ -23,32 +46,28 @@
 {% block left_content %}
 <section class="tps-section">
   <div class="tps-section-header">
-    <h2 class="tps-section-title">Team Selector</h2>
+    <h2 class="tps-section-title">Current Milestone</h2>
   </div>
   <div class="tps-section-body">
-    <select class="form-select mb-3" onchange="window.location.href=this.value">
-      {% for t in teams %}
-        {% if t.pk == team.pk and t.course.get_current_milestone is not None %}
-        <option selected value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.compact_code }} / {{ t }}</option>
-        {% elif t.course.get_current_milestone is not None %}
-        <option value="{% url 'team_view' t.pk %}">{{ t.course.masterCourse.compact_code }} / {{ t }}</option>
-        {% else %}
-        <option value="{% url 'team_view' t.pk %}" disabled>{{ t.course.masterCourse.compact_code }} / {{ t }} (No active milestone)</option>
-        {% endif %}
-      {% endfor %}
-    </select>
-
-    <div class="d-grid gap-2">
-      <a class="btn btn-outline-secondary" href="{{ team.github }}" target="_blank" rel="noopener noreferrer">
-        <i class="bi bi-github"></i> Team Repository
-      </a>
-      <a class="btn btn-outline-secondary" href="{% url 'edit_team' team.pk %}">
-        <i class="bi bi-pencil-square"></i> Edit Team
-      </a>
-      <a href="{% url 'create_task' team.pk %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Create Task
-      </a>
-    </div>
+    {% if milestone %}
+    <ul class="tps-note-list mb-3">
+      <li class="tps-note-item">
+        <span class="tps-note-label">Milestone</span>
+        <p class="tps-note-value">{{ milestone }}</p>
+      </li>
+      <li class="tps-note-item">
+        <span class="tps-note-label">Due Date</span>
+        <p class="tps-note-value">{{ milestone.due }}</p>
+      </li>
+      <li class="tps-note-item">
+        <span class="tps-note-label">Weight</span>
+        <p class="tps-note-value">{{ milestone.weight }}</p>
+      </li>
+    </ul>
+    <div class="small text-muted">{{ milestone.description|linebreaksbr }}</div>
+    {% else %}
+    <p class="text-muted mb-0">No active milestone.</p>
+    {% endif %}
   </div>
 </section>
 
@@ -97,8 +116,10 @@
 {% block main_content %}
 <section class="tps-section">
   <div class="tps-section-header">
-    <h2 class="tps-section-title">Recent Tasks</h2>
-    <span class="text-muted small">{{ tasks|length }} items</span>
+    <h2 class="tps-section-title">Tasks</h2>
+    <a href="{% url 'create_task' team.pk %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-plus-circle"></i> Create Task
+    </a>
   </div>
   <div class="p-0">
     <div class="table-responsive table-responsive-md-stack">
@@ -112,7 +133,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for mtask in tasks %}
+          {% for mtask in tasks_page %}
           <tr>
             <td>{{ mtask.owner }}</td>
             <td><a href="{% url 'view_task' mtask.pk %}">{{ mtask }}</a></td>
@@ -131,34 +152,31 @@
         </tbody>
       </table>
     </div>
-  </div>
-</section>
-{% endblock %}
 
-{% block right_content %}
-<section class="tps-section">
-  <div class="tps-section-header">
-    <h2 class="tps-section-title">Current Milestone</h2>
-  </div>
-  <div class="tps-section-body">
-    {% if milestone %}
-    <ul class="tps-note-list mb-3">
-      <li class="tps-note-item">
-        <span class="tps-note-label">Milestone</span>
-        <p class="tps-note-value">{{ milestone }}</p>
-      </li>
-      <li class="tps-note-item">
-        <span class="tps-note-label">Due Date</span>
-        <p class="tps-note-value">{{ milestone.due }}</p>
-      </li>
-      <li class="tps-note-item">
-        <span class="tps-note-label">Weight</span>
-        <p class="tps-note-value">{{ milestone.weight }}</p>
-      </li>
-    </ul>
-    <div class="small text-muted">{{ milestone.description|linebreaksbr }}</div>
-    {% else %}
-    <p class="text-muted mb-0">No active milestone.</p>
+    {% if tasks_page.has_other_pages %}
+    <nav class="p-3 border-top" aria-label="Task pagination">
+      <ul class="pagination pagination-sm mb-0 justify-content-end">
+        {% if tasks_page.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ tasks_page.previous_page_number }}">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        <li class="page-item disabled">
+          <span class="page-link">Page {{ tasks_page.number }} / {{ tasks_page.paginator.num_pages }}</span>
+        </li>
+
+        {% if tasks_page.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ tasks_page.next_page_number }}">Next</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
+    </nav>
     {% endif %}
   </div>
 </section>

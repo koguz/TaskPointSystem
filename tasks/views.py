@@ -6,6 +6,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.templatetags.static import static
@@ -80,6 +81,20 @@ def _sanitize_developer_avatar(dev: Developer):
         dev.save(update_fields=["photoURL"])
     return dev
 
+
+def _developer_teams_queryset(dev: Developer, active_only: bool = False):
+    teams = dev.team.select_related("course", "course__masterCourse").order_by("-pk")
+    if active_only:
+        teams = teams.filter(course__active=True)
+    return teams
+
+
+def _developer_default_team(dev: Developer):
+    team = _developer_teams_queryset(dev, active_only=True).first()
+    if team is not None:
+        return team
+    return _developer_teams_queryset(dev).first()
+
 @login_required
 def index(request):
     from datetime import date
@@ -98,7 +113,10 @@ def index(request):
     # redirect to another page for lecturer!
     try:
         d: Developer = Developer.objects.get(user=request.user)
-        return redirect('team_view', d.team.all()[0].pk)
+        default_team = _developer_default_team(d)
+        if default_team is not None:
+            return redirect('team_view', default_team.pk)
+        return redirect('my_details')
     except ObjectDoesNotExist:
         try:
             l: Lecturer = Lecturer.objects.get(user=request.user)
@@ -115,35 +133,48 @@ def update_view(request):
 @login_required
 def team_view(request, team_id):
     d: Developer = Developer.objects.get(user=request.user)
-    teams: Team([]) = d.team.all()
-    t = Team.objects.get(pk=team_id)
+    all_teams = _developer_teams_queryset(d)
+    if not all_teams.exists():
+        return redirect('my_details')
 
-    if t in teams:
-        devs = Developer.objects.all().filter(team=t)
-        # TODO
-        # Milestone.objects.all().filter(course=t.course).order_by('due')[0]
-        milestone = t.course.get_current_milestone()
-        mt = MasterTask.objects.all().filter(
-            team=t).order_by('pk').reverse()[:10]
-        developers = dict()
-    
-        for d in devs :
-            developers[d] = list()
-            developers[d].append(d.get_project_grade(team_id))
-            developers[d].append(d.get_milestone_list(t.pk))
-        
-        context = {
-            'page_title': 'Team Home',
-            'tasks': mt,
-            'team': t,
-            'devs': devs,
-            'milestone': milestone,
-            'teams': teams,
-            'developers': developers,
-        }
-        return render(request, 'tasks/index.html', context)
-    else:
-        return redirect('team_view', d.team.all()[0].pk)
+    active_teams = _developer_teams_queryset(d, active_only=True)
+    teams_for_selector = active_teams if active_teams.exists() else all_teams
+    t = get_object_or_404(
+        Team.objects.select_related("course", "course__masterCourse"),
+        pk=team_id
+    )
+
+    if not all_teams.filter(pk=t.pk).exists():
+        fallback_team = _developer_default_team(d)
+        if fallback_team is not None:
+            return redirect('team_view', fallback_team.pk)
+        return redirect('my_details')
+
+    if active_teams.exists() and not t.course.active:
+        return redirect('team_view', active_teams.first().pk)
+
+    devs = Developer.objects.filter(team=t)
+    milestone = t.course.get_current_milestone()
+    task_qs = MasterTask.objects.filter(team=t).order_by("-pk")
+    task_paginator = Paginator(task_qs, 10)
+    tasks_page = task_paginator.get_page(request.GET.get("page"))
+    developers = dict()
+
+    for dev in devs:
+        developers[dev] = list()
+        developers[dev].append(dev.get_project_grade(team_id))
+        developers[dev].append(dev.get_milestone_list(t.pk))
+
+    context = {
+        'page_title': 'Team Home',
+        'tasks_page': tasks_page,
+        'team': t,
+        'devs': devs,
+        'milestone': milestone,
+        'teams': teams_for_selector,
+        'developers': developers,
+    }
+    return render(request, 'tasks/index.html', context)
 
 
 @login_required
@@ -213,9 +244,22 @@ def edit_task(request, task_id):
 def create_task(request, team_id):
     d = Developer.objects.get(user=request.user)
     t:Team = Team.objects.get(pk=team_id)
-    if t not in d.team.all():
-        return redirect('team_view', d.team.all()[0].pk)
+    if not _developer_teams_queryset(d).filter(pk=t.pk).exists():
+        fallback_team = _developer_default_team(d)
+        if fallback_team is not None:
+            return redirect('team_view', fallback_team.pk)
+        return redirect('my_details')
+
+    if not t.course.active:
+        fallback_team = _developer_default_team(d)
+        if fallback_team is not None:
+            return redirect('team_view', fallback_team.pk)
+        return redirect('my_details')
+
     milestone = t.course.get_current_milestone() #Milestone.objects.all().filter(course=t.course).order_by('due')[0]
+    if milestone is None:
+        return redirect('team_view', t.pk)
+
     if request.method == 'POST':
         form = TaskForm(request.POST)
         if form.is_valid():
@@ -261,7 +305,12 @@ def create_task(request, team_id):
             
             return redirect('team_view', team_id)
         else:
-            context={'page_title': 'Create New Task', 'form': form, 'milestone': milestone}
+            context = {
+                'page_title': 'Create New Task',
+                'form': form,
+                'milestone': milestone,
+                'team': t
+            }
             return render(request, "tasks/task_create.html", context)
             # return redirect('team_view')
     else:
@@ -344,8 +393,11 @@ def complete_task(request, task_id):
 def edit_team(request, team_id):
     d:Developer = Developer.objects.get(user=request.user)
     t:Team = Team.objects.get(pk=team_id)
-    if t not in d.team.all():
-        return redirect('team_view', d.team.all()[0].pk)
+    if not _developer_teams_queryset(d).filter(pk=t.pk).exists():
+        fallback_team = _developer_default_team(d)
+        if fallback_team is not None:
+            return redirect('team_view', fallback_team.pk)
+        return redirect('my_details')
     if request.method == 'POST':
         form = TeamFormStd(request.POST)
         if form.is_valid():
@@ -565,7 +617,10 @@ def view_task(request, task_id):
         }
         return render(request, "tasks/task_view.html", context)
     else : 
-        return redirect('team_view', d.team.all()[0].pk)
+        fallback_team = _developer_default_team(d)
+        if fallback_team is not None:
+            return redirect('team_view', fallback_team.pk)
+        return redirect('my_details')
 
 
 @login_required
