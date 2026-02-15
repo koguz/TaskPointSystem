@@ -55,7 +55,11 @@ class Course(models.Model):
     group_weight = models.PositiveSmallIntegerField("Group Weight", default=40)
     individual_weight = models.PositiveSmallIntegerField("Individual Weight", default=60)
     active = models.BooleanField("Active", default=True)
-    # TODO check if group + individual is 100 
+
+    def clean(self):
+        super().clean()
+        if self.group_weight + self.individual_weight != 100:
+            raise ValidationError("Group weight and individual weight must add up to 100.")
 
     def __str__(self):
         return str(self.masterCourse) + " @ " + self.get_term_label()
