@@ -1,6 +1,7 @@
 from django.db.models.base import Model
 from django.forms import ModelForm, DateInput, Textarea
 from django.core.exceptions import ValidationError
+from django import forms
 
 from .models import *
 
@@ -16,7 +17,8 @@ class CourseForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['academic_year'].choices = Course.get_academic_year_choices()
+        academic_year_choices = Course.get_academic_year_choices()
+        self.fields['academic_year'].widget = forms.Select(choices=academic_year_choices)
         self.fields['academic_year'].initial = Course.get_default_academic_year()
 
 class MilestoneForm(ModelForm):
