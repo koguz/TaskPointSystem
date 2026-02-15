@@ -613,8 +613,7 @@ def edit_task(request, task_id):
                 'Priortiy: ' + task.getPriority(),
                 'Due date: ' + str(task.promised_date)
             ]
-            url = request._current_scheme_host + "/tasks/" + \
-                str(tm.pk) + str(task.masterTask_id)
+            url = request._current_scheme_host + "/tasks/" + str(task.masterTask_id)
 
             html_message = render_to_string('tasks/email_template.html',
             {'title': 'A task has been edited.', 'contentList': contentList, 'url': url, 'background_color': '#003399'})
