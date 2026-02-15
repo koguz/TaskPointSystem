@@ -901,14 +901,14 @@ def view_task(request, task_id):
                 comment.task = t 
                 if len(Vote.objects.all().filter(task=t).filter(status=mt.status).filter(owner=d)) == 0:
                     if request.POST['approve'] == "Yes":
-                        comment.approved = True 
+                        comment.approved = True
                         vote = Vote()
                         vote.owner = d
-                        vote.task = t 
+                        vote.task = t
                         vote.status = mt.status
-                        vote.vote = True 
+                        vote.vote = True
                         vote.save()
-                        
+
                         subject = 'TPS:Notification || The task you created has received an approve vote.'
                         contentList = [
                             'Your task called ' + t.title + ' has received an aprove vote.',
@@ -925,16 +925,15 @@ def view_task(request, task_id):
                         plain_message = strip_tags(html_message)
                         from_email = 'tps@izmirekonomi.edu.tr'
                         saveLog(mt, "Task received an approve vote by "+ str(d) + ".")
-                        comment.save()
                         _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
-                        
+
                     elif request.POST['approve'] == "No":
                         comment.approved = False
                         vote = Vote()
                         vote.owner = d
-                        vote.task = t 
-                        vote.status = mt.status 
-                        vote.vote = False 
+                        vote.task = t
+                        vote.status = mt.status
+                        vote.vote = False
                         vote.save()
 
                         subject = 'TPS:Notification || The task you created has received a revision request.'
@@ -951,11 +950,10 @@ def view_task(request, task_id):
 
                         plain_message = strip_tags(html_message)
                         from_email = 'tps@izmirekonomi.edu.tr'
-                        
+
                         saveLog(mt, "Task received a revision request by "+ str(d) + ".")
-                        comment.save()
                         _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
-                comment.save()        
+                comment.save()
                 return redirect('view_task', task_id)
     
         form = CommentForm()
