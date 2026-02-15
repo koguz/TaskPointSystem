@@ -825,18 +825,18 @@ def edit_team(request, team_id):
         if form.is_valid():
             tnew = form.save(commit=False)
             tnew.pk = t.pk
-            tnew.supervisor = t.supervisor 
+            tnew.supervisor = t.supervisor
             tnew.course = t.course
             tnew.save()
             return redirect('team_view', team_id)
     else:
         form = TeamFormStd(instance=t)
-        context = {
-            'page_title': 'Edit Team Information',
-            'form': form,
-            'team': t
-        }
-        return render(request, "tasks/team_edit_std.html", context)
+    context = {
+        'page_title': 'Edit Team Information',
+        'form': form,
+        'team': t
+    }
+    return render(request, "tasks/team_edit_std.html", context)
 
 
 @login_required 
