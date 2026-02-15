@@ -40,9 +40,10 @@ class TaskForm(ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         due = cleaned_data.get('promised_date')
-        from datetime import date 
-        if due < date.today():
+        from datetime import date
+        if due and due < date.today():
             raise ValidationError("Promised date is in the past!")
+        return cleaned_data
         
 
 class CommentForm(ModelForm):
