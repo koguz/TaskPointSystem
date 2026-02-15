@@ -894,8 +894,6 @@ def view_task(request, task_id):
     if mt.team in d.team.all():
         tm = mt.team
         task_owner: Developer = mt.owner
-        if mt.team != tm:
-            return redirect('team_view', tm.pk)
         if request.method == 'POST':
             form = CommentForm(request.POST)
             if form.is_valid():
