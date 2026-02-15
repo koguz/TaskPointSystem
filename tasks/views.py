@@ -1555,14 +1555,15 @@ def lecturer_create_milestone(request, course_id):
         form = MilestoneForm(request.POST)
         if form.is_valid():
             milestone:Milestone = form.save(commit=False)
-            milestone.course = course 
-            milestone.save() 
+            milestone.course = course
+            milestone.save()
             return redirect('lecturer_view_course', course_id)
-    form = MilestoneForm()
+    else:
+        form = MilestoneForm()
     context = {
         'page_title': 'Create New Milestone',
-        'course': course, 
-        'form': form 
+        'course': course,
+        'form': form
     }
     return render(request, "tasks/milestone_create.html", context)
 
