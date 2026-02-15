@@ -13,12 +13,12 @@
 {% block left_content %}
 <section class="tps-section">
   <div class="tps-section-header">
-    <h2 class="tps-section-title">Input Format</h2>
+    <h2 class="tps-section-title">Manual Format</h2>
   </div>
   <div class="tps-section-body small">
-    <p>Paste student rows exactly as copied from your source list (tab-separated fields).</p>
-    <p>Optional extra columns are supported after last name: <code>Section</code> (integer) and <code>Description</code> (text).</p>
-    <p class="mb-0">If extra columns are not provided, defaults from the form are used for all pasted students.</p>
+    <p>Use one student per line in this format:</p>
+    <p><code>Team Name, Student ID, Student Name, Student Surname</code></p>
+    <p class="mb-0">If a team name already exists in this course, that team is reused.</p>
   </div>
 </section>
 
@@ -33,6 +33,7 @@
           {% for key, value in t_d.items %}
             {% for dev in value %}
             <tr>
+              <td>{{ dev.user.username }}</td>
               <td>{{ dev.getName }}</td>
               <td class="text-muted">{{ key }}</td>
             </tr>
@@ -50,31 +51,35 @@
 {% endblock %}
 
 {% block main_content %}
+{% if success_message %}
+<div class="alert alert-success" role="alert">
+  {{ success_message }}
+</div>
+{% endif %}
+{% if errors %}
+<div class="alert alert-danger" role="alert">
+  <ul class="mb-0 ps-3">
+    {% for err in errors %}
+    <li>{{ err }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
 <section class="tps-section">
   <div class="tps-section-header">
-    <h2 class="tps-section-title">Generate Random Teams</h2>
+    <h2 class="tps-section-title">Manual Team Creation</h2>
   </div>
   <div class="tps-section-body">
     <form action="{% url 'create_team' course.pk %}" method="post" class="tps-form-grid">
       {% csrf_token %}
       <div>
-        <label for="team-size" class="form-label">Team Size</label>
-        <input id="team-size" type="number" min="1" name="team_size" value="4" class="form-control" />
+        <label for="manual-list" class="form-label">Team + Student List</label>
+        <textarea id="manual-list" rows="16" name="manual_list" class="form-control" placeholder="Example:&#10;Alpha Team, 20191234, Ayse, Yilmaz&#10;Alpha Team, 20195678, Ali, Kaya&#10;Beta Team, 20193456, Elif, Demir"></textarea>
       </div>
-      <div>
-        <label for="default-section-auto" class="form-label">Default Section</label>
-        <input id="default-section-auto" type="number" min="1" name="default_section" value="1" class="form-control" />
-      </div>
-      <div>
-        <label for="default-section-description-auto" class="form-label">Default Section Description (Optional)</label>
-        <input id="default-section-description-auto" type="text" name="default_section_description" class="form-control" placeholder="e.g. Monday mornings" />
-      </div>
-      <div>
-        <label for="stdlist-auto" class="form-label">Student List</label>
-        <textarea id="stdlist-auto" rows="14" name="stdlist" class="form-control" placeholder="Paste student list here..."></textarea>
-      </div>
+      <input type="hidden" name="mode" value="manual" />
       <div class="form-actions">
-        <button name="auto" type="submit" class="btn btn-primary">Generate Random Teams</button>
+        <button type="submit" class="btn btn-primary">Create Teams Manually</button>
       </div>
     </form>
   </div>
@@ -84,25 +89,22 @@
 {% block right_content %}
 <section class="tps-section">
   <div class="tps-section-header">
-    <h2 class="tps-section-title">Manual Team Creation</h2>
+    <h2 class="tps-section-title">Random Team Generation</h2>
   </div>
   <div class="tps-section-body">
     <form action="{% url 'create_team' course.pk %}" method="post" class="tps-form-grid">
       {% csrf_token %}
       <div>
-        <label for="default-section-manual" class="form-label">Default Section</label>
-        <input id="default-section-manual" type="number" min="1" name="default_section" value="1" class="form-control" />
+        <label for="team-size" class="form-label">Students Per Team</label>
+        <input id="team-size" type="number" min="1" name="team_size" value="4" class="form-control" />
       </div>
       <div>
-        <label for="default-section-description-manual" class="form-label">Default Section Description (Optional)</label>
-        <input id="default-section-description-manual" type="text" name="default_section_description" class="form-control" placeholder="e.g. Monday mornings" />
+        <label for="random-list" class="form-label">Student List</label>
+        <textarea id="random-list" rows="16" name="random_list" class="form-control" placeholder="Format (one per line):&#10;Student ID, Student Name, Student Surname&#10;&#10;Example:&#10;20191234, Ayse, Yilmaz&#10;20195678, Ali, Kaya"></textarea>
       </div>
-      <div>
-        <label for="stdlist-manual" class="form-label">Student List</label>
-        <textarea id="stdlist-manual" rows="14" name="stdlist" class="form-control" placeholder="Paste one team's members..."></textarea>
-      </div>
+      <input type="hidden" name="mode" value="random" />
       <div class="form-actions">
-        <button name="manuel" type="submit" class="btn btn-outline-primary">Generate Teams Manually</button>
+        <button type="submit" class="btn btn-outline-primary">Generate Random Teams</button>
       </div>
     </form>
   </div>

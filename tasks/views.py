@@ -131,25 +131,128 @@ def _parse_positive_int(value, fallback):
     return fallback
 
 
-def _parse_student_course_meta(fields, default_section, default_description):
-    section = default_section
-    description = default_description
+def _parse_manual_team_rows(raw_text):
+    rows = []
+    errors = []
+    for line_no, line in enumerate((raw_text or "").splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        fields = [f.strip() for f in stripped.split(",")]
+        if len(fields) < 4:
+            errors.append(f"Line {line_no}: expected 'Team Name, Student ID, Name, Surname'.")
+            continue
+        team_name, student_id, first_name, last_name = fields[:4]
+        if not team_name or not student_id or not first_name or not last_name:
+            errors.append(f"Line {line_no}: all four values must be non-empty.")
+            continue
+        rows.append({
+            "line_no": line_no,
+            "team_name": team_name,
+            "student_id": student_id,
+            "first_name": first_name,
+            "last_name": last_name,
+        })
+    return rows, errors
 
-    if len(fields) >= 5:
-        raw_section = fields[4].strip()
-        if raw_section:
-            maybe_section = _parse_positive_int(raw_section, None)
-            if maybe_section is not None:
-                section = maybe_section
-            else:
-                description = raw_section
 
-    if len(fields) >= 6:
-        raw_description = fields[5].strip()
-        if raw_description:
-            description = raw_description
+def _parse_random_team_rows(raw_text):
+    rows = []
+    errors = []
+    for line_no, line in enumerate((raw_text or "").splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        fields = [f.strip() for f in stripped.split(",")]
+        if len(fields) < 3:
+            errors.append(f"Line {line_no}: expected 'Student ID, Name, Surname'.")
+            continue
+        student_id, first_name, last_name = fields[:3]
+        if not student_id or not first_name or not last_name:
+            errors.append(f"Line {line_no}: all three values must be non-empty.")
+            continue
+        rows.append({
+            "line_no": line_no,
+            "student_id": student_id,
+            "first_name": first_name,
+            "last_name": last_name,
+        })
+    return rows, errors
 
-    return section, description
+
+def _course_team_assignments(course: Course):
+    teams = Team.objects.filter(course=course).order_by("name", "pk")
+    team_map = {}
+    for team in teams:
+        team_map[team.name] = list(
+            Developer.objects.filter(team=team).select_related("user").order_by(
+                "user__first_name", "user__last_name", "user__username"
+            )
+        )
+    return team_map
+
+
+def _get_or_create_student_developer(student_id, first_name, last_name):
+    user = User.objects.filter(username=student_id).first()
+    if user is None:
+        user = User.objects.create_user(student_id, None, student_id)
+        user.first_name = first_name
+        user.last_name = last_name
+        group, _ = Group.objects.get_or_create(name="student")
+        user.groups.add(group)
+        user.save()
+        developer = Developer.objects.create(user=user, photoURL=_default_avatar_url())
+        return developer
+
+    developer, created = Developer.objects.get_or_create(
+        user=user,
+        defaults={"photoURL": _default_avatar_url()}
+    )
+    if created:
+        return developer
+
+    updated = False
+    if not user.first_name and first_name:
+        user.first_name = first_name
+        updated = True
+    if not user.last_name and last_name:
+        user.last_name = last_name
+        updated = True
+    if updated:
+        user.save(update_fields=["first_name", "last_name"])
+    return developer
+
+
+def _next_default_team_name(existing_team_names, start_no):
+    team_no = start_no
+    while True:
+        team_name = f"Team {team_no}"
+        if team_name not in existing_team_names:
+            return team_name, team_no + 1
+        team_no += 1
+
+
+def _balanced_group_sizes(total_students, target_size):
+    if total_students <= 0:
+        return []
+    if target_size <= 0:
+        target_size = 1
+    if total_students <= target_size:
+        return [total_students]
+
+    group_count = total_students // target_size
+    remainder = total_students % target_size
+
+    if remainder > group_count:
+        group_count += 1
+        base_size = total_students // group_count
+        extra = total_students % group_count
+        return [base_size + 1] * extra + [base_size] * (group_count - extra)
+
+    sizes = [target_size] * group_count
+    for idx in range(remainder):
+        sizes[idx] += 1
+    return sizes
 
 
 def _build_team_points_breakdown(team: Team, current_user=None):
@@ -1078,158 +1181,134 @@ def create_master_course(request):
 @permission_required('tasks.add_team')
 @permission_required('tasks.add_developer')
 def create_team(request, course_id):
-    c = Course.objects.get(pk = course_id)
-    lecturer = Lecturer.objects.get(user = request.user)
-    teams: Team([]) = Team.objects.all().filter(course = c)
-    
-    team_names = []
-    for t in teams:
-        team_names.append(t.name)
-        
-    team_no = len(teams) + 1
-    
+    course = get_object_or_404(Course, pk=course_id)
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
+
+    team_assignments = _course_team_assignments(course)
+    next_team_no = Team.objects.filter(course=course).count() + 1
+    errors = []
+    success_message = None
+
     if request.method == 'POST':
-        stdlist = request.POST.get("stdlist", "").splitlines()
-        default_section = _parse_positive_int(request.POST.get("default_section"), 1)
-        default_section_description = request.POST.get("default_section_description", "").strip()
-        
-        devs = []
-        for std in stdlist:
-            if not std.strip():
-                continue
+        mode = request.POST.get("mode", "").strip()
+        existing_team_names = set(Team.objects.filter(course=course).values_list("name", flat=True))
 
-            fields = [f.strip() for f in std.split('\t')]
-            if len(fields) < 4:
-                continue
+        if mode == "manual":
+            manual_rows, parse_errors = _parse_manual_team_rows(request.POST.get("manual_list", ""))
+            errors.extend(parse_errors)
+            if not manual_rows and not errors:
+                errors.append("Please provide at least one manual input line.")
+            created_teams = 0
+            assigned_students = 0
+            team_cache = {}
 
-            uniId = fields[1].strip()
-            first_name = fields[2].strip()
-            last_name = fields[3].strip()
-            section, section_description = _parse_student_course_meta(
-                fields,
-                default_section,
-                default_section_description
-            )
+            if not errors:
+                for row in manual_rows:
+                    team_name = row["team_name"]
+                    team = team_cache.get(team_name)
+                    if team is None:
+                        team = Team.objects.filter(course=course, name=team_name).first()
+                        if team is None:
+                            team = Team.objects.create(
+                                course=course,
+                                name=team_name,
+                                github=None,
+                                supervisor=lecturer
+                            )
+                            existing_team_names.add(team_name)
+                            created_teams += 1
+                        team_cache[team_name] = team
 
-            u:User = User.objects.filter(username = uniId)
-            if not u.exists():
-                us = User.objects.create_user(uniId, None, uniId)
-                us.first_name = first_name
-                us.last_name = last_name
-                group = Group.objects.get(name="student")
-                us.groups.add(group)
-                us.save()
-                d = Developer()
-                d.user = us 
-                d.photoURL = _default_avatar_url()
-                d.save()
-            
-            u:User = User.objects.get(username=uniId)
-            dev: Developer = Developer.objects.get(user=u)
-            if not dev.user.first_name and first_name:
-                dev.user.first_name = first_name
-            if not dev.user.last_name and last_name:
-                dev.user.last_name = last_name
-            dev.user.save(update_fields=["first_name", "last_name"])
+                    developer = _get_or_create_student_developer(
+                        row["student_id"].strip(),
+                        row["first_name"],
+                        row["last_name"]
+                    )
+                    DeveloperCourse.objects.get_or_create(
+                        developer=developer,
+                        course=course,
+                        defaults={"section": 1, "description": ""}
+                    )
 
-            DeveloperCourse.objects.update_or_create(
-                developer=dev,
-                course=c,
-                defaults={
-                    "section": section,
-                    "description": section_description
-                }
-            )
-            
-            t:Team = dev.team.all().filter(course = c)
-            if t.exists():
-                continue
-            else:
-                devs.append(dev)
-                
-        if 'auto' in request.POST:
-            from random import shuffle 
-            shuffle(devs)
-            
-            team_size = int(request.POST["team_size"])
-            team_std_count = 0
-            
-            for d in devs:
-                team_name = "Team" + " " + str(team_no)
-                if team_name not in team_names:
-                    t = Team()
-                    team_std_count = 0
-                    t.course = c
-                    t.name = team_name
-                    t.github = "ENTER YOUT GIT REP ADDRESS HERE"
-                    t.supervisor = lecturer
-                    t.save()
-                    team_names.append(team_name)
-                
-                team_std_count += 1
-                if team_std_count == team_size:
-                    team_no+=1
-                t: Team = Team.objects.all().get(name = team_name, course = c)
-                d.team.add(t)
-                d.save()
-            
-            teams: Team([]) = Team.objects.all().filter(course = c)
-            
-            t_d = {}
-            for t in teams:
-                devs: Developer([]) = list(Developer.objects.all().filter(team = t))
-                t_d[t.name] = []
-                for d in devs:
-                    t_d[t.name].append(d)
-            
-            return render(request, 'tasks/team_success.html', {
-            'page_title': 'Results',
-            't_d': t_d,
-            })    
-            
-        elif 'manuel' in request.POST:
-            if devs:
-                team_name = "Team" + " " + str(team_no)
-                t = Team()
-                t.course = c
-                t.name = team_name
-                t.github = "ENTER YOUT GIT REP ADDRESS HERE"
-                t.supervisor = lecturer
-                t.save()
-            for d in devs:
-                team: Team = Team.objects.all().get(name = team_name, course = c)
-                d.team.add(team)
-                d.save()
-            team_no+=1
-            
-            teams: Team([]) = Team.objects.all().filter(course = c)
-            t_d = {}
-            for t in teams:
-                devs: Developer([]) = list(Developer.objects.all().filter(team = t))
-                t_d[t.name] = []
-                for d in devs:
-                    t_d[t.name].append(d)
-            
-            return render(request, 'tasks/team_create.html', {
-             'page_title': 'Create Teams',
-             'course': c,
-             'team_no': team_no,
-             't_d': t_d
-            })
-    else:
-        teams: Team([]) = Team.objects.all().filter(course = c)
-        t_d = {}
-        for t in teams:
-            devs: Developer([]) = list(Developer.objects.all().filter(team = t))
-            t_d[t.name] = []
-            for d in devs:
-                t_d[t.name].append(d)
-        return render(request, 'tasks/team_create.html', {
-            'page_title': 'Create Teams',
-            'course': c,
-            'team_no': team_no,
-            't_d': t_d
-            })      
+                    already_assigned = developer.team.filter(course=course).exists()
+                    if already_assigned:
+                        continue
+                    developer.team.add(team)
+                    assigned_students += 1
+
+                success_message = (
+                    f"Manual creation completed. Teams created: {created_teams}. "
+                    f"Students assigned: {assigned_students}."
+                )
+
+        elif mode == "random":
+            random_rows, parse_errors = _parse_random_team_rows(request.POST.get("random_list", ""))
+            errors.extend(parse_errors)
+            if not random_rows and not errors:
+                errors.append("Please provide at least one random input line.")
+            team_size = _parse_positive_int(request.POST.get("team_size"), 4)
+            pending_developers = []
+            seen_student_ids = set()
+
+            if not errors:
+                for row in random_rows:
+                    student_id = row["student_id"].strip()
+                    if student_id in seen_student_ids:
+                        continue
+                    seen_student_ids.add(student_id)
+                    developer = _get_or_create_student_developer(
+                        student_id,
+                        row["first_name"],
+                        row["last_name"]
+                    )
+                    DeveloperCourse.objects.get_or_create(
+                        developer=developer,
+                        course=course,
+                        defaults={"section": 1, "description": ""}
+                    )
+                    if developer.team.filter(course=course).exists():
+                        continue
+                    pending_developers.append(developer)
+
+                from random import shuffle
+                shuffle(pending_developers)
+
+                group_sizes = _balanced_group_sizes(len(pending_developers), team_size)
+                cursor = 0
+                created_teams = 0
+                for group_size in group_sizes:
+                    team_name, next_team_no = _next_default_team_name(existing_team_names, next_team_no)
+                    team = Team.objects.create(
+                        course=course,
+                        name=team_name,
+                        github=None,
+                        supervisor=lecturer
+                    )
+                    existing_team_names.add(team_name)
+                    created_teams += 1
+
+                    for developer in pending_developers[cursor:cursor + group_size]:
+                        developer.team.add(team)
+                    cursor += group_size
+
+                success_message = (
+                    f"Random generation completed. Teams created: {created_teams}. "
+                    f"Students assigned: {len(pending_developers)}."
+                )
+        else:
+            errors.append("Invalid team creation mode.")
+
+        team_assignments = _course_team_assignments(course)
+
+    return render(request, 'tasks/team_create.html', {
+        'page_title': 'Create Teams',
+        'course': course,
+        't_d': team_assignments,
+        'errors': errors,
+        'success_message': success_message,
+    })
             
 @login_required
 @permission_required('tasks.add_team')
