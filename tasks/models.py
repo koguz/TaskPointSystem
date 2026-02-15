@@ -154,32 +154,29 @@ class Developer(models.Model):
                 p = p + task.get_points() 
         return p 
 
-    def get_developer_grade(self, m):
-        t = self.team.all()[0]
+    def get_developer_grade(self, m, team):
         g = 0
-        if t.get_developer_average(m) > 0:
-            g = round((self.get_all_accepted_points(m) / t.get_developer_average(m)) * 100)
+        if team.get_developer_average(m) > 0:
+            g = round((self.get_all_accepted_points(m) / team.get_developer_average(m)) * 100)
             if g > 100:
                 g = 100
-        return g 
-    
-    # we have to get the milestone names and points
-    # for those milestones in a dictionary, so that i can loop through it in the template...
+        return g
+
     def get_milestone_list(self, team_id):
         milestone_list = {}
         t = Team.objects.get(pk=team_id)
         for m in t.course.milestone_set.all():
-            milestone_list[m.name] = self.get_developer_grade(m)
+            milestone_list[m.name] = self.get_developer_grade(m, t)
         return milestone_list
 
     def get_project_grade(self, team_id):
         team_grade = 0
         ind_grade = 0
         t = Team.objects.get(pk=team_id)
-        c = t.course 
+        c = t.course
         for m in c.milestone_set.all():
             team_grade = team_grade + t.get_team_points(m) * (m.weight / 100)
-            ind_grade  = ind_grade  + self.get_developer_grade(m) * (m.weight / 100)
+            ind_grade  = ind_grade  + self.get_developer_grade(m, t) * (m.weight / 100)
         return round(team_grade * (c.group_weight / 100) + ind_grade * (c.individual_weight / 100))
 
     # TODO check permissions https://docs.djangoproject.com/en/3.2/topics/auth/default/
