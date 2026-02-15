@@ -13,6 +13,19 @@
 {% block small_left_content %}
 <section class="tps-section">
   <div class="tps-section-header">
+    <h2 class="tps-section-title">Actions</h2>
+  </div>
+  <div class="tps-section-body">
+    <div class="d-grid gap-2">
+      <a href="{% url 'lecturer_course_points' course.id %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-table"></i> Course Points
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="tps-section">
+  <div class="tps-section-header">
     <h2 class="tps-section-title">Milestones</h2>
     <a href="{% url 'create_milestone' course.id %}" class="btn btn-sm btn-outline-primary">Create</a>
   </div>

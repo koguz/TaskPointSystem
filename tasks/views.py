@@ -1,3 +1,4 @@
+import csv
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -131,7 +132,24 @@ def _parse_positive_int(value, fallback):
     return fallback
 
 
-def _parse_manual_team_rows(raw_text):
+def _parse_student_section_meta(fields, section_index, description_index, default_section, default_description, line_no, errors):
+    section = default_section
+    description = default_description
+
+    if len(fields) > section_index and fields[section_index]:
+        parsed_section = _parse_positive_int(fields[section_index], None)
+        if parsed_section is None:
+            errors.append(f"Line {line_no}: section must be a positive integer.")
+        else:
+            section = parsed_section
+
+    if len(fields) > description_index and fields[description_index]:
+        description = fields[description_index]
+
+    return section, description
+
+
+def _parse_manual_team_rows(raw_text, default_section, default_description):
     rows = []
     errors = []
     for line_no, line in enumerate((raw_text or "").splitlines(), start=1):
@@ -146,17 +164,22 @@ def _parse_manual_team_rows(raw_text):
         if not team_name or not student_id or not first_name or not last_name:
             errors.append(f"Line {line_no}: all four values must be non-empty.")
             continue
+        section, description = _parse_student_section_meta(
+            fields, 4, 5, default_section, default_description, line_no, errors
+        )
         rows.append({
             "line_no": line_no,
             "team_name": team_name,
             "student_id": student_id,
             "first_name": first_name,
             "last_name": last_name,
+            "section": section,
+            "description": description,
         })
     return rows, errors
 
 
-def _parse_random_team_rows(raw_text):
+def _parse_random_team_rows(raw_text, default_section, default_description):
     rows = []
     errors = []
     for line_no, line in enumerate((raw_text or "").splitlines(), start=1):
@@ -171,25 +194,96 @@ def _parse_random_team_rows(raw_text):
         if not student_id or not first_name or not last_name:
             errors.append(f"Line {line_no}: all three values must be non-empty.")
             continue
+        section, description = _parse_student_section_meta(
+            fields, 3, 4, default_section, default_description, line_no, errors
+        )
         rows.append({
             "line_no": line_no,
             "student_id": student_id,
             "first_name": first_name,
             "last_name": last_name,
+            "section": section,
+            "description": description,
         })
     return rows, errors
 
 
 def _course_team_assignments(course: Course):
     teams = Team.objects.filter(course=course).order_by("name", "pk")
+    enrollment_map = {
+        enrollment.developer_id: enrollment
+        for enrollment in DeveloperCourse.objects.filter(course=course)
+    }
     team_map = {}
     for team in teams:
-        team_map[team.name] = list(
+        developers = list(
             Developer.objects.filter(team=team).select_related("user").order_by(
                 "user__first_name", "user__last_name", "user__username"
             )
         )
+        team_map[team.name] = []
+        for developer in developers:
+            enrollment = enrollment_map.get(developer.pk)
+            team_map[team.name].append({
+                "developer": developer,
+                "section": enrollment.section if enrollment else None,
+                "description": enrollment.description if enrollment else "",
+            })
     return team_map
+
+
+def _course_section_score_rows(course: Course):
+    teams = list(
+        Team.objects.filter(course=course).prefetch_related("developer_set__user")
+    )
+    team_by_developer = {}
+    for team in teams:
+        for developer in team.developer_set.all():
+            if developer.pk not in team_by_developer:
+                team_by_developer[developer.pk] = team
+
+    enrollments = {
+        enrollment.developer_id: enrollment
+        for enrollment in DeveloperCourse.objects.filter(course=course).select_related("developer__user")
+    }
+
+    developer_ids = set(team_by_developer.keys()) | set(enrollments.keys())
+    developers = {
+        developer.pk: developer
+        for developer in Developer.objects.filter(pk__in=developer_ids).select_related("user")
+    }
+
+    rows = []
+    for developer_id in developer_ids:
+        developer = developers[developer_id]
+        enrollment = enrollments.get(developer_id)
+        team = team_by_developer.get(developer_id)
+        score = developer.get_project_grade(team.pk) if team is not None else 0
+        rows.append({
+            "student_id": developer.user.username,
+            "first_name": developer.user.first_name,
+            "last_name": developer.user.last_name,
+            "team_name": team.name if team is not None else "",
+            "section": enrollment.section if enrollment is not None else None,
+            "section_description": enrollment.description if enrollment is not None else "",
+            "score": score,
+        })
+
+    rows.sort(
+        key=lambda row: (
+            row["section"] is None,
+            row["section"] if row["section"] is not None else 10 ** 9,
+            row["student_id"]
+        )
+    )
+
+    section_rows = {}
+    for row in rows:
+        section_key = row["section"] if row["section"] is not None else "Unassigned"
+        if section_key not in section_rows:
+            section_rows[section_key] = []
+        section_rows[section_key].append(row)
+    return rows, section_rows
 
 
 def _get_or_create_student_developer(student_id, first_name, last_name):
@@ -1194,9 +1288,15 @@ def create_team(request, course_id):
     if request.method == 'POST':
         mode = request.POST.get("mode", "").strip()
         existing_team_names = set(Team.objects.filter(course=course).values_list("name", flat=True))
+        default_section = _parse_positive_int(request.POST.get("default_section"), 1)
+        default_section_description = (request.POST.get("default_section_description") or "").strip()
 
         if mode == "manual":
-            manual_rows, parse_errors = _parse_manual_team_rows(request.POST.get("manual_list", ""))
+            manual_rows, parse_errors = _parse_manual_team_rows(
+                request.POST.get("manual_list", ""),
+                default_section,
+                default_section_description
+            )
             errors.extend(parse_errors)
             if not manual_rows and not errors:
                 errors.append("Please provide at least one manual input line.")
@@ -1226,10 +1326,13 @@ def create_team(request, course_id):
                         row["first_name"],
                         row["last_name"]
                     )
-                    DeveloperCourse.objects.get_or_create(
+                    DeveloperCourse.objects.update_or_create(
                         developer=developer,
                         course=course,
-                        defaults={"section": 1, "description": ""}
+                        defaults={
+                            "section": row["section"],
+                            "description": row["description"],
+                        }
                     )
 
                     already_assigned = developer.team.filter(course=course).exists()
@@ -1244,7 +1347,11 @@ def create_team(request, course_id):
                 )
 
         elif mode == "random":
-            random_rows, parse_errors = _parse_random_team_rows(request.POST.get("random_list", ""))
+            random_rows, parse_errors = _parse_random_team_rows(
+                request.POST.get("random_list", ""),
+                default_section,
+                default_section_description
+            )
             errors.extend(parse_errors)
             if not random_rows and not errors:
                 errors.append("Please provide at least one random input line.")
@@ -1263,10 +1370,13 @@ def create_team(request, course_id):
                         row["first_name"],
                         row["last_name"]
                     )
-                    DeveloperCourse.objects.get_or_create(
+                    DeveloperCourse.objects.update_or_create(
                         developer=developer,
                         course=course,
-                        defaults={"section": 1, "description": ""}
+                        defaults={
+                            "section": row["section"],
+                            "description": row["description"],
+                        }
                     )
                     if developer.team.filter(course=course).exists():
                         continue
@@ -1329,6 +1439,58 @@ def lecturer_course_view(request, course_id):
     }
 
     return render(request, 'tasks/lecturer_course_view.html', context)
+
+
+@login_required
+@permission_required('tasks.add_team')
+def lecturer_course_points_view(request, course_id):
+    course = get_object_or_404(
+        Course.objects.select_related("masterCourse", "lecturer"),
+        pk=course_id
+    )
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
+
+    rows, section_rows = _course_section_score_rows(course)
+
+    if request.GET.get("format") == "csv":
+        filename = (
+            f"course_points_{course.masterCourse.compact_code}_"
+            f"{course.academic_year}_{course.semester}.csv"
+        ).replace(" ", "")
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+        writer.writerow([
+            "Section",
+            "Section Description",
+            "Student ID",
+            "Name",
+            "Surname",
+            "Team",
+            "Final Score",
+        ])
+        for row in rows:
+            writer.writerow([
+                row["section"] if row["section"] is not None else "",
+                row["section_description"],
+                row["student_id"],
+                row["first_name"],
+                row["last_name"],
+                row["team_name"],
+                row["score"],
+            ])
+        return response
+
+    context = {
+        "page_title": "Course Points",
+        "course": course,
+        "section_rows": section_rows,
+        "total_students": len(rows),
+        "total_sections": len(section_rows),
+    }
+    return render(request, "tasks/course_points_detail.html", context)
 
 @login_required
 @permission_required('tasks.add_team')

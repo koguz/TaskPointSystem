@@ -1,0 +1,90 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+{% block layout_mode %}wide{% endblock %}
+
+{% block breadcrumbs %}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">Lecturer Workspace</p>
+  <h1 class="tps-view-title">{{ course }}</h1>
+  <p class="tps-view-subtitle">Section-based final scores ordered by student ID</p>
+</div>
+{% endblock %}
+
+{% block small_left_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Actions</h2>
+  </div>
+  <div class="tps-section-body">
+    <div class="d-grid gap-2">
+      <a href="{% url 'lecturer_view_course' course.id %}" class="btn btn-sm btn-outline-secondary">Back to Course</a>
+      <a href="{% url 'lecturer_course_points' course.id %}?format=csv" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-download"></i> Download CSV
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Summary</h2>
+  </div>
+  <div class="tps-section-body">
+    <ul class="tps-note-list">
+      <li class="tps-note-item">
+        <span class="tps-note-label">Sections</span>
+        <p class="tps-note-value">{{ total_sections }}</p>
+      </li>
+      <li class="tps-note-item">
+        <span class="tps-note-label">Students</span>
+        <p class="tps-note-value">{{ total_students }}</p>
+      </li>
+    </ul>
+  </div>
+</section>
+{% endblock %}
+
+{% block large_main_content %}
+{% for section, rows in section_rows.items %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">{% if section == "Unassigned" %}Unassigned{% else %}Section {{ section }}{% endif %}</h2>
+    <span class="text-muted small">{{ rows|length }} students</span>
+  </div>
+  <div class="p-0">
+    <div class="table-responsive table-responsive-md-stack">
+      <table class="table tps-table-clean table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Student ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Surname</th>
+            <th scope="col">Team</th>
+            <th scope="col">Section Description</th>
+            <th scope="col">Final Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>{{ row.student_id }}</td>
+            <td>{{ row.first_name }}</td>
+            <td>{{ row.last_name }}</td>
+            <td>{{ row.team_name|default:"-" }}</td>
+            <td>{{ row.section_description|default:"-" }}</td>
+            <td><span class="badge bg-primary">{{ row.score }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% empty %}
+<section class="tps-section">
+  <div class="tps-section-body">
+    <p class="text-muted mb-0">No developer enrollment data for this course yet.</p>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}
