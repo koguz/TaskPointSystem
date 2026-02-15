@@ -1430,7 +1430,10 @@ def create_team(request, course_id):
 @login_required
 @permission_required('tasks.add_team')
 def lecturer_course_view(request, course_id):
-    course = Course.objects.get(pk=course_id)
+    course = get_object_or_404(Course, pk=course_id)
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
     milestones = course.milestone_set.all()
     teams = course.team_set.all()
     tasks = list()
@@ -1502,7 +1505,10 @@ def lecturer_course_points_view(request, course_id):
 @login_required
 @permission_required('tasks.add_team')
 def lecturer_team_view(request, team_id):
-    team = Team.objects.get(pk=team_id)
+    team = get_object_or_404(Team, pk=team_id)
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if team.course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
     points_data = _build_team_points_breakdown(team, current_user=request.user)
     devs = points_data["developers"]
         
@@ -1544,7 +1550,10 @@ def lecturer_team_points_detail(request, team_id):
 @login_required 
 @permission_required('tasks.add_milestone')
 def lecturer_create_milestone(request, course_id):
-    course = Course.objects.get(pk=course_id)
+    course = get_object_or_404(Course, pk=course_id)
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
     if request.method == 'POST':
         form = MilestoneForm(request.POST)
         if form.is_valid():
@@ -1564,8 +1573,11 @@ def lecturer_create_milestone(request, course_id):
 @login_required
 @permission_required('tasks.add_milestone')
 def lecturer_grade_milestone(request, milestone_id):
-    milestone:Milestone = Milestone.objects.get(pk=milestone_id)
+    milestone:Milestone = get_object_or_404(Milestone, pk=milestone_id)
     course:Course = milestone.course
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
     teams = course.team_set.all() 
     if request.method == 'POST':
         for team in teams:
@@ -1600,7 +1612,10 @@ def lecturer_grade_milestone(request, milestone_id):
 @login_required 
 @permission_required('tasks.add_milestone')
 def lecturer_edit_milestone(request, milestone_id):
-    milestone:Milestone = Milestone.objects.get(pk=milestone_id)
+    milestone:Milestone = get_object_or_404(Milestone, pk=milestone_id)
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if milestone.course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
     if request.method == 'POST':
         form = MilestoneForm(request.POST)
         if form.is_valid():
@@ -1621,9 +1636,12 @@ def lecturer_edit_milestone(request, milestone_id):
 @login_required
 @permission_required('tasks.add_team')
 def lecturer_task_view(request, task_id):
-    mt:MasterTask = MasterTask.objects.get(pk=task_id)
+    mt:MasterTask = get_object_or_404(MasterTask, pk=task_id)
     t:Task = Task.objects.all().filter(masterTask=mt).order_by('pk').reverse()[0]
-    course = mt.team.course 
+    course = mt.team.course
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
 
     if request.method == 'POST':
         form = CommentForm(request.POST)
