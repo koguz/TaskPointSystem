@@ -450,24 +450,43 @@ def _build_team_points_breakdown(team: Team, current_user=None):
         "team_component": team_component,
     }
 
+def _reject_overdue_tasks(teams):
+    from datetime import date
+    today = date.today()
+    overdue_tasks = MasterTask.objects.filter(
+        team__in=teams,
+        status__lt=4
+    ).select_related('milestone')
+
+    # Bulk reject tasks whose milestone is past due
+    milestone_overdue = overdue_tasks.filter(milestone__due__lt=today)
+    for mt in milestone_overdue:
+        mt.status = 4
+        mt.save(update_fields=['status'])
+        saveLog(mt, "Task is rejected because milestone is due.")
+
+    # Bulk reject tasks whose promised date is past due
+    from django.db.models import Max, Subquery, OuterRef
+    latest_promised = Task.objects.filter(
+        masterTask=OuterRef('pk')
+    ).order_by('-pk').values('promised_date')[:1]
+
+    promised_overdue = overdue_tasks.annotate(
+        latest_promised_date=Subquery(latest_promised)
+    ).filter(latest_promised_date__lt=today)
+
+    for mt in promised_overdue:
+        mt.status = 4
+        mt.save(update_fields=['status'])
+        saveLog(mt, "Task is rejected because due date has passed.")
+
+
 @login_required
 def index(request):
-    from datetime import date
-    bugun = date.today()
-    for mt in MasterTask.objects.all():
-        task = mt.get_task()
-        if mt.milestone.due < bugun and mt.status < 4:
-            mt.status = 4
-            mt.save()
-            saveLog(mt, "Task is rejected because milestone is due.")
-        if task.promised_date < bugun and mt.status < 4:
-            mt.status = 4
-            mt.save()
-            saveLog(mt, "Task is rejected because due date has passed.")
-
     # redirect to another page for lecturer!
     try:
         d: Developer = Developer.objects.get(user=request.user)
+        _reject_overdue_tasks(d.team.all())
         default_team = _developer_default_team(d)
         if default_team is not None:
             return redirect('team_view', default_team.pk)
