@@ -42,10 +42,10 @@ mc_ce = MasterCourse(code='CE 350', name='Computer Engineering Project')
 mc_ce.save()
 
 # --- Courses ---
-course_se = Course(masterCourse=mc_se, lecturer=lecturer, semester='2024-2025 Spring',
+course_se = Course(masterCourse=mc_se, lecturer=lecturer, academic_year='2024-2025', semester=Course.SEMESTER_SPRING,
                    group_weight=60, individual_weight=40)
 course_se.save()
-course_ce = Course(masterCourse=mc_ce, lecturer=lecturer, semester='2024-2025 Spring',
+course_ce = Course(masterCourse=mc_ce, lecturer=lecturer, academic_year='2024-2025', semester=Course.SEMESTER_SPRING,
                    group_weight=50, individual_weight=50)
 course_ce.save()
 
@@ -89,6 +89,29 @@ developers[4].team.add(team2)
 # Team Gamma: dev6 (Frank) + dev1 (Alice is in two teams)
 developers[5].team.add(team3)
 developers[0].team.add(team3)
+
+# Developer-course section assignments
+DeveloperCourse.objects.update_or_create(
+    developer=developers[0], course=course_se, defaults={"section": 1, "description": "Monday mornings"}
+)
+DeveloperCourse.objects.update_or_create(
+    developer=developers[1], course=course_se, defaults={"section": 1, "description": "Monday mornings"}
+)
+DeveloperCourse.objects.update_or_create(
+    developer=developers[2], course=course_se, defaults={"section": 2, "description": "Wednesday afternoons"}
+)
+DeveloperCourse.objects.update_or_create(
+    developer=developers[3], course=course_se, defaults={"section": 2, "description": "Wednesday afternoons"}
+)
+DeveloperCourse.objects.update_or_create(
+    developer=developers[4], course=course_se, defaults={"section": 2, "description": "Wednesday afternoons"}
+)
+DeveloperCourse.objects.update_or_create(
+    developer=developers[5], course=course_ce, defaults={"section": 1, "description": "Friday mornings"}
+)
+DeveloperCourse.objects.update_or_create(
+    developer=developers[0], course=course_ce, defaults={"section": 3, "description": "Cross-section team"}
+)
 
 # --- MasterTasks + Tasks ---
 two_weeks_from_today = date.today() + timedelta(weeks=2)

@@ -1,5 +1,6 @@
 from django.db.models.base import Model
 from django.forms import ModelForm, DateInput, Textarea
+from django.core.exceptions import ValidationError
 
 from .models import *
 
@@ -11,7 +12,12 @@ class MasterCourseForm(ModelForm):
 class CourseForm(ModelForm):
     class Meta:
         model = Course
-        fields = ['semester', 'group_weight', 'individual_weight']
+        fields = ['academic_year', 'semester', 'group_weight', 'individual_weight']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['academic_year'].choices = Course.get_academic_year_choices()
+        self.fields['academic_year'].initial = Course.get_default_academic_year()
 
 class MilestoneForm(ModelForm):
     class Meta:

@@ -17,7 +17,8 @@
   </div>
   <div class="tps-section-body small">
     <p>Paste student rows exactly as copied from your source list (tab-separated fields).</p>
-    <p class="mb-0">Use random generation for automatic chunking by team size, or manual mode to append one team at a time.</p>
+    <p>Optional extra columns are supported after last name: <code>Section</code> (integer) and <code>Description</code> (text).</p>
+    <p class="mb-0">If extra columns are not provided, defaults from the form are used for all pasted students.</p>
   </div>
 </section>
 
@@ -61,6 +62,14 @@
         <input id="team-size" type="number" min="1" name="team_size" value="4" class="form-control" />
       </div>
       <div>
+        <label for="default-section-auto" class="form-label">Default Section</label>
+        <input id="default-section-auto" type="number" min="1" name="default_section" value="1" class="form-control" />
+      </div>
+      <div>
+        <label for="default-section-description-auto" class="form-label">Default Section Description (Optional)</label>
+        <input id="default-section-description-auto" type="text" name="default_section_description" class="form-control" placeholder="e.g. Monday mornings" />
+      </div>
+      <div>
         <label for="stdlist-auto" class="form-label">Student List</label>
         <textarea id="stdlist-auto" rows="14" name="stdlist" class="form-control" placeholder="Paste student list here..."></textarea>
       </div>
@@ -80,6 +89,14 @@
   <div class="tps-section-body">
     <form action="{% url 'create_team' course.pk %}" method="post" class="tps-form-grid">
       {% csrf_token %}
+      <div>
+        <label for="default-section-manual" class="form-label">Default Section</label>
+        <input id="default-section-manual" type="number" min="1" name="default_section" value="1" class="form-control" />
+      </div>
+      <div>
+        <label for="default-section-description-manual" class="form-label">Default Section Description (Optional)</label>
+        <input id="default-section-description-manual" type="text" name="default_section_description" class="form-control" placeholder="e.g. Monday mornings" />
+      </div>
       <div>
         <label for="stdlist-manual" class="form-label">Student List</label>
         <textarea id="stdlist-manual" rows="14" name="stdlist" class="form-control" placeholder="Paste one team's members..."></textarea>

@@ -4,14 +4,19 @@ from django.db.models.fields.related import ForeignKey
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User 
 from django.utils.translation import gettext_lazy as _
+import datetime
 
 def past_date_validator(value):
-    import datetime 
     if datetime.date.today() >= value:
         raise ValidationError(
             _('%(value)s is in the past!'),
             params={'value': value},
         )
+
+
+def default_academic_year_value():
+    year = datetime.date.today().year
+    return f"{year - 1}-{year}"
 
 class Lecturer(models.Model):
     user = models.OneToOneField(User, on_delete=CASCADE) 
@@ -34,16 +39,43 @@ class MasterCourse(models.Model):
         return self.compact_code + " - " + self.name 
  
 class Course(models.Model):
+    SEMESTER_FALL = "Fall"
+    SEMESTER_SPRING = "Spring"
+    SEMESTER_SUMMER = "Summer"
+    SEMESTER_CHOICES = (
+        (SEMESTER_FALL, "Fall"),
+        (SEMESTER_SPRING, "Spring"),
+        (SEMESTER_SUMMER, "Summer"),
+    )
+
     masterCourse = models.ForeignKey(MasterCourse, on_delete=CASCADE)
     lecturer = models.ForeignKey(Lecturer, on_delete=SET_NULL, null=True)
-    semester = models.CharField(max_length=128)
+    academic_year = models.CharField("Academic Year", max_length=9, default=default_academic_year_value)
+    semester = models.CharField("Semester", max_length=16, choices=SEMESTER_CHOICES, default=SEMESTER_FALL)
     group_weight = models.PositiveSmallIntegerField("Group Weight", default=40)
     individual_weight = models.PositiveSmallIntegerField("Individual Weight", default=60)
     active = models.BooleanField("Active", default=True)
     # TODO check if group + individual is 100 
 
     def __str__(self):
-        return str(self.masterCourse) + " @ " + self.semester
+        return str(self.masterCourse) + " @ " + self.get_term_label()
+
+    @staticmethod
+    def get_academic_year_choices(reference_year=None):
+        year = reference_year if reference_year is not None else datetime.date.today().year
+        start_year = year - 2
+        return [
+            (f"{y}-{y + 1}", f"{y}-{y + 1}")
+            for y in range(start_year, start_year + 4)
+        ]
+
+    @staticmethod
+    def get_default_academic_year(reference_year=None):
+        year = reference_year if reference_year is not None else datetime.date.today().year
+        return f"{year - 1}-{year}"
+
+    def get_term_label(self):
+        return f"{self.academic_year} {self.get_semester_display()}"
 
     def get_current_milestone(self):
         import datetime 
@@ -101,6 +133,7 @@ class Team(models.Model):
 class Developer(models.Model):
     user = models.OneToOneField(User, on_delete=CASCADE)
     team = models.ManyToManyField(Team, blank=True)
+    courses = models.ManyToManyField(Course, through='DeveloperCourse', blank=True, related_name='developers')
     photoURL = models.URLField(max_length=200, default="https://cdn0.iconfinder.com/data/icons/social-media-network-4/48/male_avatar-512.png", blank=True)
 
     # team = models.ForeignKey(Team, on_delete=SET_NULL, blank=True, null=True)
@@ -147,6 +180,20 @@ class Developer(models.Model):
         return round(team_grade * (c.group_weight / 100) + ind_grade * (c.individual_weight / 100))
 
     # TODO check permissions https://docs.djangoproject.com/en/3.2/topics/auth/default/
+
+
+class DeveloperCourse(models.Model):
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    section = models.PositiveSmallIntegerField("Section", default=1)
+    description = models.CharField("Description", max_length=128, blank=True)
+
+    class Meta:
+        unique_together = ("developer", "course")
+
+    def __str__(self):
+        suffix = f" - {self.description}" if self.description else ""
+        return f"{self.developer} @ {self.course} (Section {self.section}{suffix})"
 
 class MasterTask(models.Model):
     

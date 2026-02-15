@@ -121,6 +121,37 @@ def _has_revision_request(mastertask: MasterTask, task: Task):
     ).exists()
 
 
+def _parse_positive_int(value, fallback):
+    try:
+        parsed = int(str(value).strip())
+        if parsed > 0:
+            return parsed
+    except (TypeError, ValueError):
+        pass
+    return fallback
+
+
+def _parse_student_course_meta(fields, default_section, default_description):
+    section = default_section
+    description = default_description
+
+    if len(fields) >= 5:
+        raw_section = fields[4].strip()
+        if raw_section:
+            maybe_section = _parse_positive_int(raw_section, None)
+            if maybe_section is not None:
+                section = maybe_section
+            else:
+                description = raw_section
+
+    if len(fields) >= 6:
+        raw_description = fields[5].strip()
+        if raw_description:
+            description = raw_description
+
+    return section, description
+
+
 def _build_team_points_breakdown(team: Team, current_user=None):
     milestones = list(team.course.milestone_set.all().order_by("due", "pk"))
     developers = list(
@@ -1036,18 +1067,33 @@ def create_team(request, course_id):
     team_no = len(teams) + 1
     
     if request.method == 'POST':
-        stdlist = request.POST["stdlist"].split('\r\n')
+        stdlist = request.POST.get("stdlist", "").splitlines()
+        default_section = _parse_positive_int(request.POST.get("default_section"), 1)
+        default_section_description = request.POST.get("default_section_description", "").strip()
         
         devs = []
         for std in stdlist:
-            fields = std.split('\t')
+            if not std.strip():
+                continue
+
+            fields = [f.strip() for f in std.split('\t')]
+            if len(fields) < 4:
+                continue
+
             uniId = fields[1].strip()
-            fullname = fields[2].strip() + " " + fields[3].strip()    
+            first_name = fields[2].strip()
+            last_name = fields[3].strip()
+            section, section_description = _parse_student_course_meta(
+                fields,
+                default_section,
+                default_section_description
+            )
+
             u:User = User.objects.filter(username = uniId)
             if not u.exists():
                 us = User.objects.create_user(uniId, None, uniId)
-                us.first_name = fields[2].strip()
-                us.last_name = fields[3].strip()
+                us.first_name = first_name
+                us.last_name = last_name
                 group = Group.objects.get(name="student")
                 us.groups.add(group)
                 us.save()
@@ -1056,8 +1102,22 @@ def create_team(request, course_id):
                 d.photoURL = _default_avatar_url()
                 d.save()
             
-            u:User = User(User.objects.get(username = uniId))
-            dev: Developer = Developer.objects.get(user = u.pk)
+            u:User = User.objects.get(username=uniId)
+            dev: Developer = Developer.objects.get(user=u)
+            if not dev.user.first_name and first_name:
+                dev.user.first_name = first_name
+            if not dev.user.last_name and last_name:
+                dev.user.last_name = last_name
+            dev.user.save(update_fields=["first_name", "last_name"])
+
+            DeveloperCourse.objects.update_or_create(
+                developer=dev,
+                course=c,
+                defaults={
+                    "section": section,
+                    "description": section_description
+                }
+            )
             
             t:Team = dev.team.all().filter(course = c)
             if t.exists():

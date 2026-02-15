@@ -13,7 +13,7 @@
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
           <div class="fw-bold">{{ team.course.masterCourse.compact_code }} / {{ team.name }}</div>
-          <div class="small text-muted">{{ team.course.semester }}</div>
+          <div class="small text-muted">{{ team.course.academic_year }} {{ team.course.get_semester_display }}</div>
         </div>
         <a href="{% url 'team_view' team.pk %}" class="btn btn-sm btn-outline-primary">Open Team</a>
       </div>

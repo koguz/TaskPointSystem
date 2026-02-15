@@ -12,7 +12,7 @@
             <span class="tps-course-code">{{ course.masterCourse.compact_code }}</span>
             <span>{{ course.masterCourse.name }}</span>
           </span>
-          <span class="tps-course-meta">{{ course.semester }}</span>
+          <span class="tps-course-meta">{{ course.academic_year }} {{ course.get_semester_display }}</span>
         </a>
       </li>
       {% empty %}
