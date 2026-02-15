@@ -669,7 +669,6 @@ def create_task(request, team_id):
             task:Task = form.save(commit=False)
             task.masterTask = mastertask 
             task.save()
-            mastertask.team.developer_set
 
             devs = Developer.objects.all().filter(team=t)
 
