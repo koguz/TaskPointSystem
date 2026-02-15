@@ -610,7 +610,7 @@ def edit_task(request, task_id):
                 'Edited by: ' + str(mt.owner),
                 'Title: ' + task.title,
                 'Description: ' + task.description,
-                'Priortiy: ' + task.getPriority(),
+                'Priority: ' + task.getPriority(),
                 'Due date: ' + str(task.promised_date)
             ]
             url = request._current_scheme_host + "/tasks/" + str(task.masterTask_id)
@@ -792,7 +792,7 @@ def complete_task(request, task_id):
         'Creator: ' + str(mt.owner),
         'Title: ' + t.title,
         'Description: ' + t.description,
-        'Priortiy: ' + t.getPriority(),
+        'Priority: ' + t.getPriority(),
         'Difficulty: ' + difficulty_label,
         'Used Generative AI: ' + ('Yes (' + mt.ai_usage + ')' if mt.used_ai else 'No'),
         'Completion Summary: ' + completion_summary,
