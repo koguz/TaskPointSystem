@@ -1644,10 +1644,10 @@ def lecturer_task_view(request, task_id):
     comments = Comment.objects.all().filter(mastertask=mt).order_by('date').reverse()
     v_app = len(Vote.objects.all().filter(task=t).filter(status=mt.status).filter(vote=True))
     v_den = len(Vote.objects.all().filter(task=t).filter(status=mt.status).filter(vote=False))
-    if mt.status == 1 and v_app > len(mt.team.developer_set.all())/2 :
+    if mt.status == 1 and v_app > (len(mt.team.developer_set.all()) - 1) / 2:
         mt.status = 2
         mt.save()
-    elif mt.status == 3 and v_app > len(mt.team.developer_set.all())/2 :
+    elif mt.status == 3 and v_app > (len(mt.team.developer_set.all()) - 1) / 2:
         mt.status = 5
         mt.save()
 
