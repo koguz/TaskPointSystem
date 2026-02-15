@@ -225,8 +225,10 @@ class MasterTask(models.Model):
     ai_usage = models.CharField("AI Usage Details", max_length=256, blank=True, default='')
 
     def __str__(self):
-        # this query gives me the last task title associated with this master task 
-        return self.task_set.all().order_by('pk').reverse()[0].title
+        task = self.task_set.order_by('-pk').first()
+        if task is None:
+            return f"MasterTask #{self.pk}"
+        return task.title
     
     # TODO 
     def getStatus(self):
