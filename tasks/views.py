@@ -30,7 +30,11 @@ def saveLog(mt: MasterTask, message, gizli: bool = False):
     l.save()
 
 
-def _send_notification_email(subject, plain_message, from_email, recipient_list, html_message=None):
+def _task_url(task_id):
+    return f"{settings.SITE_URL}/tasks/{task_id}"
+
+
+def _send_notification_email(subject, plain_message, recipient_list, html_message=None):
     if not getattr(settings, "EMAIL_NOTIFICATIONS_ENABLED", False):
         return 0
     if not recipient_list:
@@ -38,7 +42,7 @@ def _send_notification_email(subject, plain_message, from_email, recipient_list,
     return send_mail(
         subject,
         plain_message,
-        from_email,
+        settings.DEFAULT_FROM_EMAIL,
         recipient_list,
         html_message=html_message
     )
@@ -613,16 +617,15 @@ def edit_task(request, task_id):
                 'Priority: ' + task.getPriority(),
                 'Due date: ' + str(task.promised_date)
             ]
-            url = request._current_scheme_host + "/tasks/" + str(task.masterTask_id)
+            url = _task_url(task.masterTask_id)
 
             html_message = render_to_string('tasks/email_template.html',
             {'title': 'A task has been edited.', 'contentList': contentList, 'url': url, 'background_color': '#003399'})
 
             plain_message = strip_tags(html_message)
-            from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mt, "Task is edited by " + str(d) + ".")
-            _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)
+            _send_notification_email(subject, plain_message, receivers, html_message=html_message)
             
 
             return redirect('view_task', task_id)
@@ -688,16 +691,15 @@ def create_task(request, team_id):
 
             subject = 'TPS:Notification || A task has been created'
 
-            url = request._current_scheme_host + "/tasks/" + str(task.masterTask_id)
+            url = _task_url(task.masterTask_id)
 
             html_message = render_to_string('tasks/email_template.html',
             {'title':'A task has been created!', 'contentList':contentList, 'url': url, 'background_color': '#003399'})
 
             plain_message = strip_tags(html_message)
-            from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mastertask, "Task is created by " + str(d) + ".")
-            _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)
+            _send_notification_email(subject, plain_message, receivers, html_message=html_message)
             
             
             return redirect('team_view', team_id)
@@ -800,12 +802,11 @@ def complete_task(request, task_id):
         'Due date: '+ str(t.promised_date)
     ]
 
-    url = request._current_scheme_host + "/tasks/" + str(t.masterTask_id)
+    url = _task_url(t.masterTask_id)
     html_message = render_to_string('tasks/email_template.html',
     {'title': title, 'contentList': contentList, 'url':url, 'background_color': '#003399'})
     plain_message = strip_tags(html_message)
-    from_email = 'tps@izmirekonomi.edu.tr'
-    _send_notification_email(subject, plain_message, from_email, receivers, html_message=html_message)
+    _send_notification_email(subject, plain_message, receivers, html_message=html_message)
 
     return redirect('view_task', task_id)
 
@@ -918,14 +919,13 @@ def view_task(request, task_id):
                             'Due date: ' + str(t.promised_date)
                         ]
 
-                        url = request._current_scheme_host + "/tasks/" + str(t.masterTask_id)
+                        url = _task_url(t.masterTask_id)
                         html_message = render_to_string('tasks/email_template.html',
                         {'title': 'A task has received an approve vote!', 'contentList': contentList, 'url': url, 'background_color': '#5cb85c'})
 
                         plain_message = strip_tags(html_message)
-                        from_email = 'tps@izmirekonomi.edu.tr'
                         saveLog(mt, "Task received an approve vote by "+ str(d) + ".")
-                        _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+                        _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
 
                     elif request.POST['approve'] == "No":
                         comment.approved = False
@@ -944,15 +944,14 @@ def view_task(request, task_id):
                             'Priority: ' + t.getPriority(),
                             'Due date: ' + str(t.promised_date)
                         ]
-                        url = request._current_scheme_host + "/tasks/" + str(t.masterTask_id)
+                        url = _task_url(t.masterTask_id)
                         html_message = render_to_string('tasks/email_template.html',
                         {'title':'A task has received a revision request.', 'contentList': contentList, 'url':url, 'background_color': '#ff2400'})
 
                         plain_message = strip_tags(html_message)
-                        from_email = 'tps@izmirekonomi.edu.tr'
-
+            
                         saveLog(mt, "Task received a revision request by "+ str(d) + ".")
-                        _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+                        _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
                 comment.save()
                 return redirect('view_task', task_id)
     
@@ -976,32 +975,30 @@ def view_task(request, task_id):
                 'Due date: ' + str(t.promised_date)
             ]
             
-            url = request._current_scheme_host + "/tasks/" + str(t.masterTask_id)
+            url = _task_url(t.masterTask_id)
 
             html_message = render_to_string('tasks/email_template.html',           
             {'title':'Your task is now in open state!','contentList': contentList, 'url':url, 'background_color': '#003399'})
 
             plain_message = strip_tags(html_message)
-            from_email = 'tps@izmirekonomi.edu.tr'
 
             saveLog(mt, "All approved. Task is now in open state.")
-            _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+            _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
             
         elif mt.status == 3 and v_app > (len(mt.team.developer_set.all()) - 1) / 2:
             mt.status = 5
             mt.save()
 
             subject = 'TPS:Notification || The task you created is now accepted.'
-            url = request._current_scheme_host + "/tasks/" + str(t.masterTask_id)
+            url = _task_url(t.masterTask_id)
 
             html_message = render_to_string('tasks/email_template.html',           
             {'title':'Your task is accepted!', 'contentList': ['Your task called ' + t.title + ' is now accepted.'],'url':url, 'background_color': '#003399' })
 
             plain_message = strip_tags(html_message)
-            from_email = 'tps@izmirekonomi.edu.tr'
             
             saveLog(mt, "All approved. Task is now accepted!")
-            _send_notification_email(subject, plain_message, from_email, [task_owner.user.email], html_message=html_message)
+            _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
             
         elif mt.status == 3 and v_den >= (len(mt.team.developer_set.all()) - 1) / 2:
             reopen = True 
