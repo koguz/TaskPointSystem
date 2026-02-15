@@ -1074,7 +1074,8 @@ def tpslogin(request):
         return render(request, 'tasks/login.html', context)
 
 def tpslogout(request):
-    logout(request)
+    if request.method == 'POST':
+        logout(request)
     return redirect('index')
 
 @login_required
