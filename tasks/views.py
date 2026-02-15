@@ -594,7 +594,7 @@ def edit_task(request, task_id):
             task: Task = form.save(commit=False)
             task.pk = None
             task.masterTask = mt
-            task.version = task.version + 1
+            task.version = t.version + 1
             task.save()
 
             devs = Developer.objects.all().filter(team=tm)
