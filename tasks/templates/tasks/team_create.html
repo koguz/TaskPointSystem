@@ -13,6 +13,15 @@
 {% block left_content %}
 <section class="tps-section">
   <div class="tps-section-header">
+    <h2 class="tps-section-title">Navigation</h2>
+  </div>
+  <div class="tps-section-body">
+    <a href="{% url 'lecturer_view_course' course.id %}" class="btn btn-sm btn-outline-secondary">Back to Course</a>
+  </div>
+</section>
+
+<section class="tps-section">
+  <div class="tps-section-header">
     <h2 class="tps-section-title">Manual Format</h2>
   </div>
   <div class="tps-section-body small">
