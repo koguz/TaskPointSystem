@@ -241,7 +241,7 @@ class MasterTask(models.Model):
         return self.difficulty * self.get_task().priority 
     
     def get_task(self):
-        return self.task_set.all().order_by('pk').reverse()[0]
+        return self.task_set.order_by('-pk').first()
 
 class Task(models.Model):
     PRIORITY = ( 
