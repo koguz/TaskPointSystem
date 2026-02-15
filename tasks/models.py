@@ -127,7 +127,10 @@ class Team(models.Model):
         return g 
 
     def get_developer_average(self, m):
-        return self.get_all_milestone_points(m) / len(self.developer_set.all())
+        count = self.developer_set.count()
+        if count == 0:
+            return 0
+        return self.get_all_milestone_points(m) / count
 
 
 class Developer(models.Model):
