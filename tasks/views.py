@@ -775,13 +775,7 @@ def complete_task(request, task_id):
     else:
         saveLog(mt, "Task is completed by " + str(d) + ".")
 
-    difficulty = str
-    if mt.difficulty == 1:
-        difficulty = 'Easy'
-    elif mt.difficulty == 2:
-        difficulty = 'Normal'
-    elif mt.difficulty == 3:
-        difficulty = 'Difficult'
+    difficulty_label = mt.getDifficulty()
 
     devs = Developer.objects.all().filter(team=tm)
     receivers = []
@@ -801,7 +795,7 @@ def complete_task(request, task_id):
         'Title: ' + t.title,
         'Description: ' + t.description,
         'Priortiy: ' + t.getPriority(),
-        'Difficulty: ' + difficulty,
+        'Difficulty: ' + difficulty_label,
         'Used Generative AI: ' + ('Yes (' + mt.ai_usage + ')' if mt.used_ai else 'No'),
         'Completion Summary: ' + completion_summary,
         'Git Commit or File URL: ' + completion_file_url,
