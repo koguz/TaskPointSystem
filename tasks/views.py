@@ -1032,24 +1032,46 @@ def my_notifications (request):
 @login_required
 @permission_required('tasks.add_mastercourse')
 def create_master_course(request):
+    mastercourses = MasterCourse.objects.all().order_by('code', 'name')
+    mastercourse_error = None
+
     if request.method == 'POST':
+        selected_mastercourse = request.POST.get('mastercourse_choice', '__new__')
+        use_new_mastercourse = selected_mastercourse == '__new__'
         form = MasterCourseForm(request.POST)
         form_details = CourseForm(request.POST)
-        if form.is_valid() and form_details.is_valid():
-            mastercourse = form.save()
+        selected_mastercourse_obj = None
+        details_valid = form_details.is_valid()
+
+        if use_new_mastercourse:
+            if form.is_valid() and details_valid:
+                selected_mastercourse_obj = form.save()
+        else:
+            try:
+                selected_mastercourse_obj = mastercourses.get(pk=int(selected_mastercourse))
+            except (TypeError, ValueError, MasterCourse.DoesNotExist):
+                mastercourse_error = 'Please select a valid master course.'
+
+        if selected_mastercourse_obj is not None and details_valid:
             course:Course = form_details.save(commit=False)
-            course.masterCourse = mastercourse
+            course.masterCourse = selected_mastercourse_obj
             course.lecturer = Lecturer.objects.get(user=request.user)
             course.save() 
             return redirect('lecturer_view')
     else: 
+        selected_mastercourse = str(mastercourses.first().pk) if mastercourses.exists() else '__new__'
+        use_new_mastercourse = selected_mastercourse == '__new__'
         form = MasterCourseForm()
         form_details = CourseForm()
     
-    return render(request, 'tasks/mastercourse_create.html', {
-        'page_title': 'Create New Master Course',
+    return render(request, 'tasks/course_create.html', {
+        'page_title': 'Create New Course',
         'form': form,
-        'form_details': form_details
+        'form_details': form_details,
+        'mastercourses': mastercourses,
+        'selected_mastercourse': str(selected_mastercourse),
+        'use_new_mastercourse': use_new_mastercourse,
+        'mastercourse_error': mastercourse_error,
     })
 
 @login_required

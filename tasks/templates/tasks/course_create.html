@@ -1,0 +1,119 @@
+{% extends "tasks/base.html" %}
+{% load static %}
+{% block layout_mode %}sidebar{% endblock %}
+
+{% block breadcrumbs %}
+<div class="tps-view-head">
+  <p class="tps-view-kicker">Lecturer Workspace</p>
+  <h1 class="tps-view-title">Create New Course</h1>
+  <p class="tps-view-subtitle">Create a course instance by reusing an existing master course or defining a new one</p>
+</div>
+{% endblock %}
+
+{% block left_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Navigation</h2>
+  </div>
+  <div class="tps-section-body">
+    <a href="{% url 'lecturer_view' %}" class="btn btn-outline-secondary btn-sm">Back to Lecturer Dashboard</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block main_content %}
+<section class="tps-section">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Course Setup</h2>
+  </div>
+  <div class="tps-section-body">
+    <form action="{% url 'create_mastercourse' %}" method="post" class="tps-form-grid">
+      {% csrf_token %}
+      <div>
+        <label for="mastercourse-choice" class="form-label">Master Course</label>
+        <select id="mastercourse-choice" name="mastercourse_choice" class="form-select">
+          {% for mcourse in mastercourses %}
+          <option value="{{ mcourse.pk }}" {% if selected_mastercourse == mcourse.pk|stringformat:'s' %}selected{% endif %}>
+            {{ mcourse.compact_code }} - {{ mcourse.name }}
+          </option>
+          {% endfor %}
+          <option value="__new__" {% if use_new_mastercourse %}selected{% endif %}>New Master Course</option>
+        </select>
+        {% if mastercourse_error %}
+        <div class="invalid-feedback d-block">{{ mastercourse_error }}</div>
+        {% endif %}
+      </div>
+
+      <div id="new-mastercourse-fields" class="tps-form-grid {% if not use_new_mastercourse %}d-none{% endif %}">
+        <div>
+          <label for="{{ form.code.id_for_label }}" class="form-label">{{ form.code.label }}</label>
+          {{ form.code }}
+          {% for error in form.code.errors %}
+          <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div>
+          <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+          {{ form.name }}
+          {% for error in form.name.errors %}
+          <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <hr class="my-2" />
+
+      <div>
+        <label for="{{ form_details.academic_year.id_for_label }}" class="form-label">{{ form_details.academic_year.label }}</label>
+        {{ form_details.academic_year }}
+        {% for error in form_details.academic_year.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div>
+        <label for="{{ form_details.semester.id_for_label }}" class="form-label">{{ form_details.semester.label }}</label>
+        {{ form_details.semester }}
+        {% for error in form_details.semester.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div>
+        <label for="{{ form_details.group_weight.id_for_label }}" class="form-label">{{ form_details.group_weight.label }}</label>
+        {{ form_details.group_weight }}
+        {% for error in form_details.group_weight.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div>
+        <label for="{{ form_details.individual_weight.id_for_label }}" class="form-label">{{ form_details.individual_weight.label }}</label>
+        {{ form_details.individual_weight }}
+        {% for error in form_details.individual_weight.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Create Course</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block scriptblock %}
+{{ block.super }}
+<script>
+  $(function () {
+    function toggleMasterCourseFields() {
+      var isNew = $("#mastercourse-choice").val() === "__new__";
+      $("#new-mastercourse-fields").toggleClass("d-none", !isNew);
+    }
+
+    toggleMasterCourseFields();
+    $("#mastercourse-choice").on("change", toggleMasterCourseFields);
+  });
+</script>
+{% endblock %}

@@ -1,10 +1,13 @@
 <section class="tps-section">
   <div class="tps-section-header">
     <h2 class="tps-section-title">Lecturer Menu</h2>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'create_mastercourse' %}">
+      <i class="bi bi-plus-circle"></i> Create New Course
+    </a>
   </div>
   <div class="tps-section-body">
     <h3 class="h6 mb-2">Courses</h3>
-    <ul class="tps-list-clean mb-3">
+    <ul class="tps-list-clean mb-0">
       {% for course in courses %}
       <li>
         <a href="{% url 'lecturer_view_course' course.id %}" class="tps-course-link">
@@ -17,21 +20,6 @@
       </li>
       {% empty %}
       <li class="small text-muted">No assigned courses.</li>
-      {% endfor %}
-    </ul>
-
-    <div class="d-grid gap-2 mb-3">
-      <a class="btn btn-outline-primary" href="{% url 'create_mastercourse' %}">
-        <i class="bi bi-plus-circle"></i> Create Master Course
-      </a>
-    </div>
-
-    <h3 class="h6 mb-2">Master Courses</h3>
-    <ul class="tps-list-clean">
-      {% for mcourse in mcourses %}
-      <li>{{ mcourse }}</li>
-      {% empty %}
-      <li class="small text-muted">No master course records.</li>
       {% endfor %}
     </ul>
   </div>
