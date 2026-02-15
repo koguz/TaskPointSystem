@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 import datetime
 
 def past_date_validator(value):
-    if datetime.date.today() >= value:
+    if datetime.date.today() > value:
         raise ValidationError(
             _('%(value)s is in the past!'),
             params={'value': value},
