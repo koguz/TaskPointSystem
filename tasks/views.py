@@ -516,7 +516,6 @@ def team_view(request, team_id):
         return redirect('my_details')
 
     active_teams = _developer_teams_queryset(d, active_only=True)
-    teams_for_selector = active_teams if active_teams.exists() else all_teams
     t = get_object_or_404(
         Team.objects.select_related("course", "course__masterCourse"),
         pk=team_id
@@ -528,8 +527,7 @@ def team_view(request, team_id):
             return redirect('team_view', fallback_team.pk)
         return redirect('my_details')
 
-    if active_teams.exists() and not t.course.active:
-        return redirect('team_view', active_teams.first().pk)
+    teams_for_selector = active_teams if active_teams.exists() and t.course.active else all_teams
 
     points_data = _build_team_points_breakdown(t, current_user=request.user)
     devs = points_data["developers"]
@@ -542,6 +540,7 @@ def team_view(request, team_id):
         'page_title': 'Team Home',
         'tasks_page': tasks_page,
         'team': t,
+        'course_active': t.course.active,
         'devs': devs,
         'milestone': milestone,
         'teams': teams_for_selector,
@@ -589,6 +588,8 @@ def edit_task(request, task_id):
     tm = mt.team
     if mt.owner != d:  # return to team view if the owner of the task is not this user
         return redirect('team_view', tm.pk)
+    if not tm.course.active:
+        return redirect('view_task', task_id)
     # return to team view if the master task is not 1 (proposed)
     if mt.status != 1:
         return redirect('team_view', tm.pk)
@@ -730,6 +731,8 @@ def complete_task(request, task_id):
     tm = mt.team
     if mt.owner != d:
         return redirect('team_view', tm.pk)
+    if not tm.course.active:
+        return redirect('view_task', task_id)
     if request.method != 'POST':
         return redirect('team_view', tm.pk)
 
@@ -819,6 +822,8 @@ def edit_team(request, team_id):
         if fallback_team is not None:
             return redirect('team_view', fallback_team.pk)
         return redirect('my_details')
+    if not t.course.active:
+        return redirect('team_view', team_id)
     if request.method == 'POST':
         form = TeamFormStd(request.POST)
         if form.is_valid():
@@ -842,6 +847,8 @@ def edit_team(request, team_id):
 def like_task(request,task_id, liked):
     mt:MasterTask = get_object_or_404(MasterTask, pk=task_id)
     d:Developer = Developer.objects.get(user=request.user)
+    if not mt.team.course.active:
+        return redirect('view_task', task_id)
     
     if mt.owner == d:
         return redirect('team_view', mt.team.pk)
@@ -894,6 +901,8 @@ def view_task(request, task_id):
         tm = mt.team
         task_owner: Developer = mt.owner
         if request.method == 'POST':
+            if not tm.course.active:
+                return redirect('view_task', task_id)
             form = CommentForm(request.POST)
             if form.is_valid():
                 comment:Comment = form.save(commit=False)
@@ -1016,6 +1025,7 @@ def view_task(request, task_id):
             'page_title': 'View Task',
             'mastertask': mt,
             'task': t, 
+            'course_active': tm.course.active,
             'tp': mt.difficulty * t.priority,
             'form': form,
             'voted': voted,
@@ -1041,7 +1051,7 @@ def view_task(request, task_id):
 def lecturer_view(request):
     l:Lecturer = Lecturer.objects.get(user=request.user)
     mcourses = MasterCourse.objects.all()
-    courses = Course.objects.all().filter(lecturer = l).order_by('pk').reverse()
+    courses = Course.objects.filter(lecturer=l).order_by('-active', '-pk')
     context = {
         'page_title': 'Home', 
         'courses': courses,
@@ -1447,6 +1457,21 @@ def lecturer_course_view(request, course_id):
     }
 
     return render(request, 'tasks/lecturer_course_view.html', context)
+
+
+@login_required
+@permission_required('tasks.add_team')
+def end_course(request, course_id):
+    if request.method != 'POST':
+        return redirect('lecturer_view_course', course_id)
+    course = get_object_or_404(Course, pk=course_id)
+    lecturer = get_object_or_404(Lecturer, user=request.user)
+    if course.lecturer_id != lecturer.pk:
+        return redirect('lecturer_view')
+    if course.active:
+        course.active = False
+        course.save(update_fields=['active'])
+    return redirect('lecturer_view_course', course_id)
 
 
 @login_required

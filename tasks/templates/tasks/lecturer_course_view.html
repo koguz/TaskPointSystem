@@ -17,6 +17,9 @@
   </div>
   <div class="tps-section-body">
     <div class="d-grid gap-2">
+      <a href="{% url 'lecturer_view' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Lecturer View
+      </a>
       <a href="{% url 'lecturer_course_points' course.id %}" class="btn btn-sm btn-outline-primary">
         <i class="bi bi-table"></i> Course Points
       </a>
@@ -60,6 +63,26 @@
       <li class="text-muted">No teams.</li>
       {% endfor %}
     </ul>
+  </div>
+</section>
+
+<section class="tps-section mb-0">
+  <div class="tps-section-header">
+    <h2 class="tps-section-title">Course Status</h2>
+  </div>
+  <div class="tps-section-body">
+    {% if course.active %}
+    <form method="post" action="{% url 'end_course' course.id %}" onsubmit="return confirm('End this course and disable all student changes?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+        <i class="bi bi-stop-circle"></i> End Course
+      </button>
+    </form>
+    <p class="small text-muted mt-2 mb-0">This deactivates the course and makes student task actions read-only.</p>
+    {% else %}
+    <span class="badge bg-secondary">Completed</span>
+    <p class="small text-muted mt-2 mb-0">This course is inactive. Student task actions are read-only.</p>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

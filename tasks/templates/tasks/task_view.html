@@ -26,8 +26,13 @@
     <p class="mb-2 text-muted"><i class="bi bi-person-check"></i> Assigned to {{ mastertask.owner }}</p>
     <p class="mb-3 text-muted"><i class="bi bi-calendar-check"></i> Due {{ task.promised_date }}</p>
     <div class="mb-3">{{ task.description|linebreaksbr }}</div>
+    {% if not course_active %}
+    <div class="alert alert-secondary py-2 mb-3">
+      Course is completed. This task is read-only.
+    </div>
+    {% endif %}
 
-    {% if not mytask %}
+    {% if not mytask and course_active %}
     <div class="d-flex flex-wrap gap-2 mb-3">
       <a href="{% url 'like_task' mastertask.pk 1 %}" class="btn {% if liked %}btn-success{% else %}btn-outline-success{% endif %} btn-sm">
         <i class="bi bi-hand-thumbs-up{% if liked %}-fill{% endif %}"></i> Like
@@ -38,14 +43,14 @@
     </div>
     {% endif %}
 
-    {% if mastertask.status == 1 and mytask %}
+    {% if mastertask.status == 1 and mytask and course_active %}
     <div class="alert alert-info py-2 mb-3">
       You can edit this task while in <strong>{{ mastertask.getStatus }}</strong> state.
       <a href="{% url 'edit_task' mastertask.pk %}" class="btn btn-sm btn-primary ms-2"><i class="bi bi-pencil-square"></i> Edit</a>
     </div>
     {% endif %}
 
-    {% if mytask and revision_requested and mastertask.status == 1 %}
+    {% if mytask and revision_requested and mastertask.status == 1 and course_active %}
     <div class="alert alert-warning py-2 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
       <span><strong>Revision requested.</strong> Edit the task and save a new version so teammates can vote again.</span>
       <a href="{% url 'edit_task' mastertask.pk %}" class="btn btn-sm btn-warning">
@@ -54,7 +59,7 @@
     </div>
     {% endif %}
 
-    {% if mytask %}
+    {% if mytask and course_active %}
     {% if mastertask.status == 2 or mastertask.status == 3 and revision_requested %}
     {% if mastertask.status == 2 %}
     <div class="alert alert-primary py-2">Task is open. Submit completion details below.</div>
@@ -167,6 +172,7 @@
     <h2 class="tps-section-title">Feedback & Decision</h2>
   </div>
   <div class="tps-section-body">
+    {% if course_active %}
     <form action="{% url 'view_task' mastertask.pk %}" method="post" class="tps-form-grid">
       {% csrf_token %}
       {{ form.as_p }}
@@ -185,6 +191,9 @@
         {% endif %}
       </div>
     </form>
+    {% else %}
+    <p class="text-muted mb-0">Course is completed. Commenting and voting are disabled.</p>
+    {% endif %}
   </div>
 </section>
 

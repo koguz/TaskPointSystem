@@ -22,9 +22,15 @@
         {% endfor %}
       </select>
 
+      {% if course_active %}
       <a class="btn btn-outline-secondary" href="{% url 'edit_team' team.pk %}">
         <i class="bi bi-pencil-square"></i> Edit Team
       </a>
+      {% else %}
+      <button class="btn btn-outline-secondary" type="button" disabled>
+        <i class="bi bi-pencil-square"></i> Edit Team
+      </button>
+      {% endif %}
       <a class="btn btn-outline-secondary" href="{{ team.github }}" target="_blank" rel="noopener noreferrer">
         <i class="bi bi-github"></i> Team Repository
       </a>
@@ -39,6 +45,11 @@
   <strong>Email missing.</strong> Add an address in
   <a class="alert-link" href="{% url 'email' %}">profile settings</a>
   to receive task updates.
+</div>
+{% endif %}
+{% if not course_active %}
+<div class="alert alert-secondary" role="alert">
+  <strong>Course completed.</strong> This workspace is now read-only.
 </div>
 {% endif %}
 {% endblock %}
@@ -123,9 +134,15 @@
 <section class="tps-section">
   <div class="tps-section-header">
     <h2 class="tps-section-title">Tasks</h2>
+    {% if course_active %}
     <a href="{% url 'create_task' team.pk %}" class="btn btn-sm btn-primary">
       <i class="bi bi-plus-circle"></i> Create Task
     </a>
+    {% else %}
+    <button type="button" class="btn btn-sm btn-secondary" disabled>
+      <i class="bi bi-plus-circle"></i> Create Task
+    </button>
+    {% endif %}
   </div>
   <div class="p-0">
     <div class="table-responsive table-responsive-md-stack">
