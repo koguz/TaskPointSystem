@@ -145,23 +145,6 @@
             <span class="tps-footer-title">Task Point System</span>
             <span class="tps-footer-muted">2017-2026</span>
           </div>
-          <div class="tps-footer-links">
-            {% if user.is_authenticated %}
-              {% if perms.tasks.add_team %}
-              <a href="{% url 'lecturer_view' %}">Dashboard</a>
-              {% else %}
-              <a href="{% url 'index' %}">Dashboard</a>
-              <a href="{% url 'my_details' %}">Profile</a>
-              {% endif %}
-              <a href="{% url 'view_updates' %}">About</a>
-              <form method="post" action="{% url 'logout' %}" style="display:inline">
-                {% csrf_token %}
-                <button type="submit" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;font:inherit">Logout</button>
-              </form>
-            {% else %}
-              <a href="{% url 'login' %}">Login</a>
-            {% endif %}
-          </div>
         </div>
       </div>
     </footer>
