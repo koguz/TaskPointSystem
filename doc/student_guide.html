@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task Point System - Student Guide</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --text: #182235;
+      --muted: #5d6b85;
+      --line: #d9dfeb;
+      --brand: #0a4d8c;
+      --brand-soft: #e8f1fb;
+      --ok: #0f7a3d;
+      --warn: #9a5a00;
+      --danger: #9b1c1c;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+    }
+
+    .hero {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+      color: var(--brand);
+    }
+    h3 { margin: 14px 0 8px; font-size: 1rem; }
+
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+    .b-proposed { background: #fff3d8; color: #6f4b00; border-color: #f6dfaa; }
+    .b-open { background: #e5f2ff; color: #11456f; border-color: #c6e2ff; }
+    .b-completed { background: #e7f8ed; color: #0f6a35; border-color: #c6ebd4; }
+    .b-accepted { background: #e3f8f1; color: #0b5d44; border-color: #bce8d8; }
+    .b-rejected { background: #fde9e9; color: #7f2020; border-color: #f8caca; }
+
+    ul, ol { margin: 8px 0 12px 20px; padding: 0; }
+    li { margin-bottom: 8px; }
+
+    .tip {
+      border-left: 4px solid var(--brand);
+      background: var(--brand-soft);
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .ok { color: var(--ok); font-weight: 600; }
+    .warn { color: var(--warn); font-weight: 600; }
+    .danger { color: var(--danger); font-weight: 600; }
+
+    code {
+      background: #f1f4fa;
+      border: 1px solid #e2e8f3;
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: #f0f4fb; }
+
+    footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Task Point System (TPS): Student Guide</h1>
+      <p class="muted">How to create clear tasks, collaborate fairly, and review your teammates' work professionally.</p>
+      <p><strong>Core idea:</strong> TPS is not only for tracking work. It is also a team accountability process. Every task should be understandable, reviewable, and evidence-based.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>1) Why task quality matters</h2>
+        <ul>
+          <li>Clear tasks prevent confusion and repeated work.</li>
+          <li>Good descriptions help teammates review fairly.</li>
+          <li>Consistent review behavior protects team trust.</li>
+          <li>Your contribution score depends on accepted work.</li>
+        </ul>
+        <div class="tip">
+          If a teammate cannot understand your task from the title + description alone, the task is not ready.
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>2) Your responsibilities</h2>
+        <ul>
+          <li>Create tasks before doing significant work.</li>
+          <li>Keep each task atomic (one clear deliverable).</li>
+          <li>Review teammate tasks and vote responsibly.</li>
+          <li>Request revisions when details or quality are insufficient.</li>
+          <li>When completing a task, provide evidence (summary + link).</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>3) Workflow and statuses</h2>
+      <p>Use these statuses correctly throughout the lifecycle:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Meaning</th>
+            <th>What happens next</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge b-proposed">Proposed</span></td>
+            <td>Task idea is created and waiting for teammate votes.</td>
+            <td>Majority approve -> <strong>Open</strong>. If teammates request changes, owner edits and a new version is created.</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-open">Open</span></td>
+            <td>Task is approved to start implementation.</td>
+            <td>Owner completes work and submits completion details.</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-completed">Completed</span></td>
+            <td>Owner submitted completion with evidence.</td>
+            <td>Majority approve -> <strong>Accepted</strong>. If majority request revision, owner submits a completion update and voting restarts.</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-accepted">Accepted</span></td>
+            <td>Team approved the delivered work.</td>
+            <td>Counts as accepted contribution.</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-rejected">Rejected</span></td>
+            <td>Task was not accepted in the workflow.</td>
+            <td>Review with lecturer/team and decide whether to replace with a new task.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>4) How to write a strong task</h2>
+        <p>When creating a task, your <strong>title</strong> should be brief, and your <strong>description</strong> should include:</p>
+        <ol>
+          <li><strong>Context:</strong> What part of the project this belongs to.</li>
+          <li><strong>Goal:</strong> What should be achieved at the end.</li>
+          <li><strong>Scope:</strong> What is included and what is excluded.</li>
+          <li><strong>Implementation plan:</strong> Main steps you will take.</li>
+          <li><strong>Acceptance criteria:</strong> Clear checks teammates can verify.</li>
+          <li><strong>Dependencies:</strong> Any blocked item, related task, or required input.</li>
+        </ol>
+        <div class="tip">
+          Strong acceptance criteria sound like: "API returns 200 with required fields", "UI shows validation errors", "unit tests for edge case X pass".
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>5) Description template (recommended)</h2>
+<pre><code>Context:
+Goal:
+Scope In:
+Scope Out:
+Plan:
+Acceptance Criteria:
+Dependencies/Risks:
+</code></pre>
+        <p class="muted">Copy this directly into the Description box and fill each line.</p>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>6) How to review teammate tasks</h2>
+        <h3>For Proposed tasks</h3>
+        <ul>
+          <li>Approve if the task is clear, scoped well, and testable.</li>
+          <li>Request revision if important details are missing.</li>
+          <li>In your comment, explain exactly what should be improved.</li>
+        </ul>
+        <h3>For Completed tasks</h3>
+        <ul>
+          <li>Read the completion summary carefully.</li>
+          <li>Check the Git commit/file URL evidence.</li>
+          <li>Verify that acceptance criteria are actually met.</li>
+          <li>If not met, request revision with specific actionable feedback.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>7) Completion submission quality</h2>
+        <p>When the owner clicks <code>Mark Completed</code>, two fields are mandatory:</p>
+        <ul>
+          <li><strong>Completion Summary:</strong> what changed, where, and why.</li>
+          <li><strong>Git Commit or File URL:</strong> concrete evidence teammates can inspect.</li>
+        </ul>
+        <p class="ok">Good summary: mentions files/modules changed, behavior added/fixed, and test/verification done.</p>
+        <p class="danger">Weak summary: "Done", "Fixed everything", or no traceable proof.</p>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>8) Professional feedback style</h2>
+      <ul>
+        <li>Critique the work, not the person.</li>
+        <li>Be precise: "Please include error handling for null payload in <code>service.py</code>" is better than "Needs improvement".</li>
+        <li>If you request revision, include what evidence would be enough to approve next round.</li>
+      </ul>
+      <div class="tip">
+        A revision request should always help the owner succeed in the next attempt.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>9) Quick checklist before submitting or voting</h2>
+      <h3>Before creating or updating a task</h3>
+      <ul>
+        <li>Is the description detailed enough for someone else to execute?</li>
+        <li>Is due date realistic and priority justified?</li>
+        <li>Are acceptance criteria objective and checkable?</li>
+      </ul>
+      <h3>Before approving a completed task</h3>
+      <ul>
+        <li>Did you check the completion summary?</li>
+        <li>Did you inspect the commit/file link?</li>
+        <li>Do outputs match the task description and criteria?</li>
+      </ul>
+      <p class="warn">Do not approve just because someone asked. Approve only when evidence is clear.</p>
+    </section>
+
+    <footer>
+      TPS Student Guide - Use this process consistently to keep work fair, transparent, and high quality.
+    </footer>
+  </div>
+</body>
+</html>

@@ -32,10 +32,17 @@
     <header class="tps-shell sticky-top">
       <nav class="navbar navbar-expand-lg tps-navbar">
         <div class="container py-2">
-          <a class="navbar-brand tps-brand" href="{% url 'index' %}">
-            <span class="tps-brand-mark"><i class="bi bi-kanban"></i></span>
-            <span class="tps-brand-title">Task Point System</span>
-          </a>
+          <div class="d-flex align-items-center">
+            <a class="navbar-brand tps-brand" href="{% url 'index' %}">
+              <span class="tps-brand-mark"><i class="bi bi-kanban"></i></span>
+              <span class="tps-brand-title">Task Point System</span>
+            </a>
+            <ul class="navbar-nav tps-primary-nav me-3">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'student_guide' %}">Student Guide</a>
+              </li>
+            </ul>
+          </div>
           {% if user.is_authenticated %}
           <button
             class="navbar-toggler tps-navbar-toggler"

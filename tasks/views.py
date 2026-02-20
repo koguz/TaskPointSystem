@@ -1,5 +1,6 @@
 import csv
 import json
+from pathlib import Path
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -492,6 +493,16 @@ def index(request):
 @login_required
 def update_view(request):
     return render(request, 'tasks/updates.html')
+
+
+def student_guide(request):
+    guide_path = Path(settings.BASE_DIR) / "doc" / "student_guide.html"
+    if not guide_path.exists():
+        return HttpResponse("Student guide is not available.", status=404)
+    return HttpResponse(
+        guide_path.read_text(encoding="utf-8"),
+        content_type="text/html; charset=utf-8"
+    )
 
 
 @login_required
