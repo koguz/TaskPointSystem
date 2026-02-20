@@ -40,13 +40,6 @@
 {% endblock %}
 
 {% block alert %}
-{% if not user.email %}
-<div class="alert alert-warning" role="alert">
-  <strong>Email missing.</strong> Add an address in
-  <a class="alert-link" href="{% url 'email' %}">profile settings</a>
-  to receive task updates.
-</div>
-{% endif %}
 {% if not course_active %}
 <div class="alert alert-secondary" role="alert">
   <strong>Course completed.</strong> This workspace is now read-only.
