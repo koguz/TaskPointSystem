@@ -1,21 +1,21 @@
 import csv
+import json
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.forms import PasswordChangeForm
-from django.http.response import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.templatetags.static import static
-from django.utils.html import strip_tags
-
+from django.views.decorators.http import require_POST, require_GET
 
 from tasks.models import *
+from datetime import datetime  # re-import after wildcard; models.py exports datetime module via *
+from tasks.push import send_push_notification
 from .forms import CommentForm, CourseForm, MasterCourseForm, MilestoneForm, TaskForm, TeamFormStd, EmailChangeForm
 
 
@@ -32,20 +32,6 @@ def saveLog(mt: MasterTask, message, gizli: bool = False):
 
 def _task_url(task_id):
     return f"{settings.SITE_URL}/tasks/{task_id}"
-
-
-def _send_notification_email(subject, plain_message, recipient_list, html_message=None):
-    if not getattr(settings, "EMAIL_NOTIFICATIONS_ENABLED", False):
-        return 0
-    if not recipient_list:
-        return 0
-    return send_mail(
-        subject,
-        plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        recipient_list,
-        html_message=html_message
-    )
 
 
 AVATAR_PRESETS = [
@@ -603,30 +589,14 @@ def edit_task(request, task_id):
             task.save()
 
             devs = Developer.objects.all().filter(team=tm)
+            notify_users = [dev.user for dev in devs if dev != d]
 
-            receivers = []
-
-            for developer in devs:
-                if developer != d:
-                    receivers.append(developer.user.email)
-
-            subject = 'TPS:Notification || A task has been edited!'
-            contentList = [
-                'Edited by: ' + str(mt.owner),
-                'Title: ' + task.title,
-                'Description: ' + task.description,
-                'Priority: ' + task.getPriority(),
-                'Due date: ' + str(task.promised_date)
-            ]
-            url = _task_url(task.masterTask_id)
-
-            html_message = render_to_string('tasks/email_template.html',
-            {'title': 'A task has been edited.', 'contentList': contentList, 'url': url, 'background_color': '#003399'})
-
-            plain_message = strip_tags(html_message)
-            
             saveLog(mt, "Task is edited by " + str(d) + ".")
-            _send_notification_email(subject, plain_message, receivers, html_message=html_message)
+            send_push_notification(
+                notify_users, 'Task Edited',
+                f'{task.title} was edited by {mt.owner}',
+                url=_task_url(task.masterTask_id), tag=f'task-edit-{mt.pk}'
+            )
             
 
             return redirect('view_task', task_id)
@@ -675,32 +645,14 @@ def create_task(request, team_id):
             task.save()
 
             devs = Developer.objects.all().filter(team=t)
+            notify_users = [dev.user for dev in devs if dev != d]
 
-            receivers = []
-
-            for developer in devs:
-                if developer != d:
-                    receivers.append(developer.user.email)
-
-            contentList = [
-                'Creator: ' + str(mastertask.owner),
-                'Title: ' + task.title,
-                'Description: ' + task.description,
-                'Priority: ' + task.getPriority(),
-                'Due date: ' + str(task.promised_date)
-            ]
-
-            subject = 'TPS:Notification || A task has been created'
-
-            url = _task_url(task.masterTask_id)
-
-            html_message = render_to_string('tasks/email_template.html',
-            {'title':'A task has been created!', 'contentList':contentList, 'url': url, 'background_color': '#003399'})
-
-            plain_message = strip_tags(html_message)
-            
             saveLog(mastertask, "Task is created by " + str(d) + ".")
-            _send_notification_email(subject, plain_message, receivers, html_message=html_message)
+            send_push_notification(
+                notify_users, 'New Task Created',
+                f'{task.title} created by {mastertask.owner}',
+                url=_task_url(task.masterTask_id), tag=f'task-create-{mastertask.pk}'
+            )
             
             
             return redirect('team_view', team_id)
@@ -778,38 +730,20 @@ def complete_task(request, task_id):
     else:
         saveLog(mt, "Task is completed by " + str(d) + ".")
 
-    difficulty_label = mt.getDifficulty()
-
     devs = Developer.objects.all().filter(team=tm)
-    receivers = []
-    for developer in devs:
-        if developer != d:
-            receivers.append(developer.user.email)
+    notify_users = [dev.user for dev in devs if dev != d]
 
     if completion_update_mode:
-        subject = 'TPS:Notification || A completion update has been submitted'
-        title = 'A completion update has been submitted!'
+        push_title = 'Completion Update'
+        push_body = f'{t.title} — completion update by {mt.owner}'
     else:
-        subject = 'TPS:Notification || A task has been completed'
-        title = 'A task has been completed!'
+        push_title = 'Task Completed'
+        push_body = f'{t.title} completed by {mt.owner}'
 
-    contentList = [
-        'Creator: ' + str(mt.owner),
-        'Title: ' + t.title,
-        'Description: ' + t.description,
-        'Priority: ' + t.getPriority(),
-        'Difficulty: ' + difficulty_label,
-        'Used Generative AI: ' + ('Yes (' + mt.ai_usage + ')' if mt.used_ai else 'No'),
-        'Completion Summary: ' + completion_summary,
-        'Git Commit or File URL: ' + completion_file_url,
-        'Due date: '+ str(t.promised_date)
-    ]
-
-    url = _task_url(t.masterTask_id)
-    html_message = render_to_string('tasks/email_template.html',
-    {'title': title, 'contentList': contentList, 'url':url, 'background_color': '#003399'})
-    plain_message = strip_tags(html_message)
-    _send_notification_email(subject, plain_message, receivers, html_message=html_message)
+    send_push_notification(
+        notify_users, push_title, push_body,
+        url=_task_url(t.masterTask_id), tag=f'task-complete-{mt.pk}'
+    )
 
     return redirect('view_task', task_id)
 
@@ -919,22 +853,12 @@ def view_task(request, task_id):
                         vote.vote = True
                         vote.save()
 
-                        subject = 'TPS:Notification || The task you created has received an approve vote.'
-                        contentList = [
-                            'Your task called ' + t.title + ' has received an aprove vote.',
-                            'Approver: ' + str(d),
-                            str(d) + '\'s comment: ' + comment.body,
-                            'Priority: ' + t.getPriority(),
-                            'Due date: ' + str(t.promised_date)
-                        ]
-
-                        url = _task_url(t.masterTask_id)
-                        html_message = render_to_string('tasks/email_template.html',
-                        {'title': 'A task has received an approve vote!', 'contentList': contentList, 'url': url, 'background_color': '#5cb85c'})
-
-                        plain_message = strip_tags(html_message)
                         saveLog(mt, "Task received an approve vote by "+ str(d) + ".")
-                        _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
+                        send_push_notification(
+                            [task_owner.user], 'Approve Vote',
+                            f'{t.title} received an approve vote from {d}',
+                            url=_task_url(t.masterTask_id), tag=f'task-vote-{mt.pk}'
+                        )
 
                     elif request.POST['approve'] == "No":
                         comment.approved = False
@@ -945,22 +869,12 @@ def view_task(request, task_id):
                         vote.vote = False
                         vote.save()
 
-                        subject = 'TPS:Notification || The task you created has received a revision request.'
-                        contentList = [
-                            'Your task called ' + t.title + ' has received a revision request.',
-                            'Requested by: ' + str(d),
-                            str(d) + '\'s comment: ' + comment.body,
-                            'Priority: ' + t.getPriority(),
-                            'Due date: ' + str(t.promised_date)
-                        ]
-                        url = _task_url(t.masterTask_id)
-                        html_message = render_to_string('tasks/email_template.html',
-                        {'title':'A task has received a revision request.', 'contentList': contentList, 'url':url, 'background_color': '#ff2400'})
-
-                        plain_message = strip_tags(html_message)
-            
                         saveLog(mt, "Task received a revision request by "+ str(d) + ".")
-                        _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
+                        send_push_notification(
+                            [task_owner.user], 'Revision Requested',
+                            f'{t.title} received a revision request from {d}',
+                            url=_task_url(t.masterTask_id), tag=f'task-revision-{mt.pk}'
+                        )
                 comment.save()
                 return redirect('view_task', task_id)
     
@@ -975,39 +889,23 @@ def view_task(request, task_id):
             mt.opened = datetime.now()
             mt.save()
             
-            subject = 'TPS:Notification || The task you created is now in open state.'
-
-            contentList = [
-                'Your task called ' + t.title + ' is now in open state.',
-                'Description: ' + t.description,
-                'Priority: ' + t.getPriority(),
-                'Due date: ' + str(t.promised_date)
-            ]
-            
-            url = _task_url(t.masterTask_id)
-
-            html_message = render_to_string('tasks/email_template.html',           
-            {'title':'Your task is now in open state!','contentList': contentList, 'url':url, 'background_color': '#003399'})
-
-            plain_message = strip_tags(html_message)
-
             saveLog(mt, "All approved. Task is now in open state.")
-            _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
+            send_push_notification(
+                [task_owner.user], 'Task is Now Open',
+                f'{t.title} is now in open state',
+                url=_task_url(t.masterTask_id), tag=f'task-open-{mt.pk}'
+            )
             
         elif mt.status == 3 and v_app > (len(mt.team.developer_set.all()) - 1) / 2:
             mt.status = 5
             mt.save()
 
-            subject = 'TPS:Notification || The task you created is now accepted.'
-            url = _task_url(t.masterTask_id)
-
-            html_message = render_to_string('tasks/email_template.html',           
-            {'title':'Your task is accepted!', 'contentList': ['Your task called ' + t.title + ' is now accepted.'],'url':url, 'background_color': '#003399' })
-
-            plain_message = strip_tags(html_message)
-            
             saveLog(mt, "All approved. Task is now accepted!")
-            _send_notification_email(subject, plain_message, [task_owner.user.email], html_message=html_message)
+            send_push_notification(
+                [task_owner.user], 'Task Accepted',
+                f'{t.title} has been accepted',
+                url=_task_url(t.masterTask_id), tag=f'task-accepted-{mt.pk}'
+            )
             
         elif mt.status == 3 and v_den >= (len(mt.team.developer_set.all()) - 1) / 2:
             reopen = True 
@@ -1701,3 +1599,53 @@ def lecturer_task_view(request, task_id):
         'logs': logs 
     }
     return render(request, "tasks/lecturer_task_view.html", context)
+
+
+@login_required
+@require_POST
+def push_subscribe(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    endpoint = data.get("endpoint", "")
+    keys = data.get("keys", {})
+    p256dh = keys.get("p256dh", "")
+    auth = keys.get("auth", "")
+
+    if not endpoint or not p256dh or not auth:
+        return JsonResponse({"error": "Missing subscription fields"}, status=400)
+
+    PushSubscription.objects.update_or_create(
+        endpoint=endpoint,
+        defaults={
+            "user": request.user,
+            "p256dh": p256dh,
+            "auth": auth,
+        },
+    )
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def push_unsubscribe(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    endpoint = data.get("endpoint", "")
+    if not endpoint:
+        return JsonResponse({"error": "Missing endpoint"}, status=400)
+
+    PushSubscription.objects.filter(user=request.user, endpoint=endpoint).delete()
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_GET
+def vapid_public_key(request):
+    key = getattr(settings, "VAPID_PUBLIC_KEY", "")
+    return JsonResponse({"publicKey": key})

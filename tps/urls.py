@@ -15,8 +15,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.static import serve
+from django.conf import settings
+import os
+
+def _serve_sw(request):
+    sw_path = os.path.join(settings.BASE_DIR, 'tasks', 'static', 'tasks')
+    response = serve(request, 'sw.js', document_root=sw_path)
+    response['Content-Type'] = 'application/javascript'
+    return response
 
 urlpatterns = [
+    path('sw.js', _serve_sw, name='service_worker'),
     path('', include('tasks.urls')),
     path('admin/', admin.site.urls),
     #path('accounts/', include('django.contrib.auth.urls')),

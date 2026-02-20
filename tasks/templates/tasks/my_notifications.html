@@ -4,11 +4,24 @@
 {% block main_content %}
 <div class="card">
   <div class="card-header">
-    <h2 class="h5 mb-0">Notifications</h2>
+    <h2 class="h5 mb-0">Push Notifications</h2>
   </div>
   <div class="card-body">
-    <p class="mb-3">Notification channel preferences are not configurable yet.</p>
-    <p class="text-muted mb-0">For now, task updates are sent to the email configured in your account.</p>
+    <p class="mb-3">
+      Status: <span id="push-status" class="badge bg-secondary">Checking...</span>
+    </p>
+
+    <button id="push-enable-btn" class="btn btn-primary" style="display:none" onclick="window.tpsEnablePush()">
+      Enable Notifications
+    </button>
+    <button id="push-disable-btn" class="btn btn-outline-secondary" style="display:none" onclick="window.tpsDisablePush()">
+      Disable Notifications
+    </button>
+
+    <p class="text-muted mt-3 mb-0">
+      Push notifications are delivered directly to your browser.
+      If the status shows "Blocked by Browser", you will need to allow notifications for this site in your browser settings.
+    </p>
   </div>
 </div>
 {% endblock %}

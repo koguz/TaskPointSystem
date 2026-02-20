@@ -32,5 +32,8 @@ urlpatterns = [
     path('accounts/profile/change-password', views.change_password, name='change_password'),
     path('accounts/profile/teams', views.my_teams, name='teams'),
     path('accounts/profile/email', views.my_email, name='email'),
-    path('accounts/profile/notifications', views.my_notifications, name='notifications')
+    path('accounts/profile/notifications', views.my_notifications, name='notifications'),
+    path('api/push/subscribe/', views.push_subscribe, name='push_subscribe'),
+    path('api/push/unsubscribe/', views.push_unsubscribe, name='push_unsubscribe'),
+    path('api/push/vapid-key/', views.vapid_public_key, name='vapid_public_key'),
 ]

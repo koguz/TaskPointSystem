@@ -294,6 +294,17 @@ class MasterTaskLog(models.Model):
     log = models.TextField("Log")
     gizli = models.BooleanField("Gizli", default=False)
 
+class PushSubscription(models.Model):
+    user = models.ForeignKey(User, on_delete=CASCADE, related_name='push_subscriptions')
+    endpoint = models.URLField("Endpoint", max_length=512, unique=True)
+    p256dh = models.CharField("p256dh Key", max_length=256)
+    auth = models.CharField("Auth Key", max_length=256)
+    created_at = models.DateTimeField("Created", auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} — {self.endpoint[:60]}"
+
+
 class TeamMilestoneGrade(models.Model):
     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
